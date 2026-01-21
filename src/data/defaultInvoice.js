@@ -27,7 +27,7 @@ const defaultInvoice = {
     taxPercent: 0
   },
   items: [
-    { id: 1, name: "", quantity: 1, price: 0 }
+    { id: 1, name: "", quantity: 1, price: 0, taxPercent: 0 }
   ]
 }
 

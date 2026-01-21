@@ -35,7 +35,7 @@ export default function InvoiceItemsForm({
         {items.map((item) => (
           <div
             key={item.id}
-            className="grid grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)_auto_auto_auto] items-center gap-2"
+            className="grid grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_auto_auto_auto] items-center gap-2"
           >
             <input
               type="text"
@@ -59,6 +59,17 @@ export default function InvoiceItemsForm({
               value={item.price}
               onChange={(e) => onUpdateItem(item.id, { price: e.target.value })}
               placeholder="Price"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-right"
+            />
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              value={item.taxPercent ?? ""}
+              onChange={(e) =>
+                onUpdateItem(item.id, { taxPercent: e.target.value })
+              }
+              placeholder="Tax %"
               className="w-full rounded-md border border-gray-300 px-3 py-2 text-right"
             />
             <button
@@ -97,7 +108,8 @@ InvoiceItemsForm.propTypes = {
       id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
       name: PropTypes.string,
       quantity: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-      price: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
+      price: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+      taxPercent: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
     })
   ).isRequired,
   onAddItem: PropTypes.func.isRequired,

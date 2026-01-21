@@ -49,7 +49,7 @@ export default function Home({
               </span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-gray-600">Tax ({totals.taxPercent || 0}%)</span>
+              <span className="text-gray-600">Tax</span>
               <span className="font-medium">
                 {formatCurrency(totals.taxAmount, invoice.settings)}
               </span>

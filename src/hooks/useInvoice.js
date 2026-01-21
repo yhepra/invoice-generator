@@ -45,7 +45,8 @@ export default function useInvoice() {
           id: Date.now(),
           name: "",
           quantity: 1,
-          price: 0
+          price: 0,
+          taxPercent: Number(prev.details?.taxPercent) || 0
         }
       ]
     }))

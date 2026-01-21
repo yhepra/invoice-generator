@@ -59,6 +59,9 @@ export default function SimpleInvoice({ invoice }) {
               <th className="w-32 py-2 text-right font-semibold text-gray-700">
                 Price
               </th>
+              <th className="w-24 py-2 text-right font-semibold text-gray-700">
+                Tax (%)
+              </th>
               <th className="w-32 py-2 text-right font-semibold text-gray-700">
                 Total
               </th>
@@ -75,6 +78,9 @@ export default function SimpleInvoice({ invoice }) {
                 </td>
                 <td className="py-2 text-right text-gray-800">
                   {formatCurrency(item.price, settings)}
+                </td>
+                <td className="py-2 text-right text-gray-800">
+                  {Number(item.taxPercent || 0)}%
                 </td>
                 <td className="py-2 text-right text-gray-800">
                   {formatCurrency(itemTotal(item.quantity, item.price), settings)}
@@ -103,9 +109,7 @@ export default function SimpleInvoice({ invoice }) {
             </span>
           </div>
           <div className="flex items-center justify-between gap-4">
-            <span className="text-gray-600">
-              Tax ({totals.taxPercent || 0}%)
-            </span>
+            <span className="text-gray-600">Tax</span>
             <span className="font-medium text-gray-900 tabular-nums">
               {formatCurrency(totals.taxAmount, settings)}
             </span>
