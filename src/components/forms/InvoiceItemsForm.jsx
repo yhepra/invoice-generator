@@ -40,6 +40,17 @@ export default function InvoiceItemsForm({
         </div>
       </div>
       <div className="space-y-2">
+        {items.length > 0 && (
+          <div className="grid grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_auto_auto_auto] gap-2 text-sm font-medium text-gray-600">
+            <div className="px-3">Item name</div>
+            <div className="px-3 text-right">Qty</div>
+            <div className="px-3 text-right">Price</div>
+            <div className="px-3 text-right">Tax %</div>
+            <div className="w-7"></div>
+            <div className="w-7"></div>
+            <div className="w-9"></div>
+          </div>
+        )}
         {items.map((item) => (
           <div
             key={item.id}
