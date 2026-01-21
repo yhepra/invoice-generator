@@ -1,0 +1,49 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body, #root {
+  height: 100%;
+}
+
+.no-horizontal-scroll,
+html, body {
+  overflow-x: hidden;
+}
+
+.invoice-a4 {
+  width: min(100%, 210mm);
+  min-height: calc(297mm - 20mm);
+  margin: 0 auto;
+  page-break-inside: avoid;
+}
+
+.invoice-content {
+  padding: 10mm;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.invoice-footer {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4mm;
+}
+
+.invoice-notes {
+  margin-bottom: 8mm;
+}
+
+@media print {
+  body {
+    margin: 0;
+    background: white;
+  }
+  .invoice-a4 {
+    box-shadow: none;
+    border: none;
+    width: 210mm;
+  }
+}
