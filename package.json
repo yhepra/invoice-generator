@@ -11,9 +11,10 @@
   },
   "dependencies": {
     "html2pdf.js": "^0.10.1",
+    "prop-types": "^15.8.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "prop-types": "^15.8.1"
+    "react-phone-input-2": "^2.15.1"
   },
   "devDependencies": {
     "@vitejs/plugin-react-swc": "^3.7.1",

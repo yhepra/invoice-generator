@@ -33,7 +33,11 @@ html, body {
 }
 
 .invoice-notes {
-  margin-bottom: 8mm;
+  margin-bottom: 3mm;
+}
+
+.invoice-terms {
+  margin-bottom: 4mm;
 }
 
 @media print {
@@ -46,4 +50,29 @@ html, body {
     border: none;
     width: 210mm;
   }
+}
+
+/* Phone input normalization to match Tailwind form fields */
+.react-tel-input {
+  @apply w-full;
+}
+.react-tel-input .form-control {
+  @apply w-full rounded-md border border-gray-300 pl-14 pr-3 py-2 text-sm;
+  box-shadow: none;
+  height: auto;
+  line-height: normal;
+}
+.react-tel-input .form-control:focus {
+  @apply border-brand-600 ring-1 ring-brand-600 outline-none;
+  box-shadow: none;
+}
+.react-tel-input .flag-dropdown {
+  @apply border border-gray-300 rounded-l-md bg-white;
+  height: 100%;
+}
+.react-tel-input .selected-flag {
+  @apply h-full px-3;
+}
+.react-tel-input .country-list {
+  @apply shadow-lg rounded-md;
 }

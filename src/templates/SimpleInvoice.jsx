@@ -102,7 +102,7 @@ export default function SimpleInvoice({ invoice }) {
         </section>
       ) : null}
       {details.terms ? (
-        <section className="mt-4 text-xs">
+        <section className="invoice-terms mt-1 text-xs">
           <p className="font-semibold text-gray-700">Terms & Conditions</p>
           <p className="mt-1 whitespace-pre-line text-gray-700">
             {details.terms}

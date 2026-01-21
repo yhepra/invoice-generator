@@ -13,16 +13,46 @@ export default function Header({ title, onDownload, onGoHome, onGoSettings }) {
           <button
             type="button"
             onClick={onGoHome}
-            className="text-sm font-medium text-gray-700 hover:text-gray-900"
+            className="rounded-md p-2 text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+            title="Home"
+            aria-label="Home"
           >
-            Home
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              className="h-5 w-5"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M3 10.5L12 3l9 7.5" />
+              <path d="M5 10v9h14v-9" />
+            </svg>
           </button>
           <button
             type="button"
             onClick={onGoSettings}
-            className="text-sm font-medium text-gray-700 hover:text-gray-900"
+            className="rounded-md p-2 text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+            title="Settings"
+            aria-label="Settings"
           >
-            Settings
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              className="h-5 w-5"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <circle cx="12" cy="12" r="3" />
+              <path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.9 2.9l-.1-.1a1.6 1.6 0 0 0-1.8-.3 1.6 1.6 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.6 1.6 0 0 0-1-1.5 1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.9-2.9l.1-.1a1.6 1.6 0 0 0 .3-1.8 1.6 1.6 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.6 1.6 0 0 0 1.5-1 1.6 1.6 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.9-2.9l.1.1a1.6 1.6 0 0 0 1.8.3H9a1.6 1.6 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.6 1.6 0 0 0 1 1.5 1.6 1.6 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.9 2.9l-.1.1a1.6 1.6 0 0 0-.3 1.8V9c0 .6.4 1 1 1H21a2 2 0 1 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1Z" />
+            </svg>
           </button>
           <Button onClick={onDownload}>Download PDF</Button>
         </div>

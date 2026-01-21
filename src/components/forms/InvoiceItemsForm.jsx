@@ -18,16 +18,24 @@ export default function InvoiceItemsForm({
           <button
             type="button"
             onClick={onAddItem}
-            className="text-sm font-medium text-brand-600 hover:text-brand-700"
+            className="rounded-md p-2 text-brand-600 hover:bg-brand-50 hover:text-brand-700"
+            title="Add item"
+            aria-label="Add item"
           >
-            + Add item
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M12 5v14M5 12h14" />
+            </svg>
           </button>
           <button
             type="button"
             onClick={onClearItems}
-            className="text-sm font-medium text-red-600 hover:text-red-700"
+            className="rounded-md p-2 text-red-600 hover:bg-red-50 hover:text-red-700"
+            title="Remove all"
+            aria-label="Remove all"
           >
-            Remove all
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M3 6h18M8 6V4h8v2m-9 4v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V10" />
+            </svg>
           </button>
         </div>
       </div>
@@ -91,9 +99,13 @@ export default function InvoiceItemsForm({
             <button
               type="button"
               onClick={() => onRemoveItem(item.id)}
-              className="rounded-md px-2 py-1 text-sm text-red-600 hover:bg-red-50"
+              className="rounded-md p-2 text-sm text-red-600 hover:bg-red-50"
+              title="Remove item"
+              aria-label="Remove item"
             >
-              Remove
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M3 6h18M8 6V4h8v2m-9 4v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V10" />
+              </svg>
             </button>
           </div>
         ))}

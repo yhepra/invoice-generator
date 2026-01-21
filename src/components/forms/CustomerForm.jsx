@@ -1,5 +1,6 @@
 import React from "react"
 import PropTypes from "prop-types"
+import PhoneInput from "../common/PhoneInput.jsx"
 
 export default function CustomerForm({ customer, onChange }) {
   return (
@@ -19,12 +20,10 @@ export default function CustomerForm({ customer, onChange }) {
         className="w-full rounded-md border border-gray-300 px-3 py-2"
         rows={3}
       />
-      <input
-        type="tel"
+      <PhoneInput
         value={customer.phone || ""}
-        onChange={(e) => onChange({ phone: e.target.value })}
+        onChange={(val) => onChange({ phone: val })}
         placeholder="Phone"
-        className="w-full rounded-md border border-gray-300 px-3 py-2"
       />
       <input
         type="email"
