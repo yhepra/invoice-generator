@@ -39,18 +39,13 @@ export default function InvoiceDetailsForm({ details, onChange }) {
         className="w-full rounded-md border border-gray-300 px-3 py-2"
         rows={3}
       />
-      <div>
-        <label className="block text-sm text-gray-600">Tax (%)</label>
-        <input
-          type="number"
-          min="0"
-          step="0.01"
-          value={details.taxPercent}
-          onChange={(e) => onChange({ taxPercent: e.target.value })}
-          placeholder="Tax percentage"
-          className="w-full rounded-md border border-gray-300 px-3 py-2"
-        />
-      </div>
+      <textarea
+        value={details.terms}
+        onChange={(e) => onChange({ terms: e.target.value })}
+        placeholder="Terms & Conditions (optional)"
+        className="w-full rounded-md border border-gray-300 px-3 py-2"
+        rows={3}
+      />
     </div>
   )
 }
@@ -61,7 +56,7 @@ InvoiceDetailsForm.propTypes = {
     invoiceDate: PropTypes.string,
     dueDate: PropTypes.string,
     notes: PropTypes.string,
-    taxPercent: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
+    terms: PropTypes.string
   }).isRequired,
   onChange: PropTypes.func.isRequired
 }

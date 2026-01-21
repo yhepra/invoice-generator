@@ -20,6 +20,13 @@ export default function CustomerForm({ customer, onChange }) {
         rows={3}
       />
       <input
+        type="tel"
+        value={customer.phone || ""}
+        onChange={(e) => onChange({ phone: e.target.value })}
+        placeholder="Phone"
+        className="w-full rounded-md border border-gray-300 px-3 py-2"
+      />
+      <input
         type="email"
         value={customer.email}
         onChange={(e) => onChange({ email: e.target.value })}
@@ -34,6 +41,7 @@ CustomerForm.propTypes = {
   customer: PropTypes.shape({
     name: PropTypes.string,
     address: PropTypes.string,
+    phone: PropTypes.string,
     email: PropTypes.string
   }).isRequired,
   onChange: PropTypes.func.isRequired

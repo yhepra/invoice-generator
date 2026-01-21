@@ -46,7 +46,7 @@ export default function useInvoice() {
           name: "",
           quantity: 1,
           price: 0,
-          taxPercent: Number(prev.details?.taxPercent) || 0
+          taxPercent: 0
         }
       ]
     }))

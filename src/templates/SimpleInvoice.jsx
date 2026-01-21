@@ -32,6 +32,7 @@ export default function SimpleInvoice({ invoice }) {
           <p className="whitespace-pre-line text-gray-700">
             {seller.address || "Seller address"}
           </p>
+          <p className="mt-1 text-gray-700">{seller.phone}</p>
           <p className="mt-1 text-gray-700">{seller.email}</p>
         </div>
         <div>
@@ -44,6 +45,7 @@ export default function SimpleInvoice({ invoice }) {
           <p className="whitespace-pre-line text-gray-700">
             {customer.address || "Customer address"}
           </p>
+          <p className="mt-1 text-gray-700">{customer.phone}</p>
           <p className="mt-1 text-gray-700">{customer.email}</p>
         </div>
       </section>
@@ -99,6 +101,14 @@ export default function SimpleInvoice({ invoice }) {
           </p>
         </section>
       ) : null}
+      {details.terms ? (
+        <section className="mt-4 text-xs">
+          <p className="font-semibold text-gray-700">Terms & Conditions</p>
+          <p className="mt-1 whitespace-pre-line text-gray-700">
+            {details.terms}
+          </p>
+        </section>
+      ) : null}
 
       <section className="invoice-footer text-xs">
         <div className="ml-auto w-52 space-y-2 text-sm">
@@ -134,18 +144,21 @@ SimpleInvoice.propTypes = {
     seller: PropTypes.shape({
       name: PropTypes.string,
       address: PropTypes.string,
+      phone: PropTypes.string,
       email: PropTypes.string
     }).isRequired,
     customer: PropTypes.shape({
       name: PropTypes.string,
       address: PropTypes.string,
+      phone: PropTypes.string,
       email: PropTypes.string
     }).isRequired,
     details: PropTypes.shape({
       number: PropTypes.string,
       invoiceDate: PropTypes.string,
       dueDate: PropTypes.string,
-      notes: PropTypes.string
+      notes: PropTypes.string,
+      terms: PropTypes.string
     }).isRequired,
     items: PropTypes.arrayOf(
       PropTypes.shape({

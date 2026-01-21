@@ -12,19 +12,21 @@ const defaultInvoice = {
   seller: {
     name: "",
     address: "",
-    email: ""
+    email: "",
+    phone: ""
   },
   customer: {
     name: "",
     address: "",
-    email: ""
+    email: "",
+    phone: ""
   },
   details: {
     number: generateInvoiceNumber(),
     invoiceDate: today,
     dueDate: today,
     notes: "",
-    taxPercent: 0
+    terms: ""
   },
   items: [
     { id: 1, name: "", quantity: 1, price: 0, taxPercent: 0 }
