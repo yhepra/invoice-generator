@@ -5,3 +5,15 @@ dist/
 .vscode/
 npm-debug.log*
 yarn-error.log*
+
+# Laravel
+/backend/vendor
+/backend/node_modules
+/backend/public/storage
+/backend/storage/*.key
+/backend/storage/framework/cache/data/*
+/backend/storage/framework/sessions/*
+/backend/storage/framework/testing/*
+/backend/storage/framework/views/*
+/backend/storage/logs/*
+

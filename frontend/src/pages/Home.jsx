@@ -7,6 +7,7 @@ import InvoiceItemsForm from "../components/forms/InvoiceItemsForm.jsx"
 import InvoicePreview from "../components/preview/InvoicePreview.jsx"
 import Button from "../components/common/Button.jsx"
 import formatCurrency from "../utils/formatCurrency.js"
+import { storage } from "../services/storage"
 
 export default function Home({
   invoice,
@@ -23,6 +24,44 @@ export default function Home({
   moveItemDown,
   downloadPDF
 }) {
+
+  const handleDownload = async () => {
+    // Auto-save contacts if they don't exist
+    try {
+      const contacts = await storage.getContacts()
+      
+      // Check and save Seller
+      if (invoice.seller.name) {
+        const sellerExists = contacts.some(
+          c => c.type === 'seller' && c.name.toLowerCase() === invoice.seller.name.toLowerCase()
+        )
+        if (!sellerExists) {
+          await storage.saveContact({
+            ...invoice.seller,
+            type: 'seller'
+          })
+        }
+      }
+
+      // Check and save Customer
+      if (invoice.customer.name) {
+        const customerExists = contacts.some(
+          c => c.type === 'customer' && c.name.toLowerCase() === invoice.customer.name.toLowerCase()
+        )
+        if (!customerExists) {
+          await storage.saveContact({
+            ...invoice.customer,
+            type: 'customer'
+          })
+        }
+      }
+    } catch (error) {
+      console.error("Error auto-saving contacts:", error)
+    }
+
+    // Proceed with download
+    downloadPDF()
+  }
 
   return (
     <div className="mx-auto max-w-7xl p-4 md:p-8">
@@ -61,7 +100,7 @@ export default function Home({
               </span>
             </div>
             <div className="pt-2">
-              <Button onClick={downloadPDF}>Download PDF</Button>
+              <Button onClick={handleDownload}>Download PDF</Button>
             </div>
           </div>
         </div>

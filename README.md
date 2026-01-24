@@ -1,33 +1,35 @@
 # Invoice Generator
 
-Proyek web aplikasi untuk membuat dan mengunduh invoice sebagai PDF. Dibangun dengan React (Vite), Tailwind CSS, dan html2pdf.js tanpa backend.
+Proyek web aplikasi untuk membuat dan mengunduh invoice sebagai PDF.
+Project ini terdiri dari Frontend (React) dan Backend (Laravel).
+
+## Struktur Project
+- `frontend/`: Aplikasi React (Vite)
+- `backend/`: API Server (Laravel)
 
 ## Cara Menjalankan
-- Pastikan Node.js terpasang.
-- Jalankan:
-  - `npm install`
-  - `npm run dev`
-- Buka URL yang ditampilkan untuk melihat aplikasi.
-- Untuk build produksi:
-  - `npm run build`
-  - `npm run preview`
+
+### Frontend
+1. Masuk ke folder frontend: `cd frontend`
+2. Install dependencies: `npm install`
+3. Jalankan server development: `npm run dev`
+
+### Backend
+1. Masuk ke folder backend: `cd backend`
+2. Install dependencies: `composer install`
+3. Copy `.env.example` ke `.env` dan setting database
+4. Generate key: `php artisan key:generate`
+5. Migrasi database: `php artisan migrate`
+6. Jalankan server: `php artisan serve`
 
 ## Tech Stack
-- React (Vite)
-- Tailwind CSS
-- JavaScript
-- html2pdf.js
-- Tanpa backend, autentikasi, dan database
+- **Frontend**: React (Vite), Tailwind CSS, html2pdf.js
+- **Backend**: PHP Laravel, MySQL
 
 ## Fitur
 - Form input Seller, Customer, Invoice Details, dan Items
 - Perhitungan Subtotal, Tax, dan Grand Total otomatis
-- Preview invoice real-time dengan layout A4 yang siap cetak
+- Preview invoice real-time
 - Unduh invoice sebagai PDF
-- Arsitektur bersih dan mudah dikembangkan
+- Manajemen data via Database (Invoices, Contacts, Settings)
 
-## Rencana Pengembangan
-- Multiple templates dengan sistem folder `templates/`
-- Penyimpanan draft lokal (LocalStorage)
-- Impor/Ekspor data invoice dalam format JSON
-- Opsi mata uang dan format tanggal yang fleksibel

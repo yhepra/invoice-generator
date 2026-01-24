@@ -1,0 +1,231 @@
+import calculateTotals from "../utils/calculateTotals";
+
+const API_URL = "http://localhost:8000/api";
+
+const STORAGE_KEYS = {
+  SETTINGS: "invoice_gen_settings",
+}
+
+export const storage = {
+  // Settings (Hybrid: API first, fallback to LocalStorage)
+  getSettings: async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (token) {
+        const headers = {
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${token}`
+        };
+        const response = await fetch(`${API_URL}/settings`, { headers });
+        if (response.ok) {
+            return await response.json();
+        }
+      }
+      
+      const data = localStorage.getItem(STORAGE_KEYS.SETTINGS)
+      return data ? JSON.parse(data) : null
+    } catch (e) {
+      console.error("Error reading settings", e)
+      return null
+    }
+  },
+  saveSettings: async (settings) => {
+    try {
+      const token = localStorage.getItem("token");
+      if (token) {
+        const headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${token}`
+        };
+        await fetch(`${API_URL}/settings`, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify(settings)
+        });
+      }
+      
+      localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(settings))
+    } catch (e) {
+      console.error("Error saving settings", e)
+    }
+  },
+
+  // Invoices (Backend API)
+  getInvoices: async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const headers = {
+        'Accept': 'application/json',
+      };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+
+      const response = await fetch(`${API_URL}/invoices`, { headers });
+      if (!response.ok) throw new Error("Failed to fetch invoices");
+      const data = await response.json();
+      
+      // Map Backend -> Frontend
+      return data.map(inv => {
+        const items = inv.items.map(i => ({
+            ...i,
+            taxPercent: i.tax_percent || 0
+        }));
+        const totals = calculateTotals({ items });
+        
+        return {
+            ...inv,
+            invoiceNumber: inv.number,
+            dueDate: inv.due_date,
+            seller: inv.seller_info,
+            customer: inv.customer_info,
+            items: items,
+            totals: totals,
+            details: {
+                number: inv.number,
+                date: inv.date,
+                dueDate: inv.due_date,
+            },
+            // Default settings if missing, as backend doesn't store it yet
+            settings: { currency: 'IDR', locale: 'id-ID' }, 
+            historyId: inv.id,
+            savedAt: inv.created_at
+        };
+      });
+    } catch (e) {
+      console.error("Error fetching invoices", e);
+      return [];
+    }
+  },
+
+  saveInvoice: async (invoice) => {
+    try {
+      // Map Frontend -> Backend
+      const payload = {
+        number: invoice.invoiceNumber || invoice.details?.number, 
+        date: invoice.date || invoice.details?.date || invoice.details?.invoiceDate,
+        due_date: invoice.dueDate || invoice.details?.dueDate,
+        seller_info: invoice.seller,
+        customer_info: invoice.customer,
+        items: (invoice.items || []).map(i => ({
+            name: i.name,
+            quantity: i.quantity,
+            price: i.price,
+            tax_percent: i.taxPercent || 0
+        })),
+        notes: invoice.notes,
+        terms: invoice.terms,
+        status: 'draft' 
+      };
+
+      const token = localStorage.getItem("token");
+      const headers = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+
+      const response = await fetch(`${API_URL}/invoices`, {
+        method: 'POST',
+        headers: headers,
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error("Server Error Details:", errorData);
+        
+        let errorMessage = errorData.message || "Failed to save invoice";
+        
+        if (errorData.errors) {
+            const firstError = Object.values(errorData.errors)[0];
+            if (Array.isArray(firstError)) {
+                errorMessage = firstError[0];
+            } else if (typeof firstError === 'string') {
+                errorMessage = firstError;
+            }
+        }
+        
+        throw new Error(errorMessage);
+      }
+      
+      const saved = await response.json();
+      return {
+          ...saved,
+          historyId: saved.id
+      };
+    } catch (e) {
+      console.error("Error saving invoice", e);
+      throw e;
+    }
+  },
+
+  deleteInvoice: async (id) => {
+    try {
+      const token = localStorage.getItem("token");
+      const headers = {};
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+
+      await fetch(`${API_URL}/invoices/${id}`, { method: 'DELETE', headers });
+    } catch (e) {
+      console.error("Error deleting invoice", e);
+    }
+  },
+
+  // Contacts (Backend API)
+  getContacts: async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const headers = {};
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+
+      const response = await fetch(`${API_URL}/contacts`, { headers });
+      if (!response.ok) throw new Error("Failed to fetch contacts");
+      return await response.json();
+    } catch (e) {
+      console.error("Error fetching contacts", e);
+      return [];
+    }
+  },
+
+  saveContact: async (contact) => {
+    try {
+      let url = `${API_URL}/contacts`;
+      let method = 'POST';
+      
+      if (contact.id) {
+          url = `${API_URL}/contacts/${contact.id}`;
+          method = 'PUT';
+      }
+
+      const token = localStorage.getItem("token");
+      const headers = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+
+      const response = await fetch(url, {
+        method: method,
+        headers: headers,
+        body: JSON.stringify(contact),
+      });
+      
+      if (!response.ok) throw new Error("Failed to save contact");
+      return await response.json();
+    } catch (e) {
+      console.error("Error saving contact", e);
+    }
+  },
+
+  deleteContact: async (id) => {
+    try {
+      const token = localStorage.getItem("token");
+      const headers = {};
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+
+      await fetch(`${API_URL}/contacts/${id}`, { method: 'DELETE', headers });
+    } catch (e) {
+      console.error("Error deleting contact", e);
+    }
+  }
+}

@@ -13,7 +13,8 @@ const defaultInvoice = {
     name: "",
     address: "",
     email: "",
-    phone: ""
+    phone: "",
+    logo: null
   },
   customer: {
     name: "",

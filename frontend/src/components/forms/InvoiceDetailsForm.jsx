@@ -5,16 +5,19 @@ export default function InvoiceDetailsForm({ details, onChange }) {
   return (
     <div className="space-y-3">
       <h2 className="text-lg font-semibold">Invoice Details</h2>
-      <input
-        type="text"
-        value={details.number}
-        onChange={(e) => onChange({ number: e.target.value })}
-        placeholder="Invoice Number"
-        className="w-full rounded-md border border-gray-300 px-3 py-2"
-      />
+      <div>
+        <label className="block text-sm text-gray-600 mb-1">Invoice Number <span className="text-red-500">*</span></label>
+        <input
+          type="text"
+          value={details.number}
+          onChange={(e) => onChange({ number: e.target.value })}
+          placeholder="Invoice Number"
+          className="w-full rounded-md border border-gray-300 px-3 py-2"
+        />
+      </div>
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-sm text-gray-600">Invoice Date</label>
+          <label className="block text-sm text-gray-600 mb-1">Invoice Date <span className="text-red-500">*</span></label>
           <input
             type="date"
             value={details.invoiceDate}
@@ -23,7 +26,7 @@ export default function InvoiceDetailsForm({ details, onChange }) {
           />
         </div>
         <div>
-          <label className="block text-sm text-gray-600">Due Date</label>
+          <label className="block text-sm text-gray-600 mb-1">Due Date <span className="text-red-500">*</span></label>
           <input
             type="date"
             value={details.dueDate}

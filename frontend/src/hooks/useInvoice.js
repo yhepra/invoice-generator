@@ -3,8 +3,8 @@ import html2pdf from "html2pdf.js"
 import defaultInvoice from "../data/defaultInvoice.js"
 import calculateTotals from "../utils/calculateTotals.js"
 
-export default function useInvoice() {
-  const [invoice, setInvoice] = useState(defaultInvoice)
+export default function useInvoice(initialData = null) {
+  const [invoice, setInvoice] = useState(initialData || defaultInvoice)
   const previewRef = useRef(null)
 
   const totals = useMemo(() => calculateTotals(invoice), [invoice])
@@ -122,6 +122,7 @@ export default function useInvoice() {
     clearItems,
     moveItemUp,
     moveItemDown,
-    downloadPDF
+    downloadPDF,
+    setInvoice // Expose setInvoice for loading history
   }
 }

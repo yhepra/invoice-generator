@@ -9,9 +9,18 @@ export default function SimpleInvoice({ invoice }) {
   return (
     <div className="invoice-content flex w-full flex-col bg-white text-sm text-gray-900">
       <header className="flex items-start justify-between border-b border-gray-200 pb-6">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">INVOICE</h1>
-          <p className="mt-1 text-xs text-gray-500">Generated with Invoice Generator</p>
+        <div className="flex items-start gap-6">
+          {seller.logo && (
+            <img 
+              src={seller.logo} 
+              alt="Logo" 
+              className="h-24 w-24 object-contain" 
+            />
+          )}
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">INVOICE</h1>
+            <p className="mt-1 text-xs text-gray-500">Generated with Invoice Generator</p>
+          </div>
         </div>
         <div className="text-right text-xs">
           <p className="font-semibold">Invoice No.</p>
