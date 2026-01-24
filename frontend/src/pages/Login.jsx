@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { auth } from '../services/auth';
+import Button from '../components/common/Button';
 
-export default function Login({ onLogin, onRegisterClick, onCancel }) {
+export default function Login({ onLogin, onRegisterClick, onForgotPasswordClick, onCancel }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -40,7 +41,7 @@ export default function Login({ onLogin, onRegisterClick, onCancel }) {
           </p>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="-space-y-px rounded-md shadow-sm">
+          <div className="space-y-4">
             <div>
               <label htmlFor="email-address" className="sr-only">
                 Email address
@@ -51,7 +52,7 @@ export default function Login({ onLogin, onRegisterClick, onCancel }) {
                 type="email"
                 autoComplete="email"
                 required
-                className="relative block w-full rounded-t-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-brand-500 focus:outline-none focus:ring-brand-500 sm:text-sm"
+                className="relative block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-brand-500 focus:outline-none focus:ring-brand-500 sm:text-sm shadow-sm"
                 placeholder="Email address"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -67,7 +68,7 @@ export default function Login({ onLogin, onRegisterClick, onCancel }) {
                 type="password"
                 autoComplete="current-password"
                 required
-                className="relative block w-full rounded-b-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-brand-500 focus:outline-none focus:ring-brand-500 sm:text-sm"
+                className="relative block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-brand-500 focus:outline-none focus:ring-brand-500 sm:text-sm shadow-sm"
                 placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -84,9 +85,13 @@ export default function Login({ onLogin, onRegisterClick, onCancel }) {
           <div className="flex items-center justify-between">
              {/* Forgot password can be added here */}
              <div className="text-sm">
-               <a href="#" className="font-medium text-brand-600 hover:text-brand-500">
+               <button 
+                type="button"
+                onClick={onForgotPasswordClick}
+                className="font-medium text-brand-600 hover:text-brand-500"
+               >
                  Forgot your password?
-               </a>
+               </button>
              </div>
              {onCancel && (
                <Button

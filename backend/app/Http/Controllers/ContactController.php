@@ -1,0 +1,49 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Contact;
+use Illuminate\Http\Request;
+
+use Illuminate\Support\Facades\Auth;
+
+class ContactController extends Controller
+{
+    public function index()
+    {
+        return response()->json(Contact::where('user_id', Auth::id())->latest()->get());
+    }
+
+    public function store(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string',
+            'type' => 'required|in:seller,customer',
+        ]);
+
+        $data = $request->all();
+        $data['user_id'] = Auth::id();
+
+        $contact = Contact::create($data);
+        return response()->json($contact, 201);
+    }
+
+    public function show($id)
+    {
+        return response()->json(Contact::where('user_id', Auth::id())->findOrFail($id));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $contact = Contact::where('user_id', Auth::id())->findOrFail($id);
+        $contact->update($request->all());
+        return response()->json($contact);
+    }
+
+    public function destroy($id)
+    {
+        $contact = Contact::where('user_id', Auth::id())->findOrFail($id);
+        $contact->delete();
+        return response()->json(null, 204);
+    }
+}

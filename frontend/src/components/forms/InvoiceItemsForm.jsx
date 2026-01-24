@@ -39,85 +39,115 @@ export default function InvoiceItemsForm({
           </button>
         </div>
       </div>
-      <div className="space-y-2">
-        {items.length > 0 && (
-          <div className="grid grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_auto_auto_auto] gap-2 text-sm font-medium text-gray-600">
-            <div className="px-3">Item name <span className="text-red-500">*</span></div>
-            <div className="px-3 text-right">Qty <span className="text-red-500">*</span></div>
-            <div className="px-3 text-right">Price <span className="text-red-500">*</span></div>
-            <div className="px-3 text-right">Tax %</div>
-            <div className="w-7"></div>
-            <div className="w-7"></div>
-            <div className="w-9"></div>
-          </div>
-        )}
+      <div className="space-y-4">
         {items.map((item) => (
           <div
             key={item.id}
-            className="grid grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_auto_auto_auto] items-center gap-2"
+            className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm"
           >
-            <input
-              type="text"
-              value={item.name}
-              onChange={(e) => onUpdateItem(item.id, { name: e.target.value })}
-              placeholder="Item name"
-              className="w-full rounded-md border border-gray-300 px-3 py-2"
-            />
-            <input
-              type="number"
-              min="0"
-              value={item.quantity}
-              onChange={(e) => onUpdateItem(item.id, { quantity: e.target.value })}
-              placeholder="Qty"
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-right"
-            />
-            <input
-              type="number"
-              min="0"
-              step="0.01"
-              value={item.price}
-              onChange={(e) => onUpdateItem(item.id, { price: e.target.value })}
-              placeholder="Price"
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-right"
-            />
-            <input
-              type="number"
-              min="0"
-              step="0.01"
-              value={item.taxPercent ?? ""}
-              onChange={(e) =>
-                onUpdateItem(item.id, { taxPercent: e.target.value })
-              }
-              placeholder="Tax %"
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-right"
-            />
-            <button
-              type="button"
-              onClick={() => onMoveUp(item.id)}
-              className="rounded-md px-2 py-1 text-sm text-gray-700 hover:bg-gray-100"
-              title="Move up"
-            >
-              ↑
-            </button>
-            <button
-              type="button"
-              onClick={() => onMoveDown(item.id)}
-              className="rounded-md px-2 py-1 text-sm text-gray-700 hover:bg-gray-100"
-              title="Move down"
-            >
-              ↓
-            </button>
-            <button
-              type="button"
-              onClick={() => onRemoveItem(item.id)}
-              className="rounded-md p-2 text-sm text-red-600 hover:bg-red-50"
-              title="Remove item"
-              aria-label="Remove item"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M3 6h18M8 6V4h8v2m-9 4v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V10" />
-              </svg>
-            </button>
+            <div className="mb-3">
+              <label className="mb-1 block text-sm font-medium text-gray-700">
+                Item Name <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                value={item.name}
+                onChange={(e) => onUpdateItem(item.id, { name: e.target.value })}
+                placeholder="Item name"
+                className="w-full rounded-md border border-gray-300 px-3 py-2"
+              />
+            </div>
+
+            <div className="flex items-end gap-3">
+              <div className="w-24">
+                <label className="mb-1 block text-sm font-medium text-gray-700">
+                  Qty <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  value={item.quantity}
+                  onChange={(e) => {
+                    const val = e.target.value
+                    if (val === "" || parseFloat(val) >= 0) {
+                        onUpdateItem(item.id, { quantity: val })
+                    }
+                  }}
+                  placeholder="0"
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-right"
+                />
+              </div>
+
+              <div className="flex-1">
+                <label className="mb-1 block text-sm font-medium text-gray-700">
+                  Price <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={item.price}
+                  onChange={(e) => {
+                    const val = e.target.value
+                    if (val === "" || parseFloat(val) >= 0) {
+                        onUpdateItem(item.id, { price: val })
+                    }
+                  }}
+                  placeholder="0.00"
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-right"
+                />
+              </div>
+
+              <div className="w-24">
+                <label className="mb-1 block text-sm font-medium text-gray-700">
+                  Tax %
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={item.taxPercent ?? ""}
+                  onChange={(e) => {
+                    const val = e.target.value
+                    if (val === "" || parseFloat(val) >= 0) {
+                        onUpdateItem(item.id, { taxPercent: val })
+                    }
+                  }}
+                  placeholder="0"
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-right"
+                />
+              </div>
+
+              <div className="flex gap-1 pb-1">
+                <button
+                  type="button"
+                  onClick={() => onMoveUp(item.id)}
+                  className="rounded-md p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+                  title="Move up"
+                >
+                  ↑
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onMoveDown(item.id)}
+                  className="rounded-md p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+                  title="Move down"
+                >
+                  ↓
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onRemoveItem(item.id)}
+                  className="rounded-md p-2 text-red-500 hover:bg-red-50 hover:text-red-700"
+                  title="Remove item"
+                  aria-label="Remove item"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M3 6h18M8 6V4h8v2m-9 4v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V10" />
+                  </svg>
+                </button>
+              </div>
+            </div>
           </div>
         ))}
       </div>

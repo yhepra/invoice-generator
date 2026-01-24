@@ -124,8 +124,16 @@ export const storage = {
       };
       if (token) headers['Authorization'] = `Bearer ${token}`;
 
-      const response = await fetch(`${API_URL}/invoices`, {
-        method: 'POST',
+      let url = `${API_URL}/invoices`;
+      let method = 'POST';
+
+      if (invoice.historyId) {
+        url = `${API_URL}/invoices/${invoice.historyId}`;
+        method = 'PUT';
+      }
+
+      const response = await fetch(url, {
+        method: method,
         headers: headers,
         body: JSON.stringify(payload),
       });
@@ -175,8 +183,11 @@ export const storage = {
   getContacts: async () => {
     try {
       const token = localStorage.getItem("token");
-      const headers = {};
-      if (token) headers['Authorization'] = `Bearer ${token}`;
+      if (!token) return [];
+      
+      const headers = {
+          'Authorization': `Bearer ${token}`
+      };
 
       const response = await fetch(`${API_URL}/contacts`, { headers });
       if (!response.ok) throw new Error("Failed to fetch contacts");

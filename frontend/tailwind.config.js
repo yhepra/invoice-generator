@@ -19,6 +19,15 @@ export default {
           800: "#1a3d8f",
           900: "#162f6f"
         }
+      },
+      keyframes: {
+        countdown: {
+          '0%': { width: '100%' },
+          '100%': { width: '0%' },
+        }
+      },
+      animation: {
+        countdown: 'countdown linear forwards',
       }
     }
   },

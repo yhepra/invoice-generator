@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect, useRef } from "react"
 import InvoiceEditor from "./pages/Home.jsx"
 import Landing from "./pages/Landing.jsx"
 import Settings from "./pages/Settings.jsx"
 import History from "./pages/History.jsx"
 import Login from "./pages/Login.jsx"
 import Register from "./pages/Register.jsx"
+import ForgotPassword from "./pages/ForgotPassword.jsx"
+import ResetPassword from "./pages/ResetPassword.jsx"
 import Header from "./components/common/Header.jsx"
 import Toast from "./components/common/Toast.jsx"
 import useInvoice from "./hooks/useInvoice.js"
@@ -14,16 +16,25 @@ import defaultInvoice from "./data/defaultInvoice"
 
 export default function App() {
   const [page, setPage] = useState("landing")
-  const [toast, setToast] = useState(null)
+  const [toasts, setToasts] = useState([])
   const [user, setUser] = useState(null)
   const [loadingUser, setLoadingUser] = useState(true)
+  const [pendingAction, setPendingAction] = useState(null) // 'save' | 'download' | null
+  const isRemoteUpdate = useRef(false)
 
   const showToast = (message, type = 'success') => {
-    setToast({ message, type })
+    const id = Date.now()
+    setToasts(prev => {
+        const newToasts = [...prev, { id, message, type }]
+        if (newToasts.length > 3) {
+            return newToasts.slice(newToasts.length - 3)
+        }
+        return newToasts
+    })
   }
 
-  const hideToast = () => {
-    setToast(null)
+  const hideToast = (id) => {
+    setToasts(prev => prev.filter(t => t.id !== id))
   }
 
   useEffect(() => {
@@ -38,6 +49,11 @@ export default function App() {
       }
     };
     checkUser();
+
+    // Check for reset password URL
+    if (window.location.hash.includes('reset-password')) {
+      setPage('reset-password');
+    }
   }, []);
 
   const invoiceApi = useInvoice(defaultInvoice)
@@ -48,6 +64,7 @@ export default function App() {
     const loadSettings = async () => {
       const savedSettings = await storage.getSettings()
       if (savedSettings) {
+        isRemoteUpdate.current = true
         updateSettings(savedSettings)
       }
     }
@@ -61,6 +78,11 @@ export default function App() {
   // Save settings when they change
   useEffect(() => {
     if (invoice.settings) {
+      if (isRemoteUpdate.current) {
+        isRemoteUpdate.current = false
+        return
+      }
+      
       const save = async () => {
         setIsSaving(true)
         await storage.saveSettings(invoice.settings)
@@ -77,20 +99,22 @@ export default function App() {
       setPage("history")
       return
     }
-    // Remove history specific fields before loading
-    const { historyId, savedAt, ...data } = loadedInvoice
+    // Load invoice data including historyId for updates
+    const { savedAt, ...data } = loadedInvoice
     setInvoice(data)
     setPage("editor")
   }
 
   const handleSaveInvoice = async () => {
     if (!user) {
+      setPendingAction('save')
       setPage("login");
       showToast("Please login to save invoices", "error");
       return;
     }
     try {
-      await storage.saveInvoice(invoice)
+      const savedInvoice = await storage.saveInvoice(invoice)
+      setInvoice(prev => ({ ...prev, historyId: savedInvoice.historyId }))
       showToast("Invoice saved to history!", "success")
     } catch (error) {
       showToast(error.message || "Failed to save invoice.", "error")
@@ -99,23 +123,73 @@ export default function App() {
 
   const handleDownloadPDF = async () => {
     if (!user) {
+      setPendingAction('download')
       setPage("login");
       showToast("Please login to download invoices", "error");
       return;
     }
+    
+    // Auto-save contacts before download
+    try {
+        const contacts = await storage.getContacts()
+        if (invoice.seller.name) {
+            const sellerExists = contacts.some(
+                c => c.type === 'seller' && c.name.toLowerCase() === invoice.seller.name.toLowerCase()
+            )
+            if (!sellerExists) {
+                await storage.saveContact({
+                    ...invoice.seller,
+                    type: 'seller'
+                })
+            }
+        }
+        if (invoice.customer.name) {
+            const customerExists = contacts.some(
+                c => c.type === 'customer' && c.name.toLowerCase() === invoice.customer.name.toLowerCase()
+            )
+            if (!customerExists) {
+                await storage.saveContact({
+                    ...invoice.customer,
+                    type: 'customer'
+                })
+            }
+        }
+    } catch (error) {
+        console.error("Error auto-saving contacts:", error)
+    }
+
     downloadPDF();
   }
 
   const handleLogin = (user) => {
     setUser(user);
-    setPage("landing");
     showToast(`Welcome back, ${user.name}!`, "success");
+    
+    if (pendingAction) {
+        setPage("editor")
+        // Optionally trigger the action automatically
+        if (pendingAction === 'save') {
+             // We can't easily call handleSaveInvoice here because state updates might not be flushed.
+             // But user is now on editor page, they can click save again.
+             // Or we can use useEffect to trigger it.
+             // For now, just returning to editor is what user asked: "kembali ke halaman yang udah di isi dan bisa save dan download"
+        }
+        setPendingAction(null)
+    } else {
+        setPage("landing");
+    }
   }
 
   const handleRegister = (user) => {
     setUser(user);
-    setPage("landing");
     showToast(`Welcome, ${user.name}! Account created.`, "success");
+
+    if (pendingAction) {
+        setPage("editor")
+        setPendingAction(null)
+    } else {
+        setPage("landing");
+    }
   }
 
   const handleLogout = async () => {
@@ -131,13 +205,17 @@ export default function App() {
 
   return (
     <div>
-      {toast && (
-        <Toast 
-          message={toast.message} 
-          type={toast.type} 
-          onClose={hideToast} 
-        />
-      )}
+      <div className="fixed top-5 right-5 z-50 flex flex-col gap-2 pointer-events-none">
+        {toasts.map(toast => (
+          <div key={toast.id} className="pointer-events-auto">
+            <Toast 
+                message={toast.message} 
+                type={toast.type} 
+                onClose={() => hideToast(toast.id)} 
+            />
+          </div>
+        ))}
+      </div>
       <Header
         title="Invoice Generator"
         onGoHome={() => setPage("landing")}
@@ -160,6 +238,8 @@ export default function App() {
       {page === "editor" && (
         <InvoiceEditor 
           {...invoiceApi} 
+          onSave={handleSaveInvoice}
+          onDownload={handleDownloadPDF}
         />
       )}
       {page === "settings" && (
@@ -176,6 +256,7 @@ export default function App() {
         <Login 
           onLogin={handleLogin} 
           onRegisterClick={() => setPage("register")}
+          onForgotPasswordClick={() => setPage("forgot-password")}
           onCancel={() => setPage("landing")}
         />
       )}
@@ -183,6 +264,17 @@ export default function App() {
         <Register 
           onRegister={handleRegister} 
           onLoginClick={() => setPage("login")}
+          onCancel={() => setPage("landing")}
+        />
+      )}
+      {page === "forgot-password" && (
+        <ForgotPassword 
+          onCancel={() => setPage("login")}
+        />
+      )}
+      {page === "reset-password" && (
+        <ResetPassword 
+          onLogin={() => setPage("login")}
           onCancel={() => setPage("landing")}
         />
       )}

@@ -22,10 +22,24 @@ export default function Home({
   clearItems,
   moveItemUp,
   moveItemDown,
-  downloadPDF
+  downloadPDF,
+  onSave,
+  onDownload
 }) {
 
   const handleDownload = async () => {
+    // If external onDownload is provided (from App.jsx which handles auth), use it
+    if (onDownload) {
+      onDownload();
+      return;
+    }
+
+    // Fallback legacy behavior (direct download without auth check)
+    // Save invoice first
+    if (onSave) {
+        await onSave();
+    }
+
     // Auto-save contacts if they don't exist
     try {
       const contacts = await storage.getContacts()
@@ -99,8 +113,9 @@ export default function Home({
                 {formatCurrency(totals.total, invoice.settings)}
               </span>
             </div>
-            <div className="pt-2">
-              <Button onClick={handleDownload}>Download PDF</Button>
+            <div className="pt-2 flex gap-2">
+              <Button onClick={onSave} variant="secondary" className="w-full">Save Invoice</Button>
+              <Button onClick={handleDownload} className="w-full">Download PDF</Button>
             </div>
           </div>
         </div>
@@ -136,5 +151,6 @@ Home.propTypes = {
   clearItems: PropTypes.func.isRequired,
   moveItemUp: PropTypes.func.isRequired,
   moveItemDown: PropTypes.func.isRequired,
-  downloadPDF: PropTypes.func.isRequired
+  downloadPDF: PropTypes.func.isRequired,
+  onSave: PropTypes.func
 }

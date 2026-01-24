@@ -1,19 +1,19 @@
 import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
 
-export default function Toast({ message, type, onClose }) {
+export default function Toast({ message, type, onClose, duration = 3000 }) {
   useEffect(() => {
     const timer = setTimeout(() => {
       onClose();
-    }, 10000);
+    }, duration);
 
     return () => clearTimeout(timer);
-  }, [onClose]);
+  }, [onClose, duration]);
 
   const bgColor = type === 'error' ? 'bg-red-500' : 'bg-green-500';
 
   return (
-    <div className={`fixed top-5 right-5 z-50 ${bgColor} text-white px-6 py-4 rounded shadow-lg flex items-center gap-4 transition-opacity duration-300 animate-fade-in`}>
+    <div className={`relative w-80 ${bgColor} text-white px-6 py-4 rounded shadow-lg flex items-center gap-4 transition-all duration-300 animate-fade-in overflow-hidden`}>
       <div className="flex-1">
         {message}
       </div>
@@ -23,6 +23,12 @@ export default function Toast({ message, type, onClose }) {
       >
         &times;
       </button>
+      <div className="absolute bottom-0 left-0 h-1 bg-white/30 w-full">
+        <div 
+            className="h-full bg-white/70 origin-left animate-countdown"
+            style={{ animationDuration: `${duration}ms` }}
+        />
+      </div>
     </div>
   );
 }
@@ -31,8 +37,10 @@ Toast.propTypes = {
   message: PropTypes.string.isRequired,
   type: PropTypes.oneOf(['success', 'error']),
   onClose: PropTypes.func.isRequired,
+  duration: PropTypes.number
 };
 
 Toast.defaultProps = {
   type: 'error',
+  duration: 3000
 };

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { auth } from '../services/auth';
+import Button from '../components/common/Button';
 
 export default function Register({ onRegister, onLoginClick, onCancel }) {
   const [name, setName] = useState('');
@@ -48,7 +49,7 @@ export default function Register({ onRegister, onLoginClick, onCancel }) {
           </p>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="-space-y-px rounded-md shadow-sm">
+          <div className="space-y-4">
             <div>
               <label htmlFor="name" className="sr-only">
                 Full Name
@@ -58,7 +59,7 @@ export default function Register({ onRegister, onLoginClick, onCancel }) {
                 name="name"
                 type="text"
                 required
-                className="relative block w-full rounded-t-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-brand-500 focus:outline-none focus:ring-brand-500 sm:text-sm"
+                className="relative block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-brand-500 focus:outline-none focus:ring-brand-500 sm:text-sm shadow-sm"
                 placeholder="Full Name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
@@ -74,7 +75,7 @@ export default function Register({ onRegister, onLoginClick, onCancel }) {
                 type="email"
                 autoComplete="email"
                 required
-                className="relative block w-full border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-brand-500 focus:outline-none focus:ring-brand-500 sm:text-sm"
+                className="relative block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-brand-500 focus:outline-none focus:ring-brand-500 sm:text-sm shadow-sm"
                 placeholder="Email address"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -89,7 +90,7 @@ export default function Register({ onRegister, onLoginClick, onCancel }) {
                 name="password"
                 type="password"
                 required
-                className="relative block w-full border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-brand-500 focus:outline-none focus:ring-brand-500 sm:text-sm"
+                className="relative block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-brand-500 focus:outline-none focus:ring-brand-500 sm:text-sm shadow-sm"
                 placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -104,7 +105,7 @@ export default function Register({ onRegister, onLoginClick, onCancel }) {
                 name="password_confirmation"
                 type="password"
                 required
-                className="relative block w-full rounded-b-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-brand-500 focus:outline-none focus:ring-brand-500 sm:text-sm"
+                className="relative block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-brand-500 focus:outline-none focus:ring-brand-500 sm:text-sm shadow-sm"
                 placeholder="Confirm Password"
                 value={passwordConfirmation}
                 onChange={(e) => setPasswordConfirmation(e.target.value)}
