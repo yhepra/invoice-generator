@@ -9,8 +9,11 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\ValidationException;
-
+use Illuminate\Support\Facades\Notification;
+use App\Notifications\VerifyEmailOtp;
 use App\Services\XenditService;
 
 class AuthController extends Controller
@@ -30,18 +33,58 @@ class AuthController extends Controller
             'password' => 'required|string|min:8|confirmed',
         ]);
 
-        $user = User::create([
+        $otp = rand(100000, 999999);
+        
+        Cache::put('registration_' . $request->email, [
             'name' => $request->name,
             'email' => $request->email,
-            'password' => Hash::make($request->password),
+            'password' => encrypt($request->password), // Encrypt password for safety in cache
+            'otp' => $otp
+        ], 600); // 10 minutes
+
+        try {
+            Notification::route('mail', $request->email)
+                ->notify(new VerifyEmailOtp($otp));
+        } catch (\Exception $e) {
+             return response()->json(['message' => 'Failed to send OTP email: ' . $e->getMessage()], 500);
+        }
+
+        return response()->json([
+            'message' => 'OTP sent to your email. Please verify to complete registration.',
+            'email' => $request->email
+        ], 200);
+    }
+
+    public function verifyOtp(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'otp' => 'required|numeric|digits:6'
         ]);
+
+        $data = Cache::get('registration_' . $request->email);
+
+        if (!$data || $data['otp'] != $request->otp) {
+            return response()->json(['message' => 'Invalid or expired OTP.'], 400);
+        }
+
+        $user = User::create([
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'password' => decrypt($data['password']),
+        ]);
+        
+        $user->markEmailAsVerified();
+
+        Cache::forget('registration_' . $request->email);
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
             'access_token' => $token,
             'token_type' => 'Bearer',
-            'user' => $user
+            'user' => $user,
+            'message' => 'Registration successful.'
         ], 201);
     }
 
@@ -141,6 +184,47 @@ class AuthController extends Controller
         }
 
         return $user;
+    }
+
+    public function updateProfile(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+        ]);
+
+        /** @var \App\Models\User $user */
+        $user = $request->user();
+        $user->name = $request->name;
+        $user->save();
+
+        return response()->json([
+            'message' => 'Profile updated successfully',
+            'user' => $user
+        ]);
+    }
+
+    public function changePassword(Request $request)
+    {
+        $request->validate([
+            'current_password' => 'required',
+            'new_password' => 'required|string|min:8|confirmed',
+        ]);
+
+        /** @var \App\Models\User $user */
+        $user = $request->user();
+
+        if (!Hash::check($request->current_password, $user->password)) {
+            throw ValidationException::withMessages([
+                'current_password' => ['The provided password does not match your current password.'],
+            ]);
+        }
+
+        $user->password = Hash::make($request->new_password);
+        $user->save();
+
+        return response()->json([
+            'message' => 'Password changed successfully',
+        ]);
     }
 
     public function upgrade(Request $request)

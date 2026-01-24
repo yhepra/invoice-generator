@@ -9,6 +9,7 @@ import ForgotPassword from "./pages/ForgotPassword.jsx"
 import ResetPassword from "./pages/ResetPassword.jsx"
 import Header from "./components/common/Header.jsx"
 import Upgrade from "./pages/Upgrade.jsx"
+import Profile from "./pages/Profile.jsx"
 import Toast from "./components/common/Toast.jsx"
 import useInvoice from "./hooks/useInvoice.js"
 import { storage } from "./services/storage"
@@ -231,9 +232,9 @@ export default function App() {
     }
   }
 
-  const handleRegister = (user) => {
+  const handleRegister = (user, message) => {
     setUser(user);
-    showToast(`Welcome, ${user.name}! Account created.`, "success");
+    showToast(message || `Welcome, ${user.name}! Account created.`, "success");
 
     if (pendingAction) {
         setPage("editor")
@@ -268,12 +269,13 @@ export default function App() {
         ))}
       </div>
       <Header 
-        title={invoice.details?.headerTitle || "Invoice Generator"} 
+        title="GenerateInvoice" 
         onGoHome={() => setPage("landing")}
         onGoEditor={() => setPage("editor")}
         onGoSettings={() => setPage("settings")}
         onGoHistory={() => setPage("history")}
         onGoUpgrade={() => setPage("upgrade")}
+        onGoProfile={() => setPage("profile")}
         user={user}
         onLogin={() => setPage("login")}
         onLogout={handleLogout}
@@ -287,6 +289,15 @@ export default function App() {
             onGoUpgrade={() => setPage("upgrade")}
             onLogin={() => setPage("login")}
             onRegister={() => setPage("register")}
+          />
+        )}
+        {page === "profile" && (
+          <Profile 
+            user={user} 
+            onUpdateUser={(updatedUser) => {
+              setUser(updatedUser);
+              showToast("Profile updated successfully", "success");
+            }}
           />
         )}
         {page === "upgrade" && (

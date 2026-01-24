@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react"
 import { storage } from "../../services/storage"
 import Button from "../common/Button"
+import ConfirmModal from "../common/ConfirmModal"
 
 export default function ContactsManager() {
   const [activeTab, setActiveTab] = useState("customer")
@@ -12,6 +13,10 @@ export default function ContactsManager() {
     phone: "",
     email: ""
   })
+  
+  // Modal State
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  const [contactToDelete, setContactToDelete] = useState(null)
 
   useEffect(() => {
     loadContacts()
@@ -35,10 +40,16 @@ export default function ContactsManager() {
     }
   }
 
-  const handleDelete = async (id) => {
-    if (confirm("Delete this contact?")) {
-      await storage.deleteContact(id)
+  const confirmDelete = (contact) => {
+    setContactToDelete(contact)
+    setIsDeleteModalOpen(true)
+  }
+
+  const handleDelete = async () => {
+    if (contactToDelete) {
+      await storage.deleteContact(contactToDelete.id)
       loadContacts()
+      setContactToDelete(null)
     }
   }
 
@@ -49,6 +60,16 @@ export default function ContactsManager() {
 
   return (
     <div className="space-y-6">
+      <ConfirmModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleDelete}
+        title="Delete Contact"
+        message={`Are you sure you want to delete ${contactToDelete?.name}? This action cannot be undone.`}
+        confirmText="Delete"
+        variant="danger"
+      />
+
       <div className="border-b border-gray-200">
         <nav className="-mb-px flex space-x-8">
           <button
@@ -100,7 +121,7 @@ export default function ContactsManager() {
                       Edit
                     </button>
                     <button
-                      onClick={() => handleDelete(contact.id)}
+                      onClick={() => confirmDelete(contact)}
                       className="text-red-600 hover:text-red-800"
                     >
                       ✕

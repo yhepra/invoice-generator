@@ -6,6 +6,38 @@ const STORAGE_KEYS = {
   SETTINGS: "invoice_gen_settings",
 }
 
+// Helper to determine status based on invoice data
+const calculateStatus = (inv) => {
+    // If it has a status field from backend, use it (future proofing)
+    // But if it's 'draft', we recalculate to show 'Overdue'/'Outstanding' based on dates
+    // unless the user explicitly wants 'Draft' (which we can't distinguish yet without another flag)
+    if (inv.status && inv.status.toLowerCase() !== 'draft') {
+        // Normalize to Title Case (e.g. 'PAID' -> 'Paid')
+        const s = inv.status.toLowerCase();
+        return s.charAt(0).toUpperCase() + s.slice(1);
+    }
+    
+    // Logic for derived status
+    const dueDate = inv.due_date ? new Date(inv.due_date) : null;
+    const now = new Date();
+    
+    // Simple logic: 
+    // - If no due date -> Draft
+    // - If due date passed -> Overdue
+    // - Else -> Outstanding
+    // Note: 'Paid' would typically require a specific flag or payment record
+    
+    if (!dueDate) return 'Draft';
+    
+    // Compare dates (ignore time)
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const due = new Date(dueDate.getFullYear(), dueDate.getMonth(), dueDate.getDate());
+    
+    if (due < today) return 'Overdue';
+    
+    return 'Unpaid';
+};
+
 export const storage = {
   // Settings (Hybrid: API first, fallback to LocalStorage)
   getSettings: async () => {
@@ -88,7 +120,8 @@ export const storage = {
             // Default settings if missing, as backend doesn't store it yet
             settings: { currency: 'IDR', locale: 'id-ID' }, 
             historyId: inv.id,
-            savedAt: inv.created_at
+            savedAt: inv.created_at,
+            status: calculateStatus(inv) // Add derived status
         };
       });
     } catch (e) {
@@ -114,7 +147,7 @@ export const storage = {
         })),
         notes: invoice.notes,
         terms: invoice.terms,
-        status: 'draft' 
+        status: invoice.status || 'draft'
       };
 
       const token = localStorage.getItem("token");

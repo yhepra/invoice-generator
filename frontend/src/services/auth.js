@@ -37,6 +37,25 @@ export const auth = {
     }
 
     const data = await response.json();
+    return { message: data.message, email: data.email };
+  },
+
+  verifyOtp: async (email, otp) => {
+    const response = await fetch(`${API_URL}/verify-otp`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+      },
+      body: JSON.stringify({ email, otp }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || "Verification failed");
+    }
+
+    const data = await response.json();
     localStorage.setItem("token", data.access_token);
     return data.user;
   },
@@ -69,6 +88,54 @@ export const auth = {
     if (!response.ok) {
       localStorage.removeItem("token");
       return null;
+    }
+
+    return await response.json();
+  },
+
+  updateProfile: async (name) => {
+    const token = localStorage.getItem("token");
+    if (!token) throw new Error("Not authenticated");
+
+    const response = await fetch(`${API_URL}/profile`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "Authorization": `Bearer ${token}`,
+      },
+      body: JSON.stringify({ name }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || "Failed to update profile");
+    }
+
+    return await response.json();
+  },
+
+  changePassword: async (current_password, new_password, new_password_confirmation) => {
+    const token = localStorage.getItem("token");
+    if (!token) throw new Error("Not authenticated");
+
+    const response = await fetch(`${API_URL}/password`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "Authorization": `Bearer ${token}`,
+      },
+      body: JSON.stringify({ 
+        current_password, 
+        new_password, 
+        new_password_confirmation 
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || "Failed to change password");
     }
 
     return await response.json();

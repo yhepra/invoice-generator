@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from "react"
 import PropTypes from "prop-types"
 import Button from "./Button.jsx"
 
-export default function Header({ title, onGoHome, onGoEditor, onGoSettings, onGoHistory, onGoUpgrade, user, onLogin, onLogout }) {
+export default function Header({ title, onGoHome, onGoEditor, onGoSettings, onGoHistory, onGoUpgrade, onGoProfile, user, onLogin, onLogout }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const menuRef = useRef(null)
 
@@ -166,6 +166,18 @@ export default function Header({ title, onGoHome, onGoEditor, onGoSettings, onGo
                   <div className="py-1">
                     <button
                       onClick={() => {
+                        onGoProfile()
+                        setIsMenuOpen(false)
+                      }}
+                      className="group flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-brand-600"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="mr-3 h-5 w-5 text-gray-400 group-hover:text-brand-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      </svg>
+                      Profile
+                    </button>
+                    <button
+                      onClick={() => {
                         onLogout()
                         setIsMenuOpen(false)
                       }}
@@ -199,7 +211,8 @@ Header.propTypes = {
   onGoSettings: PropTypes.func.isRequired,
   onGoHistory: PropTypes.func,
   onGoUpgrade: PropTypes.func,
+  onGoProfile: PropTypes.func,
   user: PropTypes.object,
-  onLogin: PropTypes.func,
+  onLogin: PropTypes.func.isRequired,
   onLogout: PropTypes.func
 }

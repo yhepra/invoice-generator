@@ -20,7 +20,7 @@ export default function SimpleInvoice({ invoice, user }) {
           )}
           <div>
             <h1 className="text-3xl font-bold tracking-tight">{details.headerTitle || "INVOICE"}</h1>
-            <p className="mt-1 text-xs text-gray-500">Generated with Invoice Generator</p>
+            <p className="mt-1 text-xs text-gray-500">Generated with GenerateInvoice</p>
           </div>
         </div>
         <div className="text-right text-xs">

@@ -141,7 +141,7 @@ export default function Landing({ user, onCreateInvoice, onLoadInvoice, onGoUpgr
         <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&q=80')] bg-cover bg-center opacity-10"></div>
         <div className="relative mx-auto max-w-5xl">
           <h1 className="mb-6 text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl leading-tight">
-            The Ultimate <span className="text-brand-400">Invoice Generator</span> for Professionals
+            The Ultimate <span className="text-brand-400">GenerateInvoice</span> for Professionals
           </h1>
           <p className="mx-auto mb-10 max-w-3xl text-lg text-slate-300 sm:text-xl">
             Manage your business billing easily and efficiently. Create professional invoices in seconds, track your history, and get paid faster.

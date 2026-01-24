@@ -14,6 +14,7 @@ Route::get('/ping', function () {
 
 // Public Auth Routes
 Route::post('/register', [AuthController::class, 'register']);
+Route::post('/verify-otp', [AuthController::class, 'verifyOtp']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
 Route::post('/reset-password', [AuthController::class, 'resetPassword']);
@@ -25,6 +26,8 @@ Route::post('/xendit/callback', [WebhookController::class, 'handleXenditCallback
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me', [AuthController::class, 'me']);
+    Route::put('/profile', [AuthController::class, 'updateProfile']);
+    Route::put('/password', [AuthController::class, 'changePassword']);
     Route::post('/upgrade', [AuthController::class, 'upgrade']);
     Route::post('/upgrade/verify', [AuthController::class, 'verifyPayment']);
     
