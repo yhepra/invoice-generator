@@ -74,6 +74,48 @@ export const auth = {
     return await response.json();
   },
 
+  upgrade: async () => {
+    const token = localStorage.getItem("token");
+    if (!token) throw new Error("Not authenticated");
+
+    const response = await fetch(`${API_URL}/upgrade`, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Accept": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || "Upgrade failed");
+    }
+
+    return await response.json();
+  },
+
+  verifyPayment: async (invoiceId) => {
+    const token = localStorage.getItem("token");
+    if (!token) throw new Error("Not authenticated");
+
+    const response = await fetch(`${API_URL}/upgrade/verify`, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+      },
+      body: JSON.stringify({ invoice_id: invoiceId }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || "Payment verification failed");
+    }
+
+    return await response.json();
+  },
+
   forgotPassword: async (email) => {
     const response = await fetch(`${API_URL}/forgot-password`, {
       method: "POST",

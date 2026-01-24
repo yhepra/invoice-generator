@@ -221,10 +221,14 @@ export const storage = {
         body: JSON.stringify(contact),
       });
       
-      if (!response.ok) throw new Error("Failed to save contact");
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || "Failed to save contact");
+      }
       return await response.json();
     } catch (e) {
       console.error("Error saving contact", e);
+      throw e;
     }
   },
 

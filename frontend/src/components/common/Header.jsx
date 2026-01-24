@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from "react"
 import PropTypes from "prop-types"
 import Button from "./Button.jsx"
 
-export default function Header({ title, onGoHome, onGoEditor, onGoSettings, onGoHistory, user, onLogin, onLogout }) {
+export default function Header({ title, onGoHome, onGoEditor, onGoSettings, onGoHistory, onGoUpgrade, user, onLogin, onLogout }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const menuRef = useRef(null)
 
@@ -36,6 +36,21 @@ export default function Header({ title, onGoHome, onGoEditor, onGoSettings, onGo
             </svg>
           </div>
           <span className="text-xl font-bold text-gray-900 tracking-tight">{title}</span>
+          {user && (
+            user.plan === 'premium' ? (
+              <span className="ml-2 rounded bg-orange-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-orange-600 border border-orange-200">
+                Premium
+              </span>
+            ) : (
+              <button 
+                onClick={onGoUpgrade}
+                className="ml-2 rounded bg-blue-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-blue-600 border border-blue-200 hover:bg-blue-200 cursor-pointer transition-colors"
+                title="Upgrade to Premium"
+              >
+                Free
+              </button>
+            )
+          )}
         </div>
         
         <div className="flex items-center gap-3">
@@ -62,9 +77,9 @@ export default function Header({ title, onGoHome, onGoEditor, onGoSettings, onGo
                 <div className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-100 text-sm font-bold text-brand-700">
                   {getInitials(user.name)}
                 </div>
-                <span className="hidden text-sm font-medium text-gray-700 sm:block">
-                  {user.name}
-                </span>
+                <div className="hidden flex-col items-start sm:flex">
+                  <span className="text-sm font-medium text-gray-700">{user.name}</span>
+                </div>
                 <svg 
                   xmlns="http://www.w3.org/2000/svg" 
                   className={`h-4 w-4 text-gray-400 transition-transform duration-200 ${isMenuOpen ? 'rotate-180' : ''}`} 
@@ -129,6 +144,25 @@ export default function Header({ title, onGoHome, onGoEditor, onGoSettings, onGo
 
                   <div className="my-1 h-px bg-gray-100" />
 
+                  {user.plan !== 'premium' && (
+                    <div className="py-1">
+                      <button
+                        onClick={() => {
+                          onGoUpgrade()
+                          setIsMenuOpen(false)
+                        }}
+                        className="group flex w-full items-center px-4 py-2 text-sm text-brand-600 hover:bg-brand-50 font-medium"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="mr-3 h-5 w-5 text-brand-500 group-hover:text-brand-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                        Upgrade to Premium
+                      </button>
+                    </div>
+                  )}
+
+                  <div className="my-1 h-px bg-gray-100" />
+
                   <div className="py-1">
                     <button
                       onClick={() => {
@@ -164,6 +198,7 @@ Header.propTypes = {
   onGoEditor: PropTypes.func,
   onGoSettings: PropTypes.func.isRequired,
   onGoHistory: PropTypes.func,
+  onGoUpgrade: PropTypes.func,
   user: PropTypes.object,
   onLogin: PropTypes.func,
   onLogout: PropTypes.func

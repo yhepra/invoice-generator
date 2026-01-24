@@ -8,6 +8,7 @@ import Register from "./pages/Register.jsx"
 import ForgotPassword from "./pages/ForgotPassword.jsx"
 import ResetPassword from "./pages/ResetPassword.jsx"
 import Header from "./components/common/Header.jsx"
+import Upgrade from "./pages/Upgrade.jsx"
 import Toast from "./components/common/Toast.jsx"
 import useInvoice from "./hooks/useInvoice.js"
 import { storage } from "./services/storage"
@@ -42,13 +43,56 @@ export default function App() {
       try {
         const currentUser = await auth.me();
         setUser(currentUser);
+        return currentUser;
       } catch (error) {
         console.error("Auth check failed", error);
+        return null;
       } finally {
         setLoadingUser(false);
       }
     };
-    checkUser();
+
+    // Check URL for upgrade callbacks
+    const path = window.location.pathname;
+    if (path.includes('/upgrade/success')) {
+        const invoiceId = localStorage.getItem('pending_upgrade_invoice_id');
+        if (invoiceId) {
+            // Verify payment status with backend
+            auth.verifyPayment(invoiceId).then((res) => {
+                if (res.status === 'success') {
+                    showToast("Upgrade successful! Welcome to Premium.", "success");
+                    setUser(res.user); // Update user immediately
+                } else {
+                    showToast("Payment processing. Please check back later.", "info");
+                    // Attempt to fetch latest user state anyway
+                    checkUser();
+                }
+            }).catch(err => {
+                console.error(err);
+                showToast("Failed to verify payment. Please contact support.", "error");
+                checkUser();
+            }).finally(() => {
+                 setLoadingUser(false);
+                 localStorage.removeItem('pending_upgrade_invoice_id');
+                 setPage('editor');
+                 window.history.pushState({}, '', '/');
+            });
+        } else {
+            // Fallback to simple user check if no ID found (legacy behavior)
+            checkUser().then((u) => {
+                showToast("Upgrade process completed.", "info");
+                setPage('editor');
+                window.history.pushState({}, '', '/');
+            });
+        }
+    } else if (path.includes('/upgrade/failure')) {
+        showToast("Payment failed or cancelled.", "error");
+        setPage('upgrade');
+        window.history.pushState({}, '', '/');
+        checkUser();
+    } else {
+        checkUser();
+    }
 
     // Check for reset password URL
     if (window.location.hash.includes('reset-password')) {
@@ -105,19 +149,21 @@ export default function App() {
     setPage("editor")
   }
 
-  const handleSaveInvoice = async () => {
+  const handleSaveInvoice = async (showSuccessToast = true) => {
     if (!user) {
       setPendingAction('save')
       setPage("login");
       showToast("Please login to save invoices", "error");
-      return;
+      return false;
     }
     try {
       const savedInvoice = await storage.saveInvoice(invoice)
       setInvoice(prev => ({ ...prev, historyId: savedInvoice.historyId }))
-      showToast("Invoice saved to history!", "success")
+      if (showSuccessToast) showToast("Invoice saved to history!", "success")
+      return true
     } catch (error) {
       showToast(error.message || "Failed to save invoice.", "error")
+      return false
     }
   }
 
@@ -129,6 +175,11 @@ export default function App() {
       return;
     }
     
+    // Attempt to save invoice first to check limits
+    // This ensures users can't download if they've reached their invoice limit
+    const saved = await handleSaveInvoice(false)
+    if (!saved) return
+
     // Auto-save contacts before download
     try {
         const contacts = await storage.getContacts()
@@ -216,30 +267,45 @@ export default function App() {
           </div>
         ))}
       </div>
-      <Header
-        title="Invoice Generator"
+      <Header 
+        title={invoice.details?.headerTitle || "Invoice Generator"} 
         onGoHome={() => setPage("landing")}
         onGoEditor={() => setPage("editor")}
         onGoSettings={() => setPage("settings")}
         onGoHistory={() => setPage("history")}
+        onGoUpgrade={() => setPage("upgrade")}
         user={user}
         onLogin={() => setPage("login")}
         onLogout={handleLogout}
       />
-      {page === "landing" && (
-        <Landing 
-          user={user}
-          onCreateInvoice={() => setPage("editor")}
-          onLoadInvoice={handleLoadInvoice}
-          onLogin={() => setPage("login")}
-          onRegister={() => setPage("register")}
-        />
-      )}
-      {page === "editor" && (
+      <main className="flex-1">
+        {page === "landing" && (
+          <Landing 
+            user={user} 
+            onCreateInvoice={() => setPage("editor")}
+            onLoadInvoice={handleLoadInvoice}
+            onGoUpgrade={() => setPage("upgrade")}
+            onLogin={() => setPage("login")}
+            onRegister={() => setPage("register")}
+          />
+        )}
+        {page === "upgrade" && (
+          <Upgrade 
+            user={user}
+            onUpgradeSuccess={(updatedUser) => {
+              setUser(updatedUser)
+              showToast("Successfully upgraded to Premium!")
+              setPage("landing")
+            }}
+            onCancel={() => setPage("landing")}
+          />
+        )}
+        {page === "editor" && (
         <InvoiceEditor 
           {...invoiceApi} 
           onSave={handleSaveInvoice}
           onDownload={handleDownloadPDF}
+          user={user}
         />
       )}
       {page === "settings" && (
@@ -278,6 +344,7 @@ export default function App() {
           onCancel={() => setPage("landing")}
         />
       )}
+      </main>
     </div>
   )
 }

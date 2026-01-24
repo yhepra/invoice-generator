@@ -3,12 +3,13 @@ import PropTypes from "prop-types"
 import formatCurrency from "../utils/formatCurrency.js"
 import itemTotal from "../utils/itemTotal.js"
 
-export default function SimpleInvoice({ invoice }) {
+export default function SimpleInvoice({ invoice, user }) {
   const { seller, customer, details, items, totals, settings } = invoice
+  const isFree = !user || user.plan === 'free';
 
   return (
-    <div className="invoice-content flex w-full flex-col bg-white text-sm text-gray-900">
-      <header className="flex items-start justify-between border-b border-gray-200 pb-6">
+    <div className="invoice-content flex w-full flex-col bg-white text-sm text-gray-900 relative">
+      <header className="flex items-start justify-between border-b border-gray-200 pb-6 relative z-10">
         <div className="flex items-start gap-6">
           {seller.logo && (
             <img 
@@ -18,7 +19,7 @@ export default function SimpleInvoice({ invoice }) {
             />
           )}
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">INVOICE</h1>
+            <h1 className="text-3xl font-bold tracking-tight">{details.headerTitle || "INVOICE"}</h1>
             <p className="mt-1 text-xs text-gray-500">Generated with Invoice Generator</p>
           </div>
         </div>

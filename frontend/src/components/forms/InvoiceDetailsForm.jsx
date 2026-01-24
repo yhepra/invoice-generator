@@ -1,10 +1,24 @@
 import React from "react"
 import PropTypes from "prop-types"
 
-export default function InvoiceDetailsForm({ details, onChange }) {
+export default function InvoiceDetailsForm({ details, onChange, user }) {
+  const isPremium = user && user.plan === 'premium';
+
   return (
     <div className="space-y-3">
       <h2 className="text-lg font-semibold">Invoice Details</h2>
+      <div>
+        <label className="block text-sm text-gray-600 mb-1">Header Title</label>
+        <input
+          type="text"
+          value={details.headerTitle || "INVOICE"}
+          onChange={(e) => onChange({ headerTitle: e.target.value })}
+          placeholder="Header Title"
+          readOnly={!isPremium}
+          className={`w-full rounded-md border border-gray-300 px-3 py-2 ${!isPremium ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+        />
+        {!isPremium && <p className="text-xs text-gray-500 mt-1">Upgrade to Premium to customize header</p>}
+      </div>
       <div>
         <label className="block text-sm text-gray-600 mb-1">Invoice Number <span className="text-red-500">*</span></label>
         <input
@@ -12,8 +26,10 @@ export default function InvoiceDetailsForm({ details, onChange }) {
           value={details.number}
           onChange={(e) => onChange({ number: e.target.value })}
           placeholder="Invoice Number"
-          className="w-full rounded-md border border-gray-300 px-3 py-2"
+          readOnly={!isPremium}
+          className={`w-full rounded-md border border-gray-300 px-3 py-2 ${!isPremium ? 'bg-gray-100 cursor-not-allowed' : ''}`}
         />
+        {!isPremium && <p className="text-xs text-gray-500 mt-1">Upgrade to Premium to customize invoice number</p>}
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div>

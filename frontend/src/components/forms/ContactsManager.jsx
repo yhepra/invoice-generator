@@ -25,10 +25,14 @@ export default function ContactsManager() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    await storage.saveContact({ ...formData, type: activeTab })
-    setFormData({ name: "", address: "", phone: "", email: "" })
-    setIsEditing(false)
-    loadContacts()
+    try {
+      await storage.saveContact({ ...formData, type: activeTab })
+      setFormData({ name: "", address: "", phone: "", email: "" })
+      setIsEditing(false)
+      loadContacts()
+    } catch (error) {
+      alert(error.message)
+    }
   }
 
   const handleDelete = async (id) => {

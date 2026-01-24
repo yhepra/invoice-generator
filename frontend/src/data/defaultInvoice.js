@@ -23,6 +23,7 @@ const defaultInvoice = {
     phone: ""
   },
   details: {
+    headerTitle: "INVOICE",
     number: generateInvoiceNumber(),
     invoiceDate: today,
     dueDate: today,

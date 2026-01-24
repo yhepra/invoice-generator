@@ -17,6 +17,14 @@ class InvoiceController extends Controller
 
     public function store(Request $request)
     {
+        $user = Auth::user();
+        if ($user->plan === 'free') {
+            $count = Invoice::where('user_id', $user->id)->count();
+            if ($count >= 30) {
+                return response()->json(['message' => 'Free plan limit reached. Upgrade to Premium for unlimited invoices.'], 403);
+            }
+        }
+
         $request->validate([
             'number' => 'required|string',
             'date' => 'required|date',

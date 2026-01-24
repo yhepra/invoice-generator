@@ -24,7 +24,8 @@ export default function Home({
   moveItemDown,
   downloadPDF,
   onSave,
-  onDownload
+  onDownload,
+  user
 }) {
 
   const handleDownload = async () => {
@@ -81,9 +82,9 @@ export default function Home({
     <div className="mx-auto max-w-7xl p-4 md:p-8">
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         <div className="space-y-8">
-          <SellerForm seller={invoice.seller} onChange={updateSeller} />
-          <CustomerForm customer={invoice.customer} onChange={updateCustomer} />
-          <InvoiceDetailsForm details={invoice.details} onChange={updateDetails} />
+          <SellerForm seller={invoice.seller} onChange={updateSeller} user={user} />
+          <CustomerForm customer={invoice.customer} onChange={updateCustomer} user={user} />
+          <InvoiceDetailsForm details={invoice.details} onChange={updateDetails} user={user} />
           <InvoiceItemsForm
             items={invoice.items}
             onAddItem={addItem}
@@ -120,7 +121,7 @@ export default function Home({
           </div>
         </div>
         <div>
-          <InvoicePreview invoice={invoice} totals={totals} previewRef={previewRef} />
+          <InvoicePreview invoice={invoice} totals={totals} previewRef={previewRef} user={user} />
         </div>
       </div>
     </div>
