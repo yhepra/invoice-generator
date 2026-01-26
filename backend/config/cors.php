@@ -19,7 +19,7 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['http://localhost:5173', 'http://localhost:3000', 'https://generateinvoice.id', 'https://be.generateinvoice.id', 'https://generateinvoice.id/*'],
+    'allowed_origins' => ['http://localhost:5173', 'http://localhost:3000', 'https://generateinvoice.id', 'https://be.generateinvoice.id', 'https://generateinvoice.id/*','https://be.generateinvoice.id/*'],
 
     'allowed_origins_patterns' => [],
 
