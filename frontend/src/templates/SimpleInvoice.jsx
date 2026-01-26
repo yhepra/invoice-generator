@@ -2,10 +2,12 @@ import React from "react"
 import PropTypes from "prop-types"
 import formatCurrency from "../utils/formatCurrency.js"
 import itemTotal from "../utils/itemTotal.js"
+import { getTranslation } from "../data/translations.js"
 
 export default function SimpleInvoice({ invoice, user }) {
   const { seller, customer, details, items, totals, settings } = invoice
   const isFree = !user || user.plan === 'free';
+  const t = (key) => getTranslation(settings.language, key);
 
   return (
     <div className="invoice-content flex w-full flex-col bg-white text-sm text-gray-900 relative">
@@ -19,16 +21,16 @@ export default function SimpleInvoice({ invoice, user }) {
             />
           )}
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">{details.headerTitle || "INVOICE"}</h1>
-            <p className="mt-1 text-xs text-gray-500">Generated with GenerateInvoice</p>
+            <h1 className="text-3xl font-bold tracking-tight">{details.headerTitle || t('invoice')}</h1>
+            {isFree && <p className="mt-1 text-xs text-gray-500">{t('generatedWith')}</p>}
           </div>
         </div>
         <div className="text-right text-xs">
-          <p className="font-semibold">Invoice No.</p>
+          <p className="font-semibold">{t('number')}</p>
           <p className="text-gray-700">{details.number}</p>
-          <p className="mt-2 font-semibold">Invoice Date</p>
+          <p className="mt-2 font-semibold">{t('date')}</p>
           <p className="text-gray-700">{details.invoiceDate}</p>
-          <p className="mt-2 font-semibold">Due Date</p>
+          <p className="mt-2 font-semibold">{t('dueDate')}</p>
           <p className="text-gray-700">{details.dueDate}</p>
         </div>
       </header>
@@ -36,24 +38,24 @@ export default function SimpleInvoice({ invoice, user }) {
       <section className="mt-6 grid grid-cols-2 gap-8 text-xs">
         <div>
           <p className="font-semibold uppercase tracking-wide text-gray-600">
-            From
+            {t('from')}
           </p>
-          <p className="mt-2 font-semibold text-gray-900">{seller.name || "Seller name"}</p>
+          <p className="mt-2 font-semibold text-gray-900">{seller.name || t('placeholderName')}</p>
           <p className="whitespace-pre-line text-gray-700">
-            {seller.address || "Seller address"}
+            {seller.address || t('placeholderAddress')}
           </p>
           <p className="mt-1 text-gray-700">{seller.phone}</p>
           <p className="mt-1 text-gray-700">{seller.email}</p>
         </div>
         <div>
           <p className="font-semibold uppercase tracking-wide text-gray-600">
-            Bill To
+            {t('billTo')}
           </p>
           <p className="mt-2 font-semibold text-gray-900">
-            {customer.name || "Customer name"}
+            {customer.name || t('placeholderName')}
           </p>
           <p className="whitespace-pre-line text-gray-700">
-            {customer.address || "Customer address"}
+            {customer.address || t('placeholderAddress')}
           </p>
           <p className="mt-1 text-gray-700">{customer.phone}</p>
           <p className="mt-1 text-gray-700">{customer.email}</p>
@@ -64,18 +66,18 @@ export default function SimpleInvoice({ invoice, user }) {
         <table className="min-w-full table-fixed border-collapse text-xs">
           <thead>
             <tr className="border-b border-t border-gray-200 bg-gray-50">
-              <th className="py-2 text-left font-semibold text-gray-700">Item</th>
+              <th className="py-2 text-left font-semibold text-gray-700">{t('item')}</th>
               <th className="w-24 py-2 text-right font-semibold text-gray-700">
-                Qty
+                {t('quantity')}
               </th>
               <th className="w-32 py-2 text-right font-semibold text-gray-700">
-                Price
+                {t('price')}
               </th>
               <th className="w-24 py-2 text-right font-semibold text-gray-700">
-                Tax (%)
+                {t('tax')} (%)
               </th>
               <th className="w-32 py-2 text-right font-semibold text-gray-700">
-                Total
+                {t('total')}
               </th>
             </tr>
           </thead>
@@ -83,7 +85,7 @@ export default function SimpleInvoice({ invoice, user }) {
             {items.map((item) => (
               <tr key={item.id} className="border-b border-gray-100">
                 <td className="py-2 pr-2 text-left text-gray-800">
-                  {item.name || "Item"}
+                  {item.name || t('placeholderItemName')}
                 </td>
                 <td className="py-2 text-right text-gray-800">
                   {item.quantity || 0}
@@ -105,7 +107,7 @@ export default function SimpleInvoice({ invoice, user }) {
 
       {details.notes ? (
         <section className="invoice-notes mt-6 text-xs">
-          <p className="font-semibold text-gray-700">Notes</p>
+          <p className="font-semibold text-gray-700">{t('notes')}</p>
           <p className="mt-1 whitespace-pre-line text-gray-700">
             {details.notes}
           </p>
@@ -113,7 +115,7 @@ export default function SimpleInvoice({ invoice, user }) {
       ) : null}
       {details.terms ? (
         <section className="invoice-terms mt-1 text-xs">
-          <p className="font-semibold text-gray-700">Terms & Conditions</p>
+          <p className="font-semibold text-gray-700">{t('terms')}</p>
           <p className="mt-1 whitespace-pre-line text-gray-700">
             {details.terms}
           </p>
@@ -123,19 +125,19 @@ export default function SimpleInvoice({ invoice, user }) {
       <section className="invoice-footer text-xs">
         <div className="ml-auto w-52 space-y-2 text-sm">
           <div className="flex items-center justify-between gap-4">
-            <span className="text-gray-600">Subtotal</span>
+            <span className="text-gray-600">{t('subtotal')}</span>
             <span className="font-medium text-gray-900 tabular-nums">
               {formatCurrency(totals.subtotal, settings)}
             </span>
           </div>
           <div className="flex items-center justify-between gap-4">
-            <span className="text-gray-600">Tax</span>
+            <span className="text-gray-600">{t('tax')}</span>
             <span className="font-medium text-gray-900 tabular-nums">
               {formatCurrency(totals.taxAmount, settings)}
             </span>
           </div>
           <div className="flex items-center justify-between gap-4 border-t border-gray-200 pt-3">
-            <span className="font-semibold text-gray-900">Total</span>
+            <span className="font-semibold text-gray-900">{t('total')}</span>
             <span className="text-lg font-semibold text-gray-900 tabular-nums">
               {formatCurrency(totals.total, settings)}
             </span>

@@ -32,6 +32,9 @@ class InvoiceController extends Controller
             'seller_info' => 'required|array',
             'customer_info' => 'required|array',
             'items' => 'required|array|min:1',
+            'items.*.name' => 'required|string',
+            'items.*.quantity' => 'required|numeric|min:0',
+            'items.*.price' => 'required|numeric|min:0',
         ]);
 
         return DB::transaction(function () use ($request) {
@@ -59,6 +62,18 @@ class InvoiceController extends Controller
     public function update(Request $request, $id)
     {
         $invoice = Invoice::where('user_id', Auth::id())->findOrFail($id);
+
+        $request->validate([
+            'number' => 'required|string',
+            'date' => 'required|date',
+            'due_date' => 'required|date',
+            'seller_info' => 'required|array',
+            'customer_info' => 'required|array',
+            'items' => 'required|array|min:1',
+            'items.*.name' => 'required|string',
+            'items.*.quantity' => 'required|numeric|min:0',
+            'items.*.price' => 'required|numeric|min:0',
+        ]);
         
         return DB::transaction(function () use ($request, $invoice) {
             $invoice->update($request->only([

@@ -150,6 +150,32 @@ export default function App() {
     setPage("editor")
   }
 
+  const validateInvoice = () => {
+    if (!invoice.seller.name.trim()) {
+      showToast("Seller name is required", "error");
+      return false;
+    }
+    if (!invoice.customer.name.trim()) {
+      showToast("Customer name is required", "error");
+      return false;
+    }
+    if (invoice.items.length === 0) {
+      showToast("Please add at least one item", "error");
+      return false;
+    }
+    for (const item of invoice.items) {
+      if (!item.name.trim()) {
+        showToast("All items must have a name", "error");
+        return false;
+      }
+      if (item.quantity <= 0) {
+        showToast(`Item "${item.name}" quantity must be greater than 0`, "error");
+        return false;
+      }
+    }
+    return true;
+  }
+
   const handleSaveInvoice = async (showSuccessToast = true) => {
     if (!user) {
       setPendingAction('save')
@@ -157,6 +183,11 @@ export default function App() {
       showToast("Please login to save invoices", "error");
       return false;
     }
+    
+    if (!validateInvoice()) {
+        return false;
+    }
+
     try {
       const savedInvoice = await storage.saveInvoice(invoice)
       setInvoice(prev => ({ ...prev, historyId: savedInvoice.historyId }))
@@ -279,6 +310,8 @@ export default function App() {
         user={user}
         onLogin={() => setPage("login")}
         onLogout={handleLogout}
+        settings={invoice.settings}
+        onUpdateSettings={updateSettings}
       />
       <main className="flex-1">
         {page === "landing" && (
@@ -289,11 +322,13 @@ export default function App() {
             onGoUpgrade={() => setPage("upgrade")}
             onLogin={() => setPage("login")}
             onRegister={() => setPage("register")}
+            settings={invoice.settings}
           />
         )}
         {page === "profile" && (
           <Profile 
             user={user} 
+            settings={invoice.settings}
             onUpdateUser={(updatedUser) => {
               setUser(updatedUser);
               showToast("Profile updated successfully", "success");
@@ -327,7 +362,7 @@ export default function App() {
         />
       )}
       {page === "history" && (
-        <History onLoadInvoice={handleLoadInvoice} />
+        <History onLoadInvoice={handleLoadInvoice} settings={invoice.settings} />
       )}
       {page === "login" && (
         <Login 
@@ -335,6 +370,7 @@ export default function App() {
           onRegisterClick={() => setPage("register")}
           onForgotPasswordClick={() => setPage("forgot-password")}
           onCancel={() => setPage("landing")}
+          settings={invoice.settings}
         />
       )}
       {page === "register" && (
@@ -342,6 +378,7 @@ export default function App() {
           onRegister={handleRegister} 
           onLoginClick={() => setPage("login")}
           onCancel={() => setPage("landing")}
+          settings={invoice.settings}
         />
       )}
       {page === "forgot-password" && (

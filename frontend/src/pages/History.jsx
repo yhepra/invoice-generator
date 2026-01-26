@@ -4,11 +4,13 @@ import { storage } from "../services/storage"
 import formatCurrency from "../utils/formatCurrency"
 import Button from "../components/common/Button"
 import ConfirmModal from "../components/common/ConfirmModal"
+import { getTranslation } from "../data/translations.js"
 
-export default function History({ onLoadInvoice }) {
+export default function History({ onLoadInvoice, settings }) {
   const [invoices, setInvoices] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const t = (key) => getTranslation(settings?.language, key);
   
   // Search & Filter State
   const [searchQuery, setSearchQuery] = useState("")
@@ -213,7 +215,7 @@ export default function History({ onLoadInvoice }) {
       />
       <div className="mb-6 flex flex-col gap-4">
         <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
-            <h1 className="text-2xl font-bold">Invoice History</h1>
+            <h1 className="text-2xl font-bold">{t('historyTitle')}</h1>
             
             {/* View Toggles */}
             <div className="flex items-center rounded-lg border bg-white p-1 shadow-sm">
@@ -224,12 +226,12 @@ export default function History({ onLoadInvoice }) {
                         ? 'bg-brand-50 text-brand-600 shadow-sm' 
                         : 'text-gray-500 hover:bg-gray-50'
                     }`}
-                    title="Grid View"
+                    title={t('grid')}
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
                     </svg>
-                    <span className="hidden sm:inline">Grid</span>
+                    <span className="hidden sm:inline">{t('grid')}</span>
                 </button>
                 <button
                     onClick={() => setViewMode('list')}
@@ -238,12 +240,12 @@ export default function History({ onLoadInvoice }) {
                         ? 'bg-brand-50 text-brand-600 shadow-sm' 
                         : 'text-gray-500 hover:bg-gray-50'
                     }`}
-                    title="List View"
+                    title={t('list')}
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                     </svg>
-                    <span className="hidden sm:inline">List</span>
+                    <span className="hidden sm:inline">{t('list')}</span>
                 </button>
             </div>
         </div>
@@ -259,38 +261,39 @@ export default function History({ onLoadInvoice }) {
                 <input
                     type="text"
                     className="block w-full rounded-md border border-gray-300 bg-white py-2 pl-10 pr-3 text-sm placeholder-gray-500 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 sm:text-sm"
-                    placeholder="Search by number, customer, or date..."
+                    placeholder={t('searchPlaceholder')}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                 />
             </div>
             <select
-                className="block w-full rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-base focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 sm:w-auto sm:text-sm"
+                className="rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 sm:text-sm"
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value)}
             >
-                <option value="all">All Status</option>
-                <option value="Unpaid">Unpaid</option>
-                <option value="Paid">Paid</option>
-                <option value="Overdue">Overdue</option>
-                <option value="Draft">Draft</option>
+                <option value="all">{t('statusAll')}</option>
+                <option value="Draft">{t('statusDraft')}</option>
+                <option value="Unpaid">{t('statusUnpaid')}</option>
+                <option value="Paid">{t('statusPaid')}</option>
+                <option value="Overdue">{t('statusOverdue')}</option>
             </select>
+            
             <select
-                className="block w-full rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-base focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 sm:w-auto sm:text-sm"
+                className="rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 sm:text-sm"
                 value={filterPeriod}
                 onChange={(e) => setFilterPeriod(e.target.value)}
             >
-                <option value="all">All Time</option>
-                <option value="30days">Last 30 Days</option>
-                <option value="thisMonth">This Month</option>
-                <option value="lastMonth">Last Month</option>
+                <option value="all">{t('periodAll')}</option>
+                <option value="30days">{t('period30Days')}</option>
+                <option value="thisMonth">{t('periodThisMonth')}</option>
+                <option value="lastMonth">{t('periodLastMonth')}</option>
             </select>
         </div>
       </div>
       
       {loading ? (
         <div className="flex h-64 items-center justify-center">
-          <div className="text-gray-500">Loading history...</div>
+          <div className="text-gray-500">{t('loadingHistory')}</div>
         </div>
       ) : error ? (
         <div className="rounded-lg bg-red-50 p-4 text-red-600">
@@ -298,7 +301,7 @@ export default function History({ onLoadInvoice }) {
         </div>
       ) : invoices.length === 0 ? (
         <div className="rounded-lg border border-dashed p-12 text-center text-gray-500">
-          <p>No saved invoices found.</p>
+          <p>{t('noInvoicesFound')}</p>
         </div>
       ) : (
         <>
@@ -315,10 +318,10 @@ export default function History({ onLoadInvoice }) {
                             onChange={(e) => handleStatusChange(inv, e.target.value)}
                             className={`rounded-full px-2 py-0.5 text-xs font-medium border cursor-pointer focus:outline-none focus:ring-2 focus:ring-brand-500 ${getStatusColor(inv.status)}`}
                         >
-                            <option value="Draft" className="bg-white text-gray-800">Draft</option>
-                            <option value="Unpaid" className="bg-white text-gray-800">Unpaid</option>
-                            <option value="Paid" className="bg-white text-gray-800">Paid</option>
-                            <option value="Overdue" className="bg-white text-gray-800">Overdue</option>
+                            <option value="Draft" className="bg-white text-gray-800">{t('statusDraft')}</option>
+                            <option value="Unpaid" className="bg-white text-gray-800">{t('statusUnpaid')}</option>
+                            <option value="Paid" className="bg-white text-gray-800">{t('statusPaid')}</option>
+                            <option value="Overdue" className="bg-white text-gray-800">{t('statusOverdue')}</option>
                         </select>
                         </div>
                         <div className="mb-4 text-sm">
@@ -326,35 +329,40 @@ export default function History({ onLoadInvoice }) {
                             {inv.savedAt ? new Date(inv.savedAt).toLocaleDateString() : "Unknown Date"}
                         </p>
                         <p className="font-medium text-gray-700 truncate" title={inv.customer?.name}>{inv.customer?.name || "Unknown Customer"}</p>
-                        <p className="text-gray-500">{inv.items?.length || 0} items</p>
+                        <p className="text-gray-500">{inv.items?.length || 0} {t('itemsCount')}</p>
                         </div>
                     </div>
                     
-                    <div className="mt-4 border-t pt-4">
-                        <div className="mb-4 flex items-center justify-between">
-                        <span className="text-sm text-gray-600">Total</span>
-                        <span className="font-bold text-brand-600">
-                            {formatCurrency(inv.totals?.total || 0, inv.settings)}
-                        </span>
+                    <div className="mt-4 flex items-center justify-between border-t pt-4">
+                        <div>
+                            <p className="text-xs text-gray-500">{t('total')}</p>
+                            <p className="font-bold text-brand-600">
+                                {formatCurrency(inv.totals?.total || 0, inv.settings)}
+                            </p>
                         </div>
                         <div className="flex gap-2">
-                        <Button
-                            onClick={() => onLoadInvoice(inv)}
-                            className="flex-1"
-                            variant="secondary"
-                        >
-                            Open
-                        </Button>
-                        <Button
-                            onClick={() => confirmDelete(inv)}
-                            variant="outline"
-                            className="px-3 hover:bg-red-50 hover:text-red-600 hover:border-red-200"
-                            title="Delete Invoice"
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                            </svg>
-                        </Button>
+                            <button
+                                onClick={() => onLoadInvoice(inv)}
+                                className="rounded-md border border-gray-300 p-2 text-gray-500 hover:bg-gray-50 hover:text-brand-600"
+                                title={t('open')}
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                </svg>
+                            </button>
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation()
+                                    setInvoiceToDelete(inv)
+                                    setIsDeleteModalOpen(true)
+                                }}
+                                className="rounded-md border border-gray-300 p-2 text-gray-500 hover:bg-red-50 hover:text-red-600"
+                                title={t('deleteInvoice')}
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                            </button>
                         </div>
                     </div>
                     </div>
@@ -366,12 +374,12 @@ export default function History({ onLoadInvoice }) {
                         <table className="min-w-full divide-y divide-gray-200">
                             <thead className="bg-gray-50">
                                 <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Number</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
-                                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('number')}</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('date')}</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('status')}</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('customer')}</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('total')}</th>
+                                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">{t('actions')}</th>
                                 </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
@@ -390,10 +398,10 @@ export default function History({ onLoadInvoice }) {
                                                 onChange={(e) => handleStatusChange(inv, e.target.value)}
                                                 className={`rounded-full px-2 py-1 text-xs font-semibold border cursor-pointer focus:outline-none focus:ring-2 focus:ring-brand-500 ${getStatusColor(inv.status)}`}
                                             >
-                                                <option value="Draft" className="bg-white text-gray-800">Draft</option>
-                                                <option value="Unpaid" className="bg-white text-gray-800">Unpaid</option>
-                                                <option value="Paid" className="bg-white text-gray-800">Paid</option>
-                                                <option value="Overdue" className="bg-white text-gray-800">Overdue</option>
+                                                <option value="Draft" className="bg-white text-gray-800">{t('statusDraft')}</option>
+                                                <option value="Unpaid" className="bg-white text-gray-800">{t('statusUnpaid')}</option>
+                                                <option value="Paid" className="bg-white text-gray-800">{t('statusPaid')}</option>
+                                                <option value="Overdue" className="bg-white text-gray-800">{t('statusOverdue')}</option>
                                             </select>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -404,19 +412,23 @@ export default function History({ onLoadInvoice }) {
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                             <div className="flex justify-end gap-2">
-                                                <button 
+                                                <button
                                                     onClick={() => onLoadInvoice(inv)}
-                                                    className="text-brand-600 hover:text-brand-900"
-                                                    title="Open Invoice"
+                                                    className="rounded-md border border-gray-300 p-2 text-gray-500 hover:bg-gray-50 hover:text-brand-600"
+                                                    title={t('open')}
                                                 >
                                                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                                                     </svg>
                                                 </button>
-                                                <button 
-                                                    onClick={() => confirmDelete(inv)}
-                                                    className="text-red-600 hover:text-red-900"
-                                                    title="Delete Invoice"
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation()
+                                                        setInvoiceToDelete(inv)
+                                                        setIsDeleteModalOpen(true)
+                                                    }}
+                                                    className="rounded-md border border-gray-300 p-2 text-gray-500 hover:bg-red-50 hover:text-red-600"
+                                                    title={t('deleteInvoice')}
                                                 >
                                                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />

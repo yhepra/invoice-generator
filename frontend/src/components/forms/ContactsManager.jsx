@@ -2,8 +2,9 @@ import React, { useState, useEffect } from "react"
 import { storage } from "../../services/storage"
 import Button from "../common/Button"
 import ConfirmModal from "../common/ConfirmModal"
+import { getTranslation } from "../../data/translations.js"
 
-export default function ContactsManager() {
+export default function ContactsManager({ settings }) {
   const [activeTab, setActiveTab] = useState("customer")
   const [contacts, setContacts] = useState([])
   const [isEditing, setIsEditing] = useState(false)
@@ -14,6 +15,8 @@ export default function ContactsManager() {
     email: ""
   })
   
+  const t = (key) => getTranslation(settings?.language, key);
+
   // Modal State
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [contactToDelete, setContactToDelete] = useState(null)
@@ -64,9 +67,9 @@ export default function ContactsManager() {
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
         onConfirm={handleDelete}
-        title="Delete Contact"
-        message={`Are you sure you want to delete ${contactToDelete?.name}? This action cannot be undone.`}
-        confirmText="Delete"
+        title={t('deleteContact')}
+        message={t('deleteConfirmation')}
+        confirmText={t('delete')}
         variant="danger"
       />
 
@@ -80,7 +83,7 @@ export default function ContactsManager() {
                 : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
             }`}
           >
-            Customers
+            {t('customers')}
           </button>
           <button
             onClick={() => { setActiveTab("seller"); setIsEditing(false); setFormData({ name: "", address: "", phone: "", email: "" }); }}
@@ -90,7 +93,7 @@ export default function ContactsManager() {
                 : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
             }`}
           >
-            Sellers
+            {t('sellers')}
           </button>
         </nav>
       </div>
@@ -98,9 +101,9 @@ export default function ContactsManager() {
       <div className="grid gap-8 md:grid-cols-2">
         {/* List */}
         <div className="space-y-4">
-          <h3 className="font-medium text-gray-900">Saved Contacts</h3>
+          <h3 className="font-medium text-gray-900">{t('savedContacts')}</h3>
           {filteredContacts.length === 0 ? (
-            <p className="text-sm text-gray-500">No contacts saved.</p>
+            <p className="text-sm text-gray-500">{t('noContacts')}</p>
           ) : (
             <div className="space-y-2 max-h-[400px] overflow-y-auto pr-2">
               {filteredContacts.map((contact) => (
@@ -118,7 +121,7 @@ export default function ContactsManager() {
                       onClick={() => handleEdit(contact)}
                       className="text-brand-600 hover:text-brand-800"
                     >
-                      Edit
+                      {t('edit')}
                     </button>
                     <button
                       onClick={() => confirmDelete(contact)}
@@ -136,11 +139,11 @@ export default function ContactsManager() {
         {/* Form */}
         <div className="rounded-lg border bg-gray-50 p-4">
           <h3 className="mb-4 font-medium text-gray-900">
-            {isEditing ? "Edit Contact" : "Add New Contact"}
+            {isEditing ? t('editContact') : t('addNewContact')}
           </h3>
           <form onSubmit={handleSubmit} className="space-y-3">
             <div>
-              <label className="mb-1 block text-xs font-medium text-gray-700">Name</label>
+              <label className="mb-1 block text-xs font-medium text-gray-700">{t('name')}</label>
               <input
                 type="text"
                 required
@@ -150,7 +153,7 @@ export default function ContactsManager() {
               />
             </div>
             <div>
-              <label className="mb-1 block text-xs font-medium text-gray-700">Address</label>
+              <label className="mb-1 block text-xs font-medium text-gray-700">{t('address')}</label>
               <textarea
                 value={formData.address}
                 onChange={(e) => setFormData({ ...formData, address: e.target.value })}
@@ -160,7 +163,7 @@ export default function ContactsManager() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="mb-1 block text-xs font-medium text-gray-700">Phone</label>
+                <label className="mb-1 block text-xs font-medium text-gray-700">{t('phone')}</label>
                 <input
                   type="text"
                   value={formData.phone}
@@ -169,7 +172,7 @@ export default function ContactsManager() {
                 />
               </div>
               <div>
-                <label className="mb-1 block text-xs font-medium text-gray-700">Email</label>
+                <label className="mb-1 block text-xs font-medium text-gray-700">{t('email')}</label>
                 <input
                   type="email"
                   value={formData.email}
@@ -185,13 +188,13 @@ export default function ContactsManager() {
                   variant="ghost"
                   onClick={() => { setIsEditing(false); setFormData({ name: "", address: "", phone: "", email: "" }); }}
                 >
-                  Cancel
+                  {t('cancel')}
                 </Button>
               )}
               <Button
                 type="submit"
               >
-                Save Contact
+                {t('saveContact')}
               </Button>
             </div>
           </form>

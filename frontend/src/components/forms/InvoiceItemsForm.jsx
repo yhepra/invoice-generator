@@ -1,5 +1,6 @@
 import React from "react"
 import PropTypes from "prop-types"
+import { getTranslation } from "../../data/translations.js"
 
 export default function InvoiceItemsForm({
   items,
@@ -8,19 +9,22 @@ export default function InvoiceItemsForm({
   onRemoveItem,
   onClearItems,
   onMoveUp,
-  onMoveDown
+  onMoveDown,
+  settings
 }) {
+  const t = (key) => getTranslation(settings?.language, key);
+
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold">Items</h2>
+        <h2 className="text-lg font-semibold">{t('items')}</h2>
         <div className="flex items-center gap-3">
           <button
             type="button"
             onClick={onAddItem}
             className="rounded-md p-2 text-brand-600 hover:bg-brand-50 hover:text-brand-700"
-            title="Add item"
-            aria-label="Add item"
+            title={t('addItem')}
+            aria-label={t('addItem')}
           >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M12 5v14M5 12h14" />
@@ -30,8 +34,8 @@ export default function InvoiceItemsForm({
             type="button"
             onClick={onClearItems}
             className="rounded-md p-2 text-red-600 hover:bg-red-50 hover:text-red-700"
-            title="Remove all"
-            aria-label="Remove all"
+            title={t('removeAll')}
+            aria-label={t('removeAll')}
           >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M3 6h18M8 6V4h8v2m-9 4v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V10" />
@@ -47,21 +51,21 @@ export default function InvoiceItemsForm({
           >
             <div className="mb-3">
               <label className="mb-1 block text-sm font-medium text-gray-700">
-                Item Name <span className="text-red-500">*</span>
+                {t('itemName')} <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 value={item.name}
                 onChange={(e) => onUpdateItem(item.id, { name: e.target.value })}
-                placeholder="Item name"
-                className="w-full rounded-md border border-gray-300 px-3 py-2"
+                placeholder={t('placeholderItemName')}
+                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
               />
             </div>
 
             <div className="flex items-end gap-3">
               <div className="w-24">
                 <label className="mb-1 block text-sm font-medium text-gray-700">
-                  Qty <span className="text-red-500">*</span>
+                  {t('quantity')} <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="number"
@@ -74,13 +78,13 @@ export default function InvoiceItemsForm({
                     }
                   }}
                   placeholder="0"
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-right"
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-right text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
                 />
               </div>
 
               <div className="flex-1">
                 <label className="mb-1 block text-sm font-medium text-gray-700">
-                  Price <span className="text-red-500">*</span>
+                  {t('price')} <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="number"
@@ -94,13 +98,13 @@ export default function InvoiceItemsForm({
                     }
                   }}
                   placeholder="0.00"
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-right"
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-right text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
                 />
               </div>
 
               <div className="w-24">
                 <label className="mb-1 block text-sm font-medium text-gray-700">
-                  Tax %
+                  {t('taxPercent')}
                 </label>
                 <input
                   type="number"
@@ -114,7 +118,7 @@ export default function InvoiceItemsForm({
                     }
                   }}
                   placeholder="0"
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-right"
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-right text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
                 />
               </div>
 
@@ -123,7 +127,7 @@ export default function InvoiceItemsForm({
                   type="button"
                   onClick={() => onMoveUp(item.id)}
                   className="rounded-md p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
-                  title="Move up"
+                  title={t('moveUp')}
                 >
                   ↑
                 </button>
@@ -131,7 +135,7 @@ export default function InvoiceItemsForm({
                   type="button"
                   onClick={() => onMoveDown(item.id)}
                   className="rounded-md p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
-                  title="Move down"
+                  title={t('moveDown')}
                 >
                   ↓
                 </button>
@@ -139,8 +143,8 @@ export default function InvoiceItemsForm({
                   type="button"
                   onClick={() => onRemoveItem(item.id)}
                   className="rounded-md p-2 text-red-500 hover:bg-red-50 hover:text-red-700"
-                  title="Remove item"
-                  aria-label="Remove item"
+                  title={t('removeItem')}
+                  aria-label={t('removeItem')}
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M3 6h18M8 6V4h8v2m-9 4v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V10" />

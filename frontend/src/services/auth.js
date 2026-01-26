@@ -37,27 +37,7 @@ export const auth = {
     }
 
     const data = await response.json();
-    return { message: data.message, email: data.email };
-  },
-
-  verifyOtp: async (email, otp) => {
-    const response = await fetch(`${API_URL}/verify-otp`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Accept": "application/json",
-      },
-      body: JSON.stringify({ email, otp }),
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || "Verification failed");
-    }
-
-    const data = await response.json();
-    localStorage.setItem("token", data.access_token);
-    return data.user;
+    return { message: data.message, user: data.user };
   },
 
   logout: async () => {

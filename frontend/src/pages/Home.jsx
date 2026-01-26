@@ -8,6 +8,7 @@ import InvoicePreview from "../components/preview/InvoicePreview.jsx"
 import Button from "../components/common/Button.jsx"
 import formatCurrency from "../utils/formatCurrency.js"
 import { storage } from "../services/storage"
+import { getTranslation } from "../data/translations.js"
 
 export default function Home({
   invoice,
@@ -27,6 +28,7 @@ export default function Home({
   onDownload,
   user
 }) {
+  const t = (key) => getTranslation(invoice.settings.language, key);
 
   const handleDownload = async () => {
     // If external onDownload is provided (from App.jsx which handles auth), use it
@@ -82,9 +84,9 @@ export default function Home({
     <div className="mx-auto max-w-7xl p-4 md:p-8">
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         <div className="space-y-8">
-          <SellerForm seller={invoice.seller} onChange={updateSeller} user={user} />
-          <CustomerForm customer={invoice.customer} onChange={updateCustomer} user={user} />
-          <InvoiceDetailsForm details={invoice.details} onChange={updateDetails} user={user} />
+          <SellerForm seller={invoice.seller} onChange={updateSeller} user={user} settings={invoice.settings} />
+          <CustomerForm customer={invoice.customer} onChange={updateCustomer} user={user} settings={invoice.settings} />
+          <InvoiceDetailsForm details={invoice.details} onChange={updateDetails} user={user} settings={invoice.settings} />
           <InvoiceItemsForm
             items={invoice.items}
             onAddItem={addItem}
@@ -93,30 +95,31 @@ export default function Home({
             onClearItems={clearItems}
             onMoveUp={moveItemUp}
             onMoveDown={moveItemDown}
+            settings={invoice.settings}
           />
           <div className="space-y-2 rounded-lg border bg-white p-4">
-            <h2 className="text-lg font-semibold">Summary</h2>
+            <h2 className="text-lg font-semibold">{t('summary')}</h2>
             <div className="flex justify-between text-sm">
-              <span className="text-gray-600">Subtotal</span>
+              <span className="text-gray-600">{t('subtotal')}</span>
               <span className="font-medium">
                 {formatCurrency(totals.subtotal, invoice.settings)}
               </span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-gray-600">Tax</span>
+              <span className="text-gray-600">{t('tax')}</span>
               <span className="font-medium">
                 {formatCurrency(totals.taxAmount, invoice.settings)}
               </span>
             </div>
             <div className="flex justify-between border-t pt-2 text-sm">
-              <span className="font-semibold">Total</span>
+              <span className="font-semibold">{t('total')}</span>
               <span className="font-semibold">
                 {formatCurrency(totals.total, invoice.settings)}
               </span>
             </div>
             <div className="pt-2 flex gap-2">
-              <Button onClick={onSave} variant="secondary" className="w-full">Save Invoice</Button>
-              <Button onClick={handleDownload} className="w-full">Download PDF</Button>
+              <Button onClick={onSave} variant="secondary" className="w-full">{t('save')}</Button>
+              <Button onClick={handleDownload} className="w-full">{t('download')}</Button>
             </div>
           </div>
         </div>

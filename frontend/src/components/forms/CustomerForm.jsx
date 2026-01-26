@@ -2,12 +2,15 @@ import React, { useState, useEffect, useRef } from "react"
 import PropTypes from "prop-types"
 import PhoneInput from "../common/PhoneInput.jsx"
 import { storage } from "../../services/storage"
+import { getTranslation } from "../../data/translations.js"
 
-export default function CustomerForm({ customer, onChange }) {
+export default function CustomerForm({ customer, onChange, settings }) {
   const [suggestions, setSuggestions] = useState([])
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const wrapperRef = useRef(null)
+  
+  const t = (key) => getTranslation(settings?.language, key);
 
   useEffect(() => {
     const fetchContacts = async () => {
@@ -54,22 +57,22 @@ export default function CustomerForm({ customer, onChange }) {
 
   return (
     <div className="space-y-3">
-      <h2 className="text-lg font-semibold">Customer</h2>
+      <h2 className="text-lg font-semibold">{t('customer')}</h2>
       <div className="relative" ref={wrapperRef}>
-        <label className="block text-sm text-gray-600 mb-1">Name <span className="text-red-500">*</span></label>
+        <label className="block text-sm text-gray-600 mb-1">{t('name')} <span className="text-red-500">*</span></label>
         <input
           type="text"
           value={customer.name}
           onChange={handleNameChange}
           onFocus={() => setShowSuggestions(true)}
-          placeholder="Name"
-          className="w-full rounded-md border border-gray-300 px-3 py-2"
+          placeholder={t('placeholderName')}
+          className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
           autoComplete="off"
         />
         {showSuggestions && (
           <ul className="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md border border-gray-300 bg-white py-1 shadow-lg">
             {isLoading ? (
-               <li className="px-3 py-2 text-sm text-gray-500">Loading...</li>
+               <li className="px-3 py-2 text-sm text-gray-500">{t('loading')}</li>
             ) : filteredSuggestions.length > 0 ? (
               filteredSuggestions.map((s) => (
                 <li
@@ -85,7 +88,7 @@ export default function CustomerForm({ customer, onChange }) {
               ))
             ) : (
               <li className="px-3 py-2 text-sm text-gray-500">
-                {suggestions.length === 0 ? "No saved customers found" : "No matches found"}
+                {suggestions.length === 0 ? t('noSavedCustomers') : t('noMatchesFound')}
               </li>
             )}
           </ul>
@@ -94,22 +97,24 @@ export default function CustomerForm({ customer, onChange }) {
       <textarea
         value={customer.address}
         onChange={(e) => onChange({ address: e.target.value })}
-        placeholder="Address"
-        className="w-full rounded-md border border-gray-300 px-3 py-2"
+        placeholder={t('placeholderAddress')}
+        className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
         rows={3}
       />
-      <PhoneInput
-        value={customer.phone || ""}
-        onChange={(val) => onChange({ phone: val })}
-        placeholder="Phone"
-      />
-      <input
-        type="email"
-        value={customer.email}
-        onChange={(e) => onChange({ email: e.target.value })}
-        placeholder="Email"
-        className="w-full rounded-md border border-gray-300 px-3 py-2"
-      />
+      <div className="grid grid-cols-2 gap-3">
+        <PhoneInput
+            value={customer.phone}
+            onChange={(val) => onChange({ phone: val })}
+            placeholder={t('placeholderPhone')}
+        />
+        <input
+          type="email"
+          value={customer.email}
+          onChange={(e) => onChange({ email: e.target.value })}
+          placeholder={t('placeholderEmail')}
+          className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+        />
+      </div>
     </div>
   )
 }

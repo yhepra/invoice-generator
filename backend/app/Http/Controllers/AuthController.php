@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Notification;
-use App\Notifications\VerifyEmailOtp;
+use Illuminate\Auth\Events\Registered;
 use App\Services\XenditService;
 
 class AuthController extends Controller
@@ -33,59 +33,41 @@ class AuthController extends Controller
             'password' => 'required|string|min:8|confirmed',
         ]);
 
-        $otp = rand(100000, 999999);
-        
-        Cache::put('registration_' . $request->email, [
+        $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
-            'password' => encrypt($request->password), // Encrypt password for safety in cache
-            'otp' => $otp
-        ], 600); // 10 minutes
+            'password' => Hash::make($request->password),
+        ]);
 
-        try {
-            Notification::route('mail', $request->email)
-                ->notify(new VerifyEmailOtp($otp));
-        } catch (\Exception $e) {
-             return response()->json(['message' => 'Failed to send OTP email: ' . $e->getMessage()], 500);
-        }
+        event(new Registered($user));
 
         return response()->json([
-            'message' => 'OTP sent to your email. Please verify to complete registration.',
-            'email' => $request->email
-        ], 200);
+            'message' => 'Registration successful. Please check your email for verification link.',
+            'user' => $user
+        ], 201);
     }
 
-    public function verifyOtp(Request $request)
+    public function verify(Request $request)
     {
-        $request->validate([
-            'email' => 'required|email',
-            'otp' => 'required|numeric|digits:6'
-        ]);
+        $user = User::findOrFail($request->route('id'));
 
-        $data = Cache::get('registration_' . $request->email);
-
-        if (!$data || $data['otp'] != $request->otp) {
-            return response()->json(['message' => 'Invalid or expired OTP.'], 400);
+        if (! hash_equals((string) $request->route('hash'), sha1($user->getEmailForVerification()))) {
+            return response()->json(['message' => 'Invalid verification link.'], 403);
         }
 
-        $user = User::create([
-            'name' => $data['name'],
-            'email' => $data['email'],
-            'password' => decrypt($data['password']),
-        ]);
-        
-        $user->markEmailAsVerified();
+        if (! $request->hasValidSignature()) {
+            return response()->json(['message' => 'Invalid or expired verification link.'], 403);
+        }
 
-        Cache::forget('registration_' . $request->email);
+        if ($user->hasVerifiedEmail()) {
+            return redirect(env('APP_FRONTEND_URL', 'http://localhost:5173') . '/login?verified=1');
+        }
 
-        $token = $user->createToken('auth_token')->plainTextToken;
+        if ($user->markEmailAsVerified()) {
+            event(new \Illuminate\Auth\Events\Verified($user));
+        }
 
-        return response()->json([
-            'access_token' => $token,
-            'token_type' => 'Bearer',
-            'user' => $user,
-            'message' => 'Registration successful.'
-        ], 201);
+        return redirect(env('APP_FRONTEND_URL', 'http://localhost:5173') . '/login?verified=1');
     }
 
     public function login(Request $request)
@@ -101,6 +83,12 @@ class AuthController extends Controller
             throw ValidationException::withMessages([
                 'email' => ['Invalid credentials provided.'],
             ]);
+        }
+
+        if (! $user->hasVerifiedEmail()) {
+            return response()->json([
+                'message' => 'Please verify your email address before logging in.'
+            ], 403);
         }
 
         // Check subscription expiration
