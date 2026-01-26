@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:8000/api";
+const API_URL = "https://be.generateinvoice.id/api";
 
 export const auth = {
   login: async (email, password) => {
@@ -6,7 +6,7 @@ export const auth = {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Accept": "application/json",
+        Accept: "application/json",
       },
       body: JSON.stringify({ email, password }),
     });
@@ -26,7 +26,7 @@ export const auth = {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Accept": "application/json",
+        Accept: "application/json",
       },
       body: JSON.stringify({ name, email, password, password_confirmation }),
     });
@@ -43,14 +43,14 @@ export const auth = {
   logout: async () => {
     const token = localStorage.getItem("token");
     if (token) {
-        await fetch(`${API_URL}/logout`, {
-            method: "POST",
-            headers: {
-                "Authorization": `Bearer ${token}`,
-                "Accept": "application/json",
-            },
-        });
-        localStorage.removeItem("token");
+      await fetch(`${API_URL}/logout`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        },
+      });
+      localStorage.removeItem("token");
     }
   },
 
@@ -60,8 +60,8 @@ export const auth = {
 
     const response = await fetch(`${API_URL}/me`, {
       headers: {
-        "Authorization": `Bearer ${token}`,
-        "Accept": "application/json",
+        Authorization: `Bearer ${token}`,
+        Accept: "application/json",
       },
     });
 
@@ -81,8 +81,8 @@ export const auth = {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
-        "Accept": "application/json",
-        "Authorization": `Bearer ${token}`,
+        Accept: "application/json",
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({ name }),
     });
@@ -95,7 +95,11 @@ export const auth = {
     return await response.json();
   },
 
-  changePassword: async (current_password, new_password, new_password_confirmation) => {
+  changePassword: async (
+    current_password,
+    new_password,
+    new_password_confirmation,
+  ) => {
     const token = localStorage.getItem("token");
     if (!token) throw new Error("Not authenticated");
 
@@ -103,13 +107,13 @@ export const auth = {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
-        "Accept": "application/json",
-        "Authorization": `Bearer ${token}`,
+        Accept: "application/json",
+        Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({ 
-        current_password, 
-        new_password, 
-        new_password_confirmation 
+      body: JSON.stringify({
+        current_password,
+        new_password,
+        new_password_confirmation,
       }),
     });
 
@@ -128,8 +132,8 @@ export const auth = {
     const response = await fetch(`${API_URL}/upgrade`, {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${token}`,
-        "Accept": "application/json",
+        Authorization: `Bearer ${token}`,
+        Accept: "application/json",
       },
     });
 
@@ -148,9 +152,9 @@ export const auth = {
     const response = await fetch(`${API_URL}/upgrade/verify`, {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
-        "Accept": "application/json",
+        Accept: "application/json",
       },
       body: JSON.stringify({ invoice_id: invoiceId }),
     });
@@ -168,7 +172,7 @@ export const auth = {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Accept": "application/json",
+        Accept: "application/json",
       },
       body: JSON.stringify({ email }),
     });
@@ -186,7 +190,7 @@ export const auth = {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Accept": "application/json",
+        Accept: "application/json",
       },
       body: JSON.stringify({ email, password, password_confirmation, token }),
     });
@@ -197,5 +201,5 @@ export const auth = {
     }
 
     return await response.json();
-  }
+  },
 };
