@@ -119,7 +119,10 @@ export const storage = {
           details: {
             number: inv.number,
             date: inv.date,
+            invoiceDate: inv.date, // Add mapping for invoiceDate
             dueDate: inv.due_date,
+            notes: inv.notes, // Add mapping for notes
+            terms: inv.terms, // Add mapping for terms
           },
           // Default settings if missing, as backend doesn't store it yet
           settings: { currency: "IDR", locale: "id-ID" },
@@ -150,8 +153,8 @@ export const storage = {
           price: i.price,
           tax_percent: i.taxPercent || 0,
         })),
-        notes: invoice.notes,
-        terms: invoice.terms,
+        notes: invoice.details?.notes || invoice.notes,
+        terms: invoice.details?.terms || invoice.terms,
         status: invoice.status || "draft",
       };
 
