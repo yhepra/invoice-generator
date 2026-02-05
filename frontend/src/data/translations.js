@@ -113,6 +113,9 @@ export const translations = {
     open: "Open",
     actions: "Actions",
     status: "Status",
+    summaryTotal: "Total Amount",
+    paidAmount: "Paid Amount",
+    balanceDue: "Balance Due",
 
     // Profile
     profileSettings: "Profile Settings",
@@ -393,6 +396,9 @@ export const translations = {
       "Apakah Anda yakin ingin menghapus faktur ini? Tindakan ini tidak dapat dibatalkan.",
     noInvoicesFound: "Tidak ada faktur ditemukan.",
     createNewInvoice: "Buat Faktur Baru",
+    summaryTotal: "Total Tagihan",
+    paidAmount: "Sudah Dibayar",
+    balanceDue: "Sisa Tagihan",
 
     // Profile
     profileSettings: "Pengaturan Profil",

@@ -201,7 +201,7 @@ export default function SellerForm({ seller, onChange, settings }) {
         </div>
 
         {showLogoHistory && savedLogos.length > 0 && (
-          <div className="mt-3">
+          <div className="mt-3 mb-4">
             <p className="text-xs text-gray-500 mb-2">
               {t("selectFromHistory") || "Select from history"}:
             </p>
@@ -210,7 +210,10 @@ export default function SellerForm({ seller, onChange, settings }) {
                 <div
                   key={i}
                   className="relative aspect-square cursor-pointer rounded-md border border-gray-200 p-1 hover:border-brand-500 bg-white flex items-center justify-center group"
-                  onClick={() => onChange({ logo: l })}
+                  onClick={() => {
+                    onChange({ logo: l });
+                    setShowLogoHistory(false);
+                  }}
                   title={t("useThisLogo") || "Use this logo"}
                 >
                   <img

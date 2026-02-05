@@ -55,13 +55,23 @@ class InvoiceController extends Controller
 
     public function show($id)
     {
-        $invoice = Invoice::where('user_id', Auth::id())->with('items')->findOrFail($id);
+        $invoice = Invoice::where('user_id', Auth::id())
+            ->where(function ($query) use ($id) {
+                $query->where('uuid', $id)->orWhere('id', $id);
+            })
+            ->with('items')
+            ->firstOrFail();
+
         return response()->json($invoice);
     }
 
     public function update(Request $request, $id)
     {
-        $invoice = Invoice::where('user_id', Auth::id())->findOrFail($id);
+        $invoice = Invoice::where('user_id', Auth::id())
+            ->where(function ($query) use ($id) {
+                $query->where('uuid', $id)->orWhere('id', $id);
+            })
+            ->firstOrFail();
 
         $request->validate([
             'number' => 'required|string',
@@ -93,7 +103,12 @@ class InvoiceController extends Controller
 
     public function destroy($id)
     {
-        $invoice = Invoice::where('user_id', Auth::id())->findOrFail($id);
+        $invoice = Invoice::where('user_id', Auth::id())
+            ->where(function ($query) use ($id) {
+                $query->where('uuid', $id)->orWhere('id', $id);
+            })
+            ->firstOrFail();
+            
         $invoice->delete();
         return response()->json(null, 204);
     }

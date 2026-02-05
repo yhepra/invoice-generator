@@ -5,6 +5,7 @@ const API_URL = "https://be.generateinvoice.id/api";
 const STORAGE_KEYS = {
   SETTINGS: "invoice_gen_settings",
   LOGOS: "invoice_gen_logos",
+  HISTORY_VIEW_MODE: "invoice_gen_history_view_mode",
 };
 
 // Helper to determine status based on invoice data
@@ -127,7 +128,7 @@ export const storage = {
           },
           // Default settings if missing, as backend doesn't store it yet
           settings: { currency: "IDR", locale: "id-ID" },
-          historyId: inv.id,
+          historyId: inv.uuid || inv.id,
           savedAt: inv.created_at,
           status: calculateStatus(inv), // Add derived status
         };
@@ -201,7 +202,7 @@ export const storage = {
       const saved = await response.json();
       return {
         ...saved,
-        historyId: saved.id,
+        historyId: saved.uuid || saved.id,
       };
     } catch (e) {
       console.error("Error saving invoice", e);
@@ -312,6 +313,23 @@ export const storage = {
       }
     } catch (e) {
       console.error("Error saving logo", e);
+    }
+  },
+
+  // View Mode Preferences
+  getViewMode: () => {
+    try {
+      return localStorage.getItem(STORAGE_KEYS.HISTORY_VIEW_MODE) || "grid";
+    } catch (e) {
+      return "grid";
+    }
+  },
+
+  saveViewMode: (mode) => {
+    try {
+      localStorage.setItem(STORAGE_KEYS.HISTORY_VIEW_MODE, mode);
+    } catch (e) {
+      console.error("Error saving view mode", e);
     }
   },
 };

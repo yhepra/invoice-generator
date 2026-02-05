@@ -1,206 +1,256 @@
-import React, { useState, useEffect } from "react"
-import PropTypes from "prop-types"
-import { storage } from "../services/storage"
-import formatCurrency from "../utils/formatCurrency"
-import Button from "../components/common/Button"
-import ConfirmModal from "../components/common/ConfirmModal"
-import { getTranslation } from "../data/translations.js"
+import React, { useState, useEffect } from "react";
+import PropTypes from "prop-types";
+import { storage } from "../services/storage";
+import formatCurrency from "../utils/formatCurrency";
+import Button from "../components/common/Button";
+import ConfirmModal from "../components/common/ConfirmModal";
+import { getTranslation } from "../data/translations.js";
 
 export default function History({ onLoadInvoice, settings }) {
-  const [invoices, setInvoices] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
+  const [invoices, setInvoices] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const t = (key) => getTranslation(settings?.language, key);
-  
+
   // Search & Filter State
-  const [searchQuery, setSearchQuery] = useState("")
-  const [filterPeriod, setFilterPeriod] = useState("all") // 'all', '30days', 'thisMonth', 'lastMonth'
-  const [filterStatus, setFilterStatus] = useState("all") // 'all', 'Draft', 'Unpaid', 'Paid', 'Overdue'
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterPeriod, setFilterPeriod] = useState("all"); // 'all', '30days', 'thisMonth', 'lastMonth'
+  const [filterStatus, setFilterStatus] = useState("all"); // 'all', 'Draft', 'Unpaid', 'Paid', 'Overdue'
 
   // Pagination & View Mode State
-  const [viewMode, setViewMode] = useState('grid') // 'grid' | 'list'
-  const [currentPage, setCurrentPage] = useState(1)
-  const itemsPerPage = viewMode === 'grid' ? 9 : 10
+  const [viewMode, setViewMode] = useState(() => storage.getViewMode()); // 'grid' | 'list'
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = viewMode === "grid" ? 9 : 10;
+
+  // Save view mode when it changes
+  useEffect(() => {
+    storage.saveViewMode(viewMode);
+  }, [viewMode]);
 
   // Modal State
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
-  const [invoiceToDelete, setInvoiceToDelete] = useState(null)
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [invoiceToDelete, setInvoiceToDelete] = useState(null);
 
   useEffect(() => {
     const loadData = async () => {
       try {
-        setLoading(true)
-        const data = await storage.getInvoices()
+        setLoading(true);
+        const data = await storage.getInvoices();
         // Sort by savedAt descending (newest first)
-        const sortedData = data.sort((a, b) => new Date(b.savedAt) - new Date(a.savedAt))
-        setInvoices(sortedData)
+        const sortedData = data.sort(
+          (a, b) => new Date(b.savedAt) - new Date(a.savedAt),
+        );
+        setInvoices(sortedData);
       } catch (err) {
-        console.error("Failed to load history:", err)
-        setError("Failed to load invoices. Please try again later.")
+        console.error("Failed to load history:", err);
+        setError("Failed to load invoices. Please try again later.");
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
-    loadData()
-  }, [])
+    };
+    loadData();
+  }, []);
 
   // Reset page when view mode or filters change
   useEffect(() => {
-    setCurrentPage(1)
-  }, [viewMode, searchQuery, filterPeriod, filterStatus])
+    setCurrentPage(1);
+  }, [viewMode, searchQuery, filterPeriod, filterStatus]);
 
   const confirmDelete = (invoice) => {
-    setInvoiceToDelete(invoice)
-    setIsDeleteModalOpen(true)
-  }
+    setInvoiceToDelete(invoice);
+    setIsDeleteModalOpen(true);
+  };
 
   const handleDelete = async () => {
     if (invoiceToDelete) {
-      await storage.deleteInvoice(invoiceToDelete.historyId)
-      const data = await storage.getInvoices()
-      const sortedData = data.sort((a, b) => new Date(b.savedAt) - new Date(a.savedAt))
-      setInvoices(sortedData)
-      setInvoiceToDelete(null)
+      await storage.deleteInvoice(invoiceToDelete.historyId);
+      const data = await storage.getInvoices();
+      const sortedData = data.sort(
+        (a, b) => new Date(b.savedAt) - new Date(a.savedAt),
+      );
+      setInvoices(sortedData);
+      setInvoiceToDelete(null);
     }
-  }
+  };
 
   const handleStatusChange = async (invoice, newStatus) => {
     // Optimistic update
     const originalInvoices = [...invoices];
-    const updatedInvoices = invoices.map(inv => 
-        inv.historyId === invoice.historyId ? { ...inv, status: newStatus } : inv
+    const updatedInvoices = invoices.map((inv) =>
+      inv.historyId === invoice.historyId ? { ...inv, status: newStatus } : inv,
     );
     setInvoices(updatedInvoices);
 
     try {
-        await storage.saveInvoice({ ...invoice, status: newStatus });
+      await storage.saveInvoice({ ...invoice, status: newStatus });
     } catch (err) {
-        console.error("Failed to update status", err);
-        setError("Failed to update status");
-        setInvoices(originalInvoices); // Revert
+      console.error("Failed to update status", err);
+      setError("Failed to update status");
+      setInvoices(originalInvoices); // Revert
     }
-  }
+  };
 
   // Filter Logic
-  const filteredInvoices = invoices.filter(inv => {
+  const filteredInvoices = invoices.filter((inv) => {
     // 1. Search Filter
-    const query = searchQuery.toLowerCase()
-    const number = inv.details?.number?.toLowerCase() || ""
-    const customer = inv.customer?.name?.toLowerCase() || ""
+    const query = searchQuery.toLowerCase();
+    const number = inv.details?.number?.toLowerCase() || "";
+    const customer = inv.customer?.name?.toLowerCase() || "";
     // Format date for search matching
-    const dateObj = inv.savedAt ? new Date(inv.savedAt) : null
-    const dateStr = dateObj ? dateObj.toLocaleDateString().toLowerCase() : ""
-    
-    const matchesSearch = number.includes(query) || customer.includes(query) || dateStr.includes(query)
+    const dateObj = inv.savedAt ? new Date(inv.savedAt) : null;
+    const dateStr = dateObj ? dateObj.toLocaleDateString().toLowerCase() : "";
 
-    if (!matchesSearch) return false
+    const matchesSearch =
+      number.includes(query) ||
+      customer.includes(query) ||
+      dateStr.includes(query);
+
+    if (!matchesSearch) return false;
 
     // 2. Time Period Filter
-    if (filterPeriod !== 'all') {
-        if (!dateObj) return false // Should not happen if savedAt exists
+    if (filterPeriod !== "all") {
+      if (!dateObj) return false; // Should not happen if savedAt exists
 
-        const now = new Date()
-        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-        const invDate = new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate())
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const invDate = new Date(
+        dateObj.getFullYear(),
+        dateObj.getMonth(),
+        dateObj.getDate(),
+      );
 
-        if (filterPeriod === '30days') {
-            const thirtyDaysAgo = new Date(today)
-            thirtyDaysAgo.setDate(today.getDate() - 30)
-            if (invDate < thirtyDaysAgo) return false
-        } else if (filterPeriod === 'thisMonth') {
-            if (invDate.getMonth() !== today.getMonth() || invDate.getFullYear() !== today.getFullYear()) return false
-        } else if (filterPeriod === 'lastMonth') {
-            const lastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1)
-            const endLastMonth = new Date(today.getFullYear(), today.getMonth(), 0)
-            if (invDate < lastMonth || invDate > endLastMonth) return false
-        }
+      if (filterPeriod === "30days") {
+        const thirtyDaysAgo = new Date(today);
+        thirtyDaysAgo.setDate(today.getDate() - 30);
+        if (invDate < thirtyDaysAgo) return false;
+      } else if (filterPeriod === "thisMonth") {
+        if (
+          invDate.getMonth() !== today.getMonth() ||
+          invDate.getFullYear() !== today.getFullYear()
+        )
+          return false;
+      } else if (filterPeriod === "lastMonth") {
+        const lastMonth = new Date(
+          today.getFullYear(),
+          today.getMonth() - 1,
+          1,
+        );
+        const endLastMonth = new Date(today.getFullYear(), today.getMonth(), 0);
+        if (invDate < lastMonth || invDate > endLastMonth) return false;
+      }
     }
 
     // 3. Status Filter
-    if (filterStatus !== 'all') {
-        // Since backend might not store status yet, we use the derived status logic
-        // or check if 'status' property exists (if we added it to storage.js)
-        const status = inv.status || 'Unpaid'; // Default if undefined
-        if (status !== filterStatus) return false;
+    if (filterStatus !== "all") {
+      // Since backend might not store status yet, we use the derived status logic
+      // or check if 'status' property exists (if we added it to storage.js)
+      const status = inv.status || "Unpaid"; // Default if undefined
+      if (status !== filterStatus) return false;
     }
 
-    return true
-  })
+    return true;
+  });
+
+  // Calculate Summary
+  const summaryData = filteredInvoices.reduce(
+    (acc, inv) => {
+      const status = inv.status || "Unpaid";
+      const amount = inv.totals?.total || 0;
+
+      acc.total += amount;
+
+      if (status === "Paid") {
+        acc.paid += amount;
+      } else if (status === "Unpaid" || status === "Overdue") {
+        acc.balance += amount;
+      }
+      return acc;
+    },
+    { total: 0, paid: 0, balance: 0 },
+  );
 
   // Pagination Logic
-  const indexOfLastItem = currentPage * itemsPerPage
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage
-  const currentItems = filteredInvoices.slice(indexOfFirstItem, indexOfLastItem)
-  const totalPages = Math.ceil(filteredInvoices.length / itemsPerPage)
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredInvoices.slice(
+    indexOfFirstItem,
+    indexOfLastItem,
+  );
+  const totalPages = Math.ceil(filteredInvoices.length / itemsPerPage);
 
-  const paginate = (pageNumber) => setCurrentPage(pageNumber)
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   const renderPagination = () => {
     if (totalPages <= 1) return null;
-    
-    return (
-        <div className="mt-8 flex justify-center gap-2">
-            <Button 
-                variant="secondary" 
-                onClick={() => paginate(currentPage - 1)}
-                disabled={currentPage === 1}
-                className="px-3 py-1 text-sm disabled:opacity-50"
-            >
-                Prev
-            </Button>
-            
-            <div className="flex items-center gap-1">
-                {Array.from({ length: totalPages }, (_, i) => {
-                    const page = i + 1;
-                    // Show first, last, current, and adjacent pages
-                    if (
-                        page === 1 || 
-                        page === totalPages || 
-                        (page >= currentPage - 1 && page <= currentPage + 1)
-                    ) {
-                        return (
-                            <button
-                                key={page}
-                                onClick={() => paginate(page)}
-                                className={`h-8 w-8 rounded-md text-sm font-medium transition-colors ${
-                                    currentPage === page
-                                        ? 'bg-brand-600 text-white'
-                                        : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
-                                }`}
-                            >
-                                {page}
-                            </button>
-                        );
-                    } else if (
-                        page === currentPage - 2 || 
-                        page === currentPage + 2
-                    ) {
-                        return <span key={page} className="px-1 text-gray-400">...</span>;
-                    }
-                    return null;
-                })}
-            </div>
 
-            <Button 
-                variant="secondary" 
-                onClick={() => paginate(currentPage + 1)}
-                disabled={currentPage === totalPages}
-                className="px-3 py-1 text-sm disabled:opacity-50"
-            >
-                Next
-            </Button>
+    return (
+      <div className="mt-8 flex justify-center gap-2">
+        <Button
+          variant="secondary"
+          onClick={() => paginate(currentPage - 1)}
+          disabled={currentPage === 1}
+          className="px-3 py-1 text-sm disabled:opacity-50"
+        >
+          Prev
+        </Button>
+
+        <div className="flex items-center gap-1">
+          {Array.from({ length: totalPages }, (_, i) => {
+            const page = i + 1;
+            // Show first, last, current, and adjacent pages
+            if (
+              page === 1 ||
+              page === totalPages ||
+              (page >= currentPage - 1 && page <= currentPage + 1)
+            ) {
+              return (
+                <button
+                  key={page}
+                  onClick={() => paginate(page)}
+                  className={`h-8 w-8 rounded-md text-sm font-medium transition-colors ${
+                    currentPage === page
+                      ? "bg-brand-600 text-white"
+                      : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-300"
+                  }`}
+                >
+                  {page}
+                </button>
+              );
+            } else if (page === currentPage - 2 || page === currentPage + 2) {
+              return (
+                <span key={page} className="px-1 text-gray-400">
+                  ...
+                </span>
+              );
+            }
+            return null;
+          })}
         </div>
-    )
-  }
+
+        <Button
+          variant="secondary"
+          onClick={() => paginate(currentPage + 1)}
+          disabled={currentPage === totalPages}
+          className="px-3 py-1 text-sm disabled:opacity-50"
+        >
+          Next
+        </Button>
+      </div>
+    );
+  };
 
   const getStatusColor = (status) => {
     switch (status) {
-        case 'Paid': return 'bg-green-100 text-green-800 border-green-200';
-        case 'Overdue': return 'bg-red-100 text-red-800 border-red-200';
-        case 'Draft': return 'bg-gray-100 text-gray-800 border-gray-200';
-        default: return 'bg-blue-100 text-blue-800 border-blue-200'; // Unpaid
+      case "Paid":
+        return "bg-green-100 text-green-800 border-green-200";
+      case "Overdue":
+        return "bg-red-100 text-red-800 border-red-200";
+      case "Draft":
+        return "bg-gray-100 text-gray-800 border-gray-200";
+      default:
+        return "bg-blue-100 text-blue-800 border-blue-200"; // Unpaid
     }
-  }
+  };
 
   return (
     <div className="mx-auto max-w-7xl p-4 md:p-8">
@@ -215,242 +265,515 @@ export default function History({ onLoadInvoice, settings }) {
       />
       <div className="mb-6 flex flex-col gap-4">
         <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
-            <h1 className="text-2xl font-bold">{t('historyTitle')}</h1>
-            
-            {/* View Toggles */}
-            <div className="flex items-center rounded-lg border bg-white p-1 shadow-sm">
-                <button
-                    onClick={() => setViewMode('grid')}
-                    className={`flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium transition-all ${
-                        viewMode === 'grid' 
-                        ? 'bg-brand-50 text-brand-600 shadow-sm' 
-                        : 'text-gray-500 hover:bg-gray-50'
-                    }`}
-                    title={t('grid')}
-                >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-                    </svg>
-                    <span className="hidden sm:inline">{t('grid')}</span>
-                </button>
-                <button
-                    onClick={() => setViewMode('list')}
-                    className={`flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium transition-all ${
-                        viewMode === 'list' 
-                        ? 'bg-brand-50 text-brand-600 shadow-sm' 
-                        : 'text-gray-500 hover:bg-gray-50'
-                    }`}
-                    title={t('list')}
-                >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                    </svg>
-                    <span className="hidden sm:inline">{t('list')}</span>
-                </button>
-            </div>
+          <h1 className="text-2xl font-bold">{t("historyTitle")}</h1>
+
+          {/* View Toggles */}
+          <div className="flex items-center rounded-lg border bg-white p-1 shadow-sm">
+            <button
+              onClick={() => setViewMode("grid")}
+              className={`flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium transition-all ${
+                viewMode === "grid"
+                  ? "bg-brand-50 text-brand-600 shadow-sm"
+                  : "text-gray-500 hover:bg-gray-50"
+              }`}
+              title={t("grid")}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-4 w-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
+                />
+              </svg>
+              <span className="hidden sm:inline">{t("grid")}</span>
+            </button>
+            <button
+              onClick={() => setViewMode("list")}
+              className={`flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium transition-all ${
+                viewMode === "list"
+                  ? "bg-brand-50 text-brand-600 shadow-sm"
+                  : "text-gray-500 hover:bg-gray-50"
+              }`}
+              title={t("list")}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-4 w-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
+              </svg>
+              <span className="hidden sm:inline">{t("list")}</span>
+            </button>
+          </div>
         </div>
 
         {/* Search and Filters */}
         <div className="flex flex-col gap-3 sm:flex-row">
-            <div className="relative flex-1">
-                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                    <svg className="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                        <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
-                    </svg>
-                </div>
-                <input
-                    type="text"
-                    className="block w-full rounded-md border border-gray-300 bg-white py-2 pl-10 pr-3 text-sm placeholder-gray-500 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 sm:text-sm"
-                    placeholder={t('searchPlaceholder')}
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+          <div className="relative flex-1">
+            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+              <svg
+                className="h-5 w-5 text-gray-400"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+                  clipRule="evenodd"
                 />
+              </svg>
             </div>
-            <select
-                className="rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 sm:text-sm"
-                value={filterStatus}
-                onChange={(e) => setFilterStatus(e.target.value)}
-            >
-                <option value="all">{t('statusAll')}</option>
-                <option value="Draft">{t('statusDraft')}</option>
-                <option value="Unpaid">{t('statusUnpaid')}</option>
-                <option value="Paid">{t('statusPaid')}</option>
-                <option value="Overdue">{t('statusOverdue')}</option>
-            </select>
-            
-            <select
-                className="rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 sm:text-sm"
-                value={filterPeriod}
-                onChange={(e) => setFilterPeriod(e.target.value)}
-            >
-                <option value="all">{t('periodAll')}</option>
-                <option value="30days">{t('period30Days')}</option>
-                <option value="thisMonth">{t('periodThisMonth')}</option>
-                <option value="lastMonth">{t('periodLastMonth')}</option>
-            </select>
+            <input
+              type="text"
+              className="block w-full rounded-md border border-gray-300 bg-white py-2 pl-10 pr-3 text-sm placeholder-gray-500 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 sm:text-sm"
+              placeholder={t("searchPlaceholder")}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+          <select
+            className="rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 sm:text-sm"
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(e.target.value)}
+          >
+            <option value="all">{t("statusAll")}</option>
+            <option value="Draft">{t("statusDraft")}</option>
+            <option value="Unpaid">{t("statusUnpaid")}</option>
+            <option value="Paid">{t("statusPaid")}</option>
+            <option value="Overdue">{t("statusOverdue")}</option>
+          </select>
+
+          <select
+            className="rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 sm:text-sm"
+            value={filterPeriod}
+            onChange={(e) => setFilterPeriod(e.target.value)}
+          >
+            <option value="all">{t("periodAll")}</option>
+            <option value="30days">{t("period30Days")}</option>
+            <option value="thisMonth">{t("periodThisMonth")}</option>
+            <option value="lastMonth">{t("periodLastMonth")}</option>
+          </select>
         </div>
       </div>
-      
+
+      {/* Summary Cards */}
+      {!loading && !error && invoices.length > 0 && (
+        <div className="mb-8 grid grid-cols-1 gap-6 sm:grid-cols-3">
+          {/* Total Tagihan */}
+          <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 p-6 text-white shadow-lg transition-transform hover:scale-105">
+            <div className="relative z-10">
+              <div className="flex items-center gap-2">
+                <div className="rounded-full bg-blue-400/30 p-2">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </div>
+                <p className="font-medium text-blue-100">{t("summaryTotal")}</p>
+              </div>
+              <p className="mt-4 text-3xl font-bold tracking-tight">
+                {formatCurrency(summaryData.total, settings)}
+              </p>
+            </div>
+            {/* Decorative Icon */}
+            <div className="absolute -right-6 -bottom-6 opacity-10">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-32 w-32"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </div>
+          </div>
+
+          {/* Sudah Dibayar */}
+          <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 p-6 text-white shadow-lg transition-transform hover:scale-105">
+            <div className="relative z-10">
+              <div className="flex items-center gap-2">
+                <div className="rounded-full bg-emerald-400/30 p-2">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </div>
+                <p className="font-medium text-emerald-100">
+                  {t("paidAmount")}
+                </p>
+              </div>
+              <p className="mt-4 text-3xl font-bold tracking-tight">
+                {formatCurrency(summaryData.paid, settings)}
+              </p>
+            </div>
+            {/* Decorative Icon */}
+            <div className="absolute -right-6 -bottom-6 opacity-10">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-32 w-32"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </div>
+          </div>
+
+          {/* Sisa Tagihan */}
+          <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-rose-500 to-rose-600 p-6 text-white shadow-lg transition-transform hover:scale-105">
+            <div className="relative z-10">
+              <div className="flex items-center gap-2">
+                <div className="rounded-full bg-rose-400/30 p-2">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </div>
+                <p className="font-medium text-rose-100">{t("balanceDue")}</p>
+              </div>
+              <p className="mt-4 text-3xl font-bold tracking-tight">
+                {formatCurrency(summaryData.balance, settings)}
+              </p>
+            </div>
+            {/* Decorative Icon */}
+            <div className="absolute -right-6 -bottom-6 opacity-10">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-32 w-32"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </div>
+          </div>
+        </div>
+      )}
+
       {loading ? (
         <div className="flex h-64 items-center justify-center">
-          <div className="text-gray-500">{t('loadingHistory')}</div>
+          <div className="text-gray-500">{t("loadingHistory")}</div>
         </div>
       ) : error ? (
-        <div className="rounded-lg bg-red-50 p-4 text-red-600">
-          {error}
-        </div>
+        <div className="rounded-lg bg-red-50 p-4 text-red-600">{error}</div>
       ) : invoices.length === 0 ? (
         <div className="rounded-lg border border-dashed p-12 text-center text-gray-500">
-          <p>{t('noInvoicesFound')}</p>
+          <p>{t("noInvoicesFound")}</p>
         </div>
       ) : (
         <>
-            {viewMode === 'grid' ? (
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {currentItems.map((inv) => (
-                    <div key={inv.historyId} className="flex flex-col justify-between rounded-lg border bg-white p-4 shadow-sm transition-all hover:shadow-md hover:border-brand-200">
-                    <div>
-                        <div className="mb-2 flex items-center justify-between">
-                        <span className="font-semibold text-gray-900">#{inv.details?.number || "N/A"}</span>
-                        <select
-                            value={inv.status || 'Unpaid'}
-                            onClick={(e) => e.stopPropagation()}
-                            onChange={(e) => handleStatusChange(inv, e.target.value)}
-                            className={`rounded-full px-2 py-0.5 text-xs font-medium border cursor-pointer focus:outline-none focus:ring-2 focus:ring-brand-500 ${getStatusColor(inv.status)}`}
+          {viewMode === "grid" ? (
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {currentItems.map((inv) => (
+                <div
+                  key={inv.historyId}
+                  className="flex flex-col justify-between rounded-lg border bg-white p-4 shadow-sm transition-all hover:shadow-md hover:border-brand-200"
+                >
+                  <div>
+                    <div className="mb-2 flex items-center justify-between">
+                      <span className="font-semibold text-gray-900">
+                        #{inv.details?.number || "N/A"}
+                      </span>
+                      <select
+                        value={inv.status || "Unpaid"}
+                        onClick={(e) => e.stopPropagation()}
+                        onChange={(e) =>
+                          handleStatusChange(inv, e.target.value)
+                        }
+                        className={`rounded-full px-2 py-0.5 text-xs font-medium border cursor-pointer focus:outline-none focus:ring-2 focus:ring-brand-500 ${getStatusColor(inv.status)}`}
+                      >
+                        <option
+                          value="Draft"
+                          className="bg-white text-gray-800"
                         >
-                            <option value="Draft" className="bg-white text-gray-800">{t('statusDraft')}</option>
-                            <option value="Unpaid" className="bg-white text-gray-800">{t('statusUnpaid')}</option>
-                            <option value="Paid" className="bg-white text-gray-800">{t('statusPaid')}</option>
-                            <option value="Overdue" className="bg-white text-gray-800">{t('statusOverdue')}</option>
-                        </select>
-                        </div>
-                        <div className="mb-4 text-sm">
-                        <p className="text-gray-500 mb-1">
-                            {inv.savedAt ? new Date(inv.savedAt).toLocaleDateString() : "Unknown Date"}
-                        </p>
-                        <p className="font-medium text-gray-700 truncate" title={inv.customer?.name}>{inv.customer?.name || "Unknown Customer"}</p>
-                        <p className="text-gray-500">{inv.items?.length || 0} {t('itemsCount')}</p>
-                        </div>
+                          {t("statusDraft")}
+                        </option>
+                        <option
+                          value="Unpaid"
+                          className="bg-white text-gray-800"
+                        >
+                          {t("statusUnpaid")}
+                        </option>
+                        <option value="Paid" className="bg-white text-gray-800">
+                          {t("statusPaid")}
+                        </option>
+                        <option
+                          value="Overdue"
+                          className="bg-white text-gray-800"
+                        >
+                          {t("statusOverdue")}
+                        </option>
+                      </select>
                     </div>
-                    
-                    <div className="mt-4 flex items-center justify-between border-t pt-4">
-                        <div>
-                            <p className="text-xs text-gray-500">{t('total')}</p>
-                            <p className="font-bold text-brand-600">
-                                {formatCurrency(inv.totals?.total || 0, inv.settings)}
-                            </p>
-                        </div>
-                        <div className="flex gap-2">
-                            <button
-                                onClick={() => onLoadInvoice(inv)}
-                                className="rounded-md border border-gray-300 p-2 text-gray-500 hover:bg-gray-50 hover:text-brand-600"
-                                title={t('open')}
+                    <div className="mb-4 text-sm">
+                      <p className="text-gray-500 mb-1">
+                        {inv.savedAt
+                          ? new Date(inv.savedAt).toLocaleDateString()
+                          : "Unknown Date"}
+                      </p>
+                      <p
+                        className="font-medium text-gray-700 truncate"
+                        title={inv.customer?.name}
+                      >
+                        {inv.customer?.name || "Unknown Customer"}
+                      </p>
+                      <p className="text-gray-500">
+                        {inv.items?.length || 0} {t("itemsCount")}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 flex items-center justify-between border-t pt-4">
+                    <div>
+                      <p className="text-xs text-gray-500">{t("total")}</p>
+                      <p className="font-bold text-brand-600">
+                        {formatCurrency(inv.totals?.total || 0, inv.settings)}
+                      </p>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => onLoadInvoice(inv)}
+                        className="rounded-md border border-gray-300 p-2 text-gray-500 hover:bg-gray-50 hover:text-brand-600"
+                        title={t("open")}
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-5 w-5"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                          />
+                        </svg>
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setInvoiceToDelete(inv);
+                          setIsDeleteModalOpen(true);
+                        }}
+                        className="rounded-md border border-gray-300 p-2 text-gray-500 hover:bg-red-50 hover:text-red-600"
+                        title={t("deleteInvoice")}
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-5 w-5"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                          />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="overflow-hidden rounded-lg border bg-white shadow-sm">
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        {t("number")}
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        {t("date")}
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        {t("status")}
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        {t("customer")}
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        {t("total")}
+                      </th>
+                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        {t("actions")}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {currentItems.map((inv) => (
+                      <tr key={inv.historyId} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          #{inv.details?.number || "N/A"}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {inv.savedAt
+                            ? new Date(inv.savedAt).toLocaleDateString()
+                            : "-"}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <select
+                            value={inv.status || "Unpaid"}
+                            onClick={(e) => e.stopPropagation()}
+                            onChange={(e) =>
+                              handleStatusChange(inv, e.target.value)
+                            }
+                            className={`rounded-full px-2 py-1 text-xs font-semibold border cursor-pointer focus:outline-none focus:ring-2 focus:ring-brand-500 ${getStatusColor(inv.status)}`}
+                          >
+                            <option
+                              value="Draft"
+                              className="bg-white text-gray-800"
                             >
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                                </svg>
+                              {t("statusDraft")}
+                            </option>
+                            <option
+                              value="Unpaid"
+                              className="bg-white text-gray-800"
+                            >
+                              {t("statusUnpaid")}
+                            </option>
+                            <option
+                              value="Paid"
+                              className="bg-white text-gray-800"
+                            >
+                              {t("statusPaid")}
+                            </option>
+                            <option
+                              value="Overdue"
+                              className="bg-white text-gray-800"
+                            >
+                              {t("statusOverdue")}
+                            </option>
+                          </select>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {inv.customer?.name || "-"}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-brand-600">
+                          {formatCurrency(inv.totals?.total || 0, inv.settings)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                          <div className="flex justify-end gap-2">
+                            <button
+                              onClick={() => onLoadInvoice(inv)}
+                              className="rounded-md border border-gray-300 p-2 text-gray-500 hover:bg-gray-50 hover:text-brand-600"
+                              title={t("open")}
+                            >
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="h-5 w-5"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                                />
+                              </svg>
                             </button>
                             <button
-                                onClick={(e) => {
-                                    e.stopPropagation()
-                                    setInvoiceToDelete(inv)
-                                    setIsDeleteModalOpen(true)
-                                }}
-                                className="rounded-md border border-gray-300 p-2 text-gray-500 hover:bg-red-50 hover:text-red-600"
-                                title={t('deleteInvoice')}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setInvoiceToDelete(inv);
+                                setIsDeleteModalOpen(true);
+                              }}
+                              className="rounded-md border border-gray-300 p-2 text-gray-500 hover:bg-red-50 hover:text-red-600"
+                              title={t("deleteInvoice")}
                             >
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                </svg>
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="h-5 w-5"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                />
+                              </svg>
                             </button>
-                        </div>
-                    </div>
-                    </div>
-                ))}
-                </div>
-            ) : (
-                <div className="overflow-hidden rounded-lg border bg-white shadow-sm">
-                    <div className="overflow-x-auto">
-                        <table className="min-w-full divide-y divide-gray-200">
-                            <thead className="bg-gray-50">
-                                <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('number')}</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('date')}</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('status')}</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('customer')}</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t('total')}</th>
-                                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">{t('actions')}</th>
-                                </tr>
-                            </thead>
-                            <tbody className="bg-white divide-y divide-gray-200">
-                                {currentItems.map(inv => (
-                                    <tr key={inv.historyId} className="hover:bg-gray-50">
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                            #{inv.details?.number || "N/A"}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            {inv.savedAt ? new Date(inv.savedAt).toLocaleDateString() : "-"}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <select
-                                                value={inv.status || 'Unpaid'}
-                                                onClick={(e) => e.stopPropagation()}
-                                                onChange={(e) => handleStatusChange(inv, e.target.value)}
-                                                className={`rounded-full px-2 py-1 text-xs font-semibold border cursor-pointer focus:outline-none focus:ring-2 focus:ring-brand-500 ${getStatusColor(inv.status)}`}
-                                            >
-                                                <option value="Draft" className="bg-white text-gray-800">{t('statusDraft')}</option>
-                                                <option value="Unpaid" className="bg-white text-gray-800">{t('statusUnpaid')}</option>
-                                                <option value="Paid" className="bg-white text-gray-800">{t('statusPaid')}</option>
-                                                <option value="Overdue" className="bg-white text-gray-800">{t('statusOverdue')}</option>
-                                            </select>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            {inv.customer?.name || "-"}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-brand-600">
-                                            {formatCurrency(inv.totals?.total || 0, inv.settings)}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                            <div className="flex justify-end gap-2">
-                                                <button
-                                                    onClick={() => onLoadInvoice(inv)}
-                                                    className="rounded-md border border-gray-300 p-2 text-gray-500 hover:bg-gray-50 hover:text-brand-600"
-                                                    title={t('open')}
-                                                >
-                                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                                                    </svg>
-                                                </button>
-                                                <button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation()
-                                                        setInvoiceToDelete(inv)
-                                                        setIsDeleteModalOpen(true)
-                                                    }}
-                                                    className="rounded-md border border-gray-300 p-2 text-gray-500 hover:bg-red-50 hover:text-red-600"
-                                                    title={t('deleteInvoice')}
-                                                >
-                                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                    </svg>
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            )}
-            
-            {renderPagination()}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {renderPagination()}
         </>
       )}
     </div>
-  )
+  );
 }
 
 History.propTypes = {
-  onLoadInvoice: PropTypes.func.isRequired
-}
+  onLoadInvoice: PropTypes.func.isRequired,
+};

@@ -133,6 +133,27 @@ export default function SimpleInvoice({ invoice, user }) {
         </table>
       </section>
 
+      <div className="mt-6 mb-8 ml-auto w-52 space-y-2 text-sm">
+        <div className="flex items-center justify-between gap-4">
+          <span className="text-gray-600">{t("subtotal")}</span>
+          <span className="font-medium text-gray-900 tabular-nums">
+            {formatCurrency(totals.subtotal, settings)}
+          </span>
+        </div>
+        <div className="flex items-center justify-between gap-4">
+          <span className="text-gray-600">{t("tax")}</span>
+          <span className="font-medium text-gray-900 tabular-nums">
+            {formatCurrency(totals.taxAmount, settings)}
+          </span>
+        </div>
+        <div className="flex items-center justify-between gap-4 border-t border-gray-200 pt-3">
+          <span className="font-semibold text-gray-900">{t("total")}</span>
+          <span className="text-lg font-semibold text-gray-900 tabular-nums">
+            {formatCurrency(totals.total, settings)}
+          </span>
+        </div>
+      </div>
+
       {details.notes ? (
         <section className="invoice-notes mt-6 text-xs">
           <p className="font-semibold text-gray-700">{t("notes")}</p>
@@ -150,27 +171,7 @@ export default function SimpleInvoice({ invoice, user }) {
         </section>
       ) : null}
 
-      <section className="invoice-footer text-xs">
-        <div className="ml-auto w-52 space-y-2 text-sm">
-          <div className="flex items-center justify-between gap-4">
-            <span className="text-gray-600">{t("subtotal")}</span>
-            <span className="font-medium text-gray-900 tabular-nums">
-              {formatCurrency(totals.subtotal, settings)}
-            </span>
-          </div>
-          <div className="flex items-center justify-between gap-4">
-            <span className="text-gray-600">{t("tax")}</span>
-            <span className="font-medium text-gray-900 tabular-nums">
-              {formatCurrency(totals.taxAmount, settings)}
-            </span>
-          </div>
-          <div className="flex items-center justify-between gap-4 border-t border-gray-200 pt-3">
-            <span className="font-semibold text-gray-900">{t("total")}</span>
-            <span className="text-lg font-semibold text-gray-900 tabular-nums">
-              {formatCurrency(totals.total, settings)}
-            </span>
-          </div>
-        </div>
+      <section className="invoice-footer text-xs mt-6">
         <div className="text-[10px] text-gray-600 self-start">
           {settings.footerText || "Thank you for your business."}
         </div>
