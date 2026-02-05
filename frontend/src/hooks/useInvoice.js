@@ -123,6 +123,6 @@ export default function useInvoice(initialData = null) {
     moveItemUp,
     moveItemDown,
     downloadPDF,
-    setInvoice // Expose setInvoice for loading history
+    setInvoice
   }
 }

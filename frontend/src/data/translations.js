@@ -18,7 +18,7 @@ export const translations = {
     notes: "Notes",
     terms: "Terms & Conditions",
     generatedWith: "Generated with GenerateInvoice",
-    
+
     // UI - Editor
     editor: "Editor",
     settings: "Settings",
@@ -31,7 +31,7 @@ export const translations = {
     save: "Save",
     download: "Download",
     loading: "Loading...",
-    
+
     // Forms
     name: "Name",
     address: "Address",
@@ -63,7 +63,8 @@ export const translations = {
     editContact: "Edit Contact",
     addNewContact: "Add New Contact",
     deleteContact: "Delete Contact",
-    deleteConfirmation: "Are you sure you want to delete this contact? This action cannot be undone.",
+    deleteConfirmation:
+      "Are you sure you want to delete this contact? This action cannot be undone.",
     upgradeToPremiumHeader: "Upgrade to Premium to customize header",
     upgradeToPremiumNumber: "Upgrade to Premium to customize invoice number",
     invoiceNumber: "Invoice Number",
@@ -74,6 +75,10 @@ export const translations = {
     noSavedSellers: "No saved sellers found",
     noSavedCustomers: "No saved customers found",
     noMatchesFound: "No matches found",
+    hideHistory: "Hide History",
+    showHistory: "Show History",
+    selectFromHistory: "Select from history",
+    useThisLogo: "Use this logo",
 
     // Header
     home: "Home",
@@ -97,7 +102,8 @@ export const translations = {
     periodThisMonth: "This Month",
     periodLastMonth: "Last Month",
     deleteInvoice: "Delete Invoice",
-    deleteInvoiceConfirmation: "Are you sure you want to delete this invoice? This action cannot be undone.",
+    deleteInvoiceConfirmation:
+      "Are you sure you want to delete this invoice? This action cannot be undone.",
     noInvoicesFound: "No invoices found.",
     createNewInvoice: "Create New Invoice",
     grid: "Grid",
@@ -123,10 +129,11 @@ export const translations = {
     updatePassword: "Update Password",
     newPasswordsDoNotMatch: "New passwords do not match",
     itemsCount: "items",
-    passwordDescription: "Ensure your account is using a long, random password to stay secure.",
+    passwordDescription:
+      "Ensure your account is using a long, random password to stay secure.",
     saving: "Saving...",
     changingPassword: "Changing Password...",
-    
+
     // Placeholders
     placeholderName: "Name",
     placeholderAddress: "Address",
@@ -136,11 +143,11 @@ export const translations = {
     placeholderHeader: "e.g. INVOICE",
     placeholderItemName: "Item name",
     placeholderFooter: "Footer text on invoice",
-    
+
     // Toasts / Messages
     savedSuccess: "Invoice saved to history!",
     validationError: "Please check the form for errors.",
-    
+
     // General
     page: "Page",
     of: "of",
@@ -149,7 +156,8 @@ export const translations = {
     welcomeBack: "Welcome back, {name}!",
     readyToCreate: "Ready to create your next professional invoice?",
     unlockPremium: "Unlock Premium Features",
-    premiumBenefits: "Get unlimited invoices, custom headers, and remove watermarks.",
+    premiumBenefits:
+      "Get unlimited invoices, custom headers, and remove watermarks.",
     upgradeNow: "Upgrade Now",
     recentInvoices: "Recent Invoices",
     viewAllHistory: "View All History",
@@ -159,42 +167,51 @@ export const translations = {
     unknownCustomer: "Unknown Customer",
     totalAmount: "Total Amount",
     editView: "Edit / View",
-    
+
     // Landing - Hero
     heroTitle: "The Best Invoice Generator for Professionals",
-    heroSubtitle: "Manage your business billing easily and efficiently. Create professional invoices in seconds, track history, and get paid faster.",
+    heroSubtitle:
+      "Manage your business billing easily and efficiently. Create professional invoices in seconds, track history, and get paid faster.",
     heroCreateInvoice: "Create Invoice Now",
     heroStartFree: "Start Free Account",
     alreadyHaveAccount: "Already have an account?",
-    
+
     // Landing - Pain Points
     painPointsTitle: "Is Your Business Facing These Issues?",
     painPointsSubtitle: "Don't let billing problems slow down your growth.",
     ppTrackingTitle: "Hard to track payments?",
-    ppTrackingDesc: "Stop using spreadsheets that are error-prone and hard to update.",
+    ppTrackingDesc:
+      "Stop using spreadsheets that are error-prone and hard to update.",
     ppProfessionalTitle: "Unprofessional invoices?",
-    ppProfessionalDesc: "Sending plain text emails or messy Word documents damages your brand image.",
+    ppProfessionalDesc:
+      "Sending plain text emails or messy Word documents damages your brand image.",
     ppLostDataTitle: "Lost data?",
-    ppLostDataDesc: "Never lose an invoice again with our secure cloud storage history.",
+    ppLostDataDesc:
+      "Never lose an invoice again with our secure cloud storage history.",
     ppCalcErrorsTitle: "Calculation errors?",
-    ppCalcErrorsDesc: "Let our system handle the math, taxes, and totals automatically.",
-    
+    ppCalcErrorsDesc:
+      "Let our system handle the math, taxes, and totals automatically.",
+
     // Landing - Features
     featuresTitle: "Key Features",
     featuresSubtitle: "Everything you need to manage your invoices.",
     featFastTitle: "Blazing Fast",
-    featFastDesc: "Create PDF invoices in seconds. Auto-save ensures you never lose your work.",
+    featFastDesc:
+      "Create PDF invoices in seconds. Auto-save ensures you never lose your work.",
     featSecureTitle: "Secure & Organized",
-    featSecureDesc: "Keep all your invoices in one place. Log in to access your history from anywhere.",
+    featSecureDesc:
+      "Keep all your invoices in one place. Log in to access your history from anywhere.",
     featLookTitle: "Professional Look",
-    featLookDesc: "Clean and professional templates that make your business look good.",
+    featLookDesc:
+      "Clean and professional templates that make your business look good.",
     featClientTitle: "Client Management",
-    featClientDesc: "Save customer details for one-click invoice generation next time.",
+    featClientDesc:
+      "Save customer details for one-click invoice generation next time.",
     featHistoryTitle: "History Tracking",
     featHistoryDesc: "View all past invoices and their status at a glance.",
     featMobileTitle: "Mobile Friendly",
     featMobileDesc: "Create and send invoices directly from your smartphone.",
-    
+
     // Landing - How It Works
     howItWorksTitle: "How It Works",
     howItWorksSubtitle: "Simple 3-step process to get paid.",
@@ -204,7 +221,7 @@ export const translations = {
     step2Desc: "Preview your invoice and save it to your account history.",
     step3Title: "Download PDF",
     step3Desc: "Download professional PDF and send it to your client.",
-    
+
     // Landing - Pricing
     plansTitle: "Flexible Plans",
     plansSubtitle: "Choose a plan that fits your needs.",
@@ -230,19 +247,23 @@ export const translations = {
     featCustomNumber: "Custom Invoice Number",
     featPrioritySupport: "Priority Support",
     getPremium: "Get Premium",
-    
+
     // Landing - FAQ
     faqTitle: "Frequently Asked Questions",
     faq1Q: "Is this invoice generator really free?",
-    faq1A: "Yes! Both our Guest and Registered plans are completely free to use. We believe in helping small businesses grow.",
+    faq1A:
+      "Yes! Both our Guest and Registered plans are completely free to use. We believe in helping small businesses grow.",
     faq2Q: "Can I save my invoices?",
-    faq2A: "If you create a free account, all your invoices are automatically saved to the cloud so you can access them anytime.",
+    faq2A:
+      "If you create a free account, all your invoices are automatically saved to the cloud so you can access them anytime.",
     faq3Q: "Is my data safe?",
-    faq3A: "Absolutely. We use industry-standard encryption to protect your data. We never share your information with third parties.",
-    
+    faq3A:
+      "Absolutely. We use industry-standard encryption to protect your data. We never share your information with third parties.",
+
     // Landing - CTA
     ctaTitle: "Ready to streamline your billing?",
-    ctaSubtitle: "Join thousands of freelancers and small business owners today.",
+    ctaSubtitle:
+      "Join thousands of freelancers and small business owners today.",
     ctaButton: "Start for Free",
 
     // Auth
@@ -262,7 +283,7 @@ export const translations = {
     passwordsDoNotMatch: "Passwords do not match",
     creatingAccount: "Creating Account...",
     register: "Register",
-    confirmPassword: "Confirm Password"
+    confirmPassword: "Confirm Password",
   },
   id: {
     // Invoice Template
@@ -283,7 +304,7 @@ export const translations = {
     notes: "Catatan",
     terms: "Syarat & Ketentuan",
     generatedWith: "Dibuat dengan GenerateInvoice",
-    
+
     // UI - Editor
     editor: "Editor",
     settings: "Pengaturan",
@@ -296,7 +317,7 @@ export const translations = {
     save: "Simpan",
     download: "Unduh",
     loading: "Memuat...",
-    
+
     // Forms
     name: "Nama",
     address: "Alamat",
@@ -328,7 +349,8 @@ export const translations = {
     editContact: "Ubah Kontak",
     addNewContact: "Tambah Kontak Baru",
     deleteContact: "Hapus Kontak",
-    deleteConfirmation: "Apakah Anda yakin ingin menghapus kontak ini? Tindakan ini tidak dapat dibatalkan.",
+    deleteConfirmation:
+      "Apakah Anda yakin ingin menghapus kontak ini? Tindakan ini tidak dapat dibatalkan.",
     upgradeToPremiumHeader: "Tingkatkan ke Premium untuk mengubah judul",
     upgradeToPremiumNumber: "Tingkatkan ke Premium untuk mengubah nomor faktur",
     invoiceNumber: "Nomor Faktur",
@@ -339,6 +361,10 @@ export const translations = {
     noSavedSellers: "Tidak ada penjual tersimpan",
     noSavedCustomers: "Tidak ada pelanggan tersimpan",
     noMatchesFound: "Tidak ada hasil ditemukan",
+    hideHistory: "Sembunyikan Riwayat",
+    showHistory: "Tampilkan Riwayat",
+    selectFromHistory: "Pilih dari riwayat",
+    useThisLogo: "Gunakan logo ini",
 
     // Header
     home: "Beranda",
@@ -363,7 +389,8 @@ export const translations = {
     periodThisMonth: "Bulan Ini",
     periodLastMonth: "Bulan Lalu",
     deleteInvoice: "Hapus Faktur",
-    deleteInvoiceConfirmation: "Apakah Anda yakin ingin menghapus faktur ini? Tindakan ini tidak dapat dibatalkan.",
+    deleteInvoiceConfirmation:
+      "Apakah Anda yakin ingin menghapus faktur ini? Tindakan ini tidak dapat dibatalkan.",
     noInvoicesFound: "Tidak ada faktur ditemukan.",
     createNewInvoice: "Buat Faktur Baru",
 
@@ -382,10 +409,11 @@ export const translations = {
     updatePassword: "Perbarui Kata Sandi",
     newPasswordsDoNotMatch: "Kata sandi baru tidak cocok",
     itemsCount: "barang",
-    passwordDescription: "Pastikan akun Anda menggunakan kata sandi yang panjang dan acak agar tetap aman.",
+    passwordDescription:
+      "Pastikan akun Anda menggunakan kata sandi yang panjang dan acak agar tetap aman.",
     saving: "Menyimpan...",
     changingPassword: "Mengubah Kata Sandi...",
-    
+
     // Placeholders
     placeholderName: "Nama",
     placeholderAddress: "Alamat",
@@ -395,11 +423,11 @@ export const translations = {
     placeholderHeader: "cth. FAKTUR",
     placeholderItemName: "Nama barang",
     placeholderFooter: "Teks footer pada invoice",
-    
+
     // Toasts / Messages
     savedSuccess: "Faktur berhasil disimpan ke riwayat!",
     validationError: "Mohon periksa formulir kembali.",
-    
+
     // General
     page: "Halaman",
     of: "dari",
@@ -408,7 +436,8 @@ export const translations = {
     welcomeBack: "Selamat datang kembali, {name}!",
     readyToCreate: "Siap membuat faktur profesional berikutnya?",
     unlockPremium: "Buka Fitur Premium",
-    premiumBenefits: "Dapatkan faktur tanpa batas, header kustom, dan hapus watermark.",
+    premiumBenefits:
+      "Dapatkan faktur tanpa batas, header kustom, dan hapus watermark.",
     upgradeNow: "Tingkatkan Sekarang",
     recentInvoices: "Faktur Terbaru",
     viewAllHistory: "Lihat Semua Riwayat",
@@ -418,52 +447,64 @@ export const translations = {
     unknownCustomer: "Pelanggan Tidak Diketahui",
     totalAmount: "Total Jumlah",
     editView: "Ubah / Lihat",
-    
+
     // Landing - Hero
     heroTitle: "GenerateInvoice Terbaik untuk Profesional",
-    heroSubtitle: "Kelola penagihan bisnis Anda dengan mudah dan efisien. Buat faktur profesional dalam hitungan detik, lacak riwayat, dan dapatkan bayaran lebih cepat.",
+    heroSubtitle:
+      "Kelola penagihan bisnis Anda dengan mudah dan efisien. Buat faktur profesional dalam hitungan detik, lacak riwayat, dan dapatkan bayaran lebih cepat.",
     heroCreateInvoice: "Buat Faktur Sekarang",
     heroStartFree: "Mulai Akun Gratis",
     alreadyHaveAccount: "Sudah punya akun?",
-    
+
     // Landing - Pain Points
     painPointsTitle: "Apakah Bisnis Anda Menghadapi Masalah Ini?",
-    painPointsSubtitle: "Jangan biarkan masalah penagihan memperlambat pertumbuhan Anda.",
+    painPointsSubtitle:
+      "Jangan biarkan masalah penagihan memperlambat pertumbuhan Anda.",
     ppTrackingTitle: "Sulit melacak pembayaran?",
-    ppTrackingDesc: "Berhenti menggunakan spreadsheet yang rentan kesalahan dan sulit diperbarui.",
+    ppTrackingDesc:
+      "Berhenti menggunakan spreadsheet yang rentan kesalahan dan sulit diperbarui.",
     ppProfessionalTitle: "Faktur tidak profesional?",
-    ppProfessionalDesc: "Mengirim email teks biasa atau dokumen Word yang berantakan merusak citra merek Anda.",
+    ppProfessionalDesc:
+      "Mengirim email teks biasa atau dokumen Word yang berantakan merusak citra merek Anda.",
     ppLostDataTitle: "Kehilangan data?",
-    ppLostDataDesc: "Jangan pernah kehilangan faktur lagi dengan riwayat penyimpanan cloud kami yang aman.",
+    ppLostDataDesc:
+      "Jangan pernah kehilangan faktur lagi dengan riwayat penyimpanan cloud kami yang aman.",
     ppCalcErrorsTitle: "Kesalahan perhitungan?",
-    ppCalcErrorsDesc: "Biarkan sistem kami menangani matematika, pajak, dan total secara otomatis.",
-    
+    ppCalcErrorsDesc:
+      "Biarkan sistem kami menangani matematika, pajak, dan total secara otomatis.",
+
     // Landing - Features
     featuresTitle: "Fitur Utama",
     featuresSubtitle: "Segala yang Anda butuhkan untuk mengelola faktur Anda.",
     featFastTitle: "Sangat Cepat",
-    featFastDesc: "Buat faktur PDF dalam hitungan detik. Penyimpanan otomatis memastikan Anda tidak pernah kehilangan pekerjaan Anda.",
+    featFastDesc:
+      "Buat faktur PDF dalam hitungan detik. Penyimpanan otomatis memastikan Anda tidak pernah kehilangan pekerjaan Anda.",
     featSecureTitle: "Aman & Terorganisir",
-    featSecureDesc: "Simpan semua faktur Anda di satu tempat. Masuk untuk mengakses riwayat Anda dari mana saja.",
+    featSecureDesc:
+      "Simpan semua faktur Anda di satu tempat. Masuk untuk mengakses riwayat Anda dari mana saja.",
     featLookTitle: "Tampilan Profesional",
-    featLookDesc: "Templat bersih dan profesional yang membuat bisnis Anda terlihat bagus.",
+    featLookDesc:
+      "Templat bersih dan profesional yang membuat bisnis Anda terlihat bagus.",
     featClientTitle: "Manajemen Klien",
-    featClientDesc: "Simpan detail pelanggan untuk pembuatan faktur satu klik di lain waktu.",
+    featClientDesc:
+      "Simpan detail pelanggan untuk pembuatan faktur satu klik di lain waktu.",
     featHistoryTitle: "Pelacakan Riwayat",
-    featHistoryDesc: "Lihat semua faktur masa lalu dan statusnya dalam sekejap.",
+    featHistoryDesc:
+      "Lihat semua faktur masa lalu dan statusnya dalam sekejap.",
     featMobileTitle: "Ramah Seluler",
     featMobileDesc: "Buat dan kirim faktur langsung dari ponsel cerdas Anda.",
-    
+
     // Landing - How It Works
     howItWorksTitle: "Cara Kerja",
     howItWorksSubtitle: "Proses 3 langkah sederhana untuk mendapatkan bayaran.",
     step1Title: "Isi Detail",
-    step1Desc: "Masukkan info bisnis, detail pelanggan, dan barang faktur Anda.",
+    step1Desc:
+      "Masukkan info bisnis, detail pelanggan, dan barang faktur Anda.",
     step2Title: "Tinjau & Simpan",
     step2Desc: "Pratinjau faktur Anda dan simpan ke riwayat akun Anda.",
     step3Title: "Unduh PDF",
     step3Desc: "Unduh PDF profesional dan kirimkan ke klien Anda.",
-    
+
     // Landing - Pricing
     plansTitle: "Paket Fleksibel",
     plansSubtitle: "Pilih paket yang sesuai dengan kebutuhan Anda.",
@@ -489,26 +530,31 @@ export const translations = {
     featCustomNumber: "Nomor Faktur Kustom",
     featPrioritySupport: "Dukungan Prioritas",
     getPremium: "Dapatkan Premium",
-    
+
     // Landing - FAQ
     faqTitle: "Pertanyaan yang Sering Diajukan",
     faq1Q: "Apakah pembuat faktur ini benar-benar gratis?",
-    faq1A: "Ya! Baik paket Tamu maupun Terdaftar kami sepenuhnya gratis untuk digunakan. Kami percaya dalam membantu bisnis kecil tumbuh.",
+    faq1A:
+      "Ya! Baik paket Tamu maupun Terdaftar kami sepenuhnya gratis untuk digunakan. Kami percaya dalam membantu bisnis kecil tumbuh.",
     faq2Q: "Bisakah saya menyimpan faktur saya?",
-    faq2A: "Jika Anda membuat akun gratis, semua faktur Anda secara otomatis disimpan ke cloud sehingga Anda dapat mengaksesnya kapan saja.",
+    faq2A:
+      "Jika Anda membuat akun gratis, semua faktur Anda secara otomatis disimpan ke cloud sehingga Anda dapat mengaksesnya kapan saja.",
     faq3Q: "Apakah data saya aman?",
-    faq3A: "Tentu saja. Kami menggunakan enkripsi standar industri untuk melindungi data Anda. Kami tidak pernah membagikan informasi Anda dengan pihak ketiga.",
-    
+    faq3A:
+      "Tentu saja. Kami menggunakan enkripsi standar industri untuk melindungi data Anda. Kami tidak pernah membagikan informasi Anda dengan pihak ketiga.",
+
     // Landing - CTA
     ctaTitle: "Siap menyederhanakan penagihan Anda?",
-    ctaSubtitle: "Bergabunglah dengan ribuan pekerja lepas dan pemilik bisnis kecil hari ini.",
+    ctaSubtitle:
+      "Bergabunglah dengan ribuan pekerja lepas dan pemilik bisnis kecil hari ini.",
     ctaButton: "Mulai Gratis",
 
     // Auth
     signInTitle: "Masuk ke akun Anda",
     or: "Atau",
     createNewAccount: "buat akun baru",
-    emailVerifiedSuccess: "Email berhasil diverifikasi! Anda sekarang dapat masuk.",
+    emailVerifiedSuccess:
+      "Email berhasil diverifikasi! Anda sekarang dapat masuk.",
     forgotPassword: "Lupa kata sandi Anda?",
     signIn: "Masuk",
     signingIn: "Sedang masuk...",
@@ -522,11 +568,11 @@ export const translations = {
     creatingAccount: "Membuat Akun...",
     register: "Daftar",
     confirmPassword: "Konfirmasi Kata Sandi",
-    verifyEmailBeforeLogin: "Harap verifikasi alamat email Anda sebelum masuk."
-  }
+    verifyEmailBeforeLogin: "Harap verifikasi alamat email Anda sebelum masuk.",
+  },
 };
 
 export const getTranslation = (lang, key) => {
-  const language = lang || 'id'; // Default to ID if not set
-  return translations[language]?.[key] || translations['en'][key] || key;
+  const language = lang || "id"; // Default to ID if not set
+  return translations[language]?.[key] || translations["en"][key] || key;
 };

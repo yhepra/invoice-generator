@@ -9,6 +9,23 @@ export default function SimpleInvoice({ invoice, user }) {
   const isFree = !user || user.plan === "free";
   const t = (key) => getTranslation(settings.language, key);
 
+  const formatDate = (dateValue) => {
+    // If empty, use current date as requested
+    const date = dateValue ? new Date(dateValue) : new Date();
+
+    // Check if valid date
+    if (isNaN(date.getTime())) {
+      return dateValue || "";
+    }
+
+    // Format using locale settings
+    return date.toLocaleDateString(settings.locale || "id-ID", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
+
   return (
     <div className="invoice-content flex w-full flex-col bg-white text-sm text-gray-900 relative">
       <header className="flex items-start justify-between border-b border-gray-200 pb-6 relative z-10">
@@ -33,9 +50,9 @@ export default function SimpleInvoice({ invoice, user }) {
           <p className="font-semibold">{t("number")}</p>
           <p className="text-gray-700">{details.number}</p>
           <p className="mt-2 font-semibold">{t("date")}</p>
-          <p className="text-gray-700">{details.invoiceDate}</p>
+          <p className="text-gray-700">{formatDate(details.invoiceDate)}</p>
           <p className="mt-2 font-semibold">{t("dueDate")}</p>
-          <p className="text-gray-700">{details.dueDate}</p>
+          <p className="text-gray-700">{formatDate(details.dueDate)}</p>
         </div>
       </header>
 

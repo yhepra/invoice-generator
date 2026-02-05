@@ -4,6 +4,7 @@ const API_URL = "https://be.generateinvoice.id/api";
 
 const STORAGE_KEYS = {
   SETTINGS: "invoice_gen_settings",
+  LOGOS: "invoice_gen_logos",
 };
 
 // Helper to determine status based on invoice data
@@ -282,6 +283,35 @@ export const storage = {
       await fetch(`${API_URL}/contacts/${id}`, { method: "DELETE", headers });
     } catch (e) {
       console.error("Error deleting contact", e);
+    }
+  },
+
+  // Logo History
+  getLogos: async () => {
+    try {
+      const data = localStorage.getItem(STORAGE_KEYS.LOGOS);
+      return data ? JSON.parse(data) : [];
+    } catch (e) {
+      console.error("Error reading logos", e);
+      return [];
+    }
+  },
+
+  saveLogo: async (logoData) => {
+    try {
+      if (!logoData) return;
+      // Get current logos
+      const data = localStorage.getItem(STORAGE_KEYS.LOGOS);
+      const logos = data ? JSON.parse(data) : [];
+
+      // Avoid duplicates
+      if (!logos.includes(logoData)) {
+        // Keep last 10
+        const newLogos = [logoData, ...logos].slice(0, 10);
+        localStorage.setItem(STORAGE_KEYS.LOGOS, JSON.stringify(newLogos));
+      }
+    } catch (e) {
+      console.error("Error saving logo", e);
     }
   },
 };
