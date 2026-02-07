@@ -93,9 +93,17 @@ export default function Header({ title, onGoHome, onGoEditor, onGoSettings, onGo
                 aria-expanded={isMenuOpen}
                 aria-haspopup="true"
               >
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-100 text-sm font-bold text-brand-700">
-                  {getInitials(user.name)}
-                </div>
+                {user.avatar ? (
+                  <img 
+                    src={user.avatar} 
+                    alt={user.name} 
+                    className="h-8 w-8 rounded-full object-cover border border-gray-200"
+                  />
+                ) : (
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-100 text-sm font-bold text-brand-700">
+                    {getInitials(user.name)}
+                  </div>
+                )}
                 <div className="hidden flex-col items-start sm:flex">
                   <span className="text-sm font-medium text-gray-700">{user.name}</span>
                 </div>

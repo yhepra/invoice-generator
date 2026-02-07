@@ -532,6 +532,7 @@ export default function App() {
             element={
               <Upgrade
                 user={user}
+                settings={invoice.settings}
                 onUpgradeSuccess={(updatedUser) => {
                   setUser(updatedUser);
                   showToast("Successfully upgraded to Premium!");

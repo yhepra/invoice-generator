@@ -184,7 +184,7 @@ export default function Login({ onLogin, onRegisterClick, onForgotPasswordClick,
                   />
                 </svg>
               </span>
-              Sign in with Google
+              {t('signInWithGoogle')}
             </button>
           </div>
         </form>
