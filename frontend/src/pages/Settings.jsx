@@ -4,7 +4,7 @@ import SettingsForm from "../components/forms/SettingsForm.jsx"
 import ContactsManager from "../components/forms/ContactsManager.jsx"
 import { getTranslation } from "../data/translations.js"
 
-export default function Settings({ settings, onChange, isSaving }) {
+export default function Settings({ settings, onChange, isSaving, user }) {
   const t = (key) => getTranslation(settings?.language, key);
 
   return (
@@ -33,7 +33,7 @@ export default function Settings({ settings, onChange, isSaving }) {
         <section>
           <h2 className="mb-4 text-lg font-semibold text-gray-900">{t('contactsManagement')}</h2>
           <div className="rounded-lg border bg-white p-4">
-            <ContactsManager settings={settings} />
+            <ContactsManager settings={settings} user={user} />
           </div>
         </section>
       </div>
@@ -49,5 +49,6 @@ Settings.propTypes = {
     footerText: PropTypes.string
   }).isRequired,
   onChange: PropTypes.func.isRequired,
-  isSaving: PropTypes.bool
+  isSaving: PropTypes.bool,
+  user: PropTypes.object
 }

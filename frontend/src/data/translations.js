@@ -79,6 +79,8 @@ export const translations = {
     showHistory: "Show History",
     selectFromHistory: "Select from history",
     useThisLogo: "Use this logo",
+    freePlanSellerLimit:
+      "Free plan limit reached: You can only save 1 seller contact.",
 
     // Header
     home: "Home",
@@ -232,7 +234,7 @@ export const translations = {
     planFreeDesc: "Perfect to get started.",
     planFreePrice: "IDR 0",
     planFreePeriod: "/ forever",
-    featLimitContacts: "Max 5 Customers & Sellers",
+    featLimitContacts: "Max 5 Customers & 1 Sellers",
     featLimitInvoices: "Max 30 Invoices",
     featWatermark: "Standard PDF (Watermarked)",
     featFixedHeader: "Fixed Invoice Header",
@@ -368,6 +370,8 @@ export const translations = {
     showHistory: "Tampilkan Riwayat",
     selectFromHistory: "Pilih dari riwayat",
     useThisLogo: "Gunakan logo ini",
+    freePlanSellerLimit:
+      "Batas paket gratis tercapai: Anda hanya dapat menyimpan 1 kontak penjual.",
 
     // Header
     home: "Beranda",
@@ -518,7 +522,7 @@ export const translations = {
     planFreeDesc: "Sempurna untuk memulai.",
     planFreePrice: "IDR 0",
     planFreePeriod: "/ selamanya",
-    featLimitContacts: "Maks 5 Pelanggan & Penjual",
+    featLimitContacts: "Maks 5 Pelanggan & 1 Penjual",
     featLimitInvoices: "Maks 30 Faktur",
     featWatermark: "PDF Standar (Ada Watermark)",
     featFixedHeader: "Header Faktur Tetap",

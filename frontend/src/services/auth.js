@@ -21,6 +21,14 @@ export const auth = {
     return data.user;
   },
 
+  setToken: (token) => {
+    localStorage.setItem("token", token);
+  },
+
+  googleLogin: () => {
+    window.location.href = API_URL.replace('/api', '/auth/google');
+  },
+
   register: async (name, email, password, password_confirmation) => {
     const response = await fetch(`${API_URL}/register`, {
       method: "POST",

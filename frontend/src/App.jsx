@@ -14,6 +14,7 @@ import Login from "./pages/Login.jsx";
 import Register from "./pages/Register.jsx";
 import ForgotPassword from "./pages/ForgotPassword.jsx";
 import ResetPassword from "./pages/ResetPassword.jsx";
+import AuthCallback from "./pages/AuthCallback.jsx";
 import Header from "./components/common/Header.jsx";
 import Upgrade from "./pages/Upgrade.jsx";
 import Profile from "./pages/Profile.jsx";
@@ -466,6 +467,7 @@ export default function App() {
                 settings={invoice.settings}
                 onChange={updateSettings}
                 isSaving={isSaving}
+                user={user}
               />
             }
           />
@@ -475,6 +477,17 @@ export default function App() {
               <History
                 onLoadInvoice={(inv) => handleLoadInvoiceFromLanding(inv)}
                 settings={invoice.settings}
+              />
+            }
+          />
+          <Route
+            path="/auth/callback"
+            element={
+              <AuthCallback
+                onLogin={(user) => {
+                  setUser(user);
+                  showToast(`Welcome back, ${user.name}!`);
+                }}
               />
             }
           />

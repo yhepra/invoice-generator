@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react"
+import PropTypes from "prop-types"
 import { storage } from "../../services/storage"
 import Button from "../common/Button"
 import ConfirmModal from "../common/ConfirmModal"
 import { getTranslation } from "../../data/translations.js"
 
-export default function ContactsManager({ settings }) {
+export default function ContactsManager({ settings, user }) {
   const [activeTab, setActiveTab] = useState("customer")
   const [contacts, setContacts] = useState([])
   const [isEditing, setIsEditing] = useState(false)
@@ -33,6 +34,21 @@ export default function ContactsManager({ settings }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+
+    // Free Plan Limit Check
+    const isFree = !user || user.plan === "free";
+    if (activeTab === "seller" && isFree) {
+      // Check if we are creating a new one (not editing existing)
+      const isCreatingNew = !formData.id;
+      // Count existing sellers
+      const sellerCount = contacts.filter(c => c.type === 'seller').length;
+      
+      if (isCreatingNew && sellerCount >= 1) {
+        alert(t("freePlanSellerLimit") || "Free plan limit reached: You can only save 1 seller contact.");
+        return;
+      }
+    }
+
     try {
       await storage.saveContact({ ...formData, type: activeTab })
       setFormData({ name: "", address: "", phone: "", email: "" })
@@ -202,4 +218,9 @@ export default function ContactsManager({ settings }) {
       </div>
     </div>
   )
+}
+
+ContactsManager.propTypes = {
+  settings: PropTypes.object.isRequired,
+  user: PropTypes.object
 }

@@ -15,6 +15,7 @@ use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Auth\Events\Registered;
 use App\Services\XenditService;
+use Laravel\Socialite\Facades\Socialite;
 
 class AuthController extends Controller
 {
@@ -23,6 +24,53 @@ class AuthController extends Controller
     public function __construct(XenditService $xenditService)
     {
         $this->xenditService = $xenditService;
+    }
+
+    public function redirectToGoogle()
+    {
+        return Socialite::driver('google')->stateless()->redirect();
+    }
+
+    public function handleGoogleCallback()
+    {
+        try {
+            $googleUser = Socialite::driver('google')->stateless()->user();
+        } catch (\Exception $e) {
+            return redirect(env('APP_FRONTEND_URL', 'http://localhost:5173') . '/login?error=google_auth_failed');
+        }
+
+        $user = User::where('email', $googleUser->getEmail())->first();
+
+        if ($user) {
+            // Update google_id and avatar if not set
+            if (!$user->google_id) {
+                $user->google_id = $googleUser->getId();
+            }
+            if (!$user->avatar) {
+                $user->avatar = $googleUser->getAvatar();
+            }
+            if (!$user->email_verified_at) {
+                $user->email_verified_at = now();
+            }
+            $user->save();
+        } else {
+            // Create new user
+            $user = User::create([
+                'name' => $googleUser->getName(),
+                'email' => $googleUser->getEmail(),
+                'google_id' => $googleUser->getId(),
+                'avatar' => $googleUser->getAvatar(),
+                'password' => null, // No password for Google users
+                'email_verified_at' => now(), // Google emails are verified
+            ]);
+            
+            event(new Registered($user));
+        }
+
+        $token = $user->createToken('auth_token')->plainTextToken;
+
+        // Redirect to frontend with token
+        return redirect(env('APP_FRONTEND_URL', 'http://localhost:5173') . '/auth/callback?token=' . $token);
     }
 
     public function register(Request $request)
