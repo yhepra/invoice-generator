@@ -4,7 +4,7 @@ import PhoneInput from "../common/PhoneInput.jsx";
 import { storage } from "../../services/storage";
 import { getTranslation } from "../../data/translations.js";
 
-export default function SellerForm({ seller, onChange, settings }) {
+export default function SellerForm({ seller, onChange, settings, user }) {
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -15,6 +15,8 @@ export default function SellerForm({ seller, onChange, settings }) {
   const fileInputRef = useRef(null);
 
   const t = (key) => getTranslation(settings?.language, key);
+  const isFree = !user || user.plan === "free";
+  const limitReached = isFree && suggestions.length >= 1;
 
   useEffect(() => {
     const fetchContacts = async () => {
@@ -121,6 +123,12 @@ export default function SellerForm({ seller, onChange, settings }) {
   return (
     <div className="space-y-3">
       <h2 className="text-lg font-semibold">{t("seller")}</h2>
+      {limitReached && !isLoading && (
+        <div className="mb-2 rounded-md bg-yellow-50 p-2 text-xs text-yellow-700 border border-yellow-100">
+          {t("freePlanSellerLimit") ||
+            "Free plan limit reached (1/1). New sellers won't be saved."}
+        </div>
+      )}
       <div className="relative" ref={wrapperRef}>
         <label className="block text-sm text-gray-600 mb-1">
           {t("name")} <span className="text-red-500">*</span>
@@ -319,4 +327,5 @@ SellerForm.propTypes = {
     logo: PropTypes.string,
   }).isRequired,
   onChange: PropTypes.func.isRequired,
+  user: PropTypes.object,
 };

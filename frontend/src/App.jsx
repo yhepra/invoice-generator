@@ -310,11 +310,23 @@ export default function App() {
             c.type === "seller" &&
             c.name.toLowerCase() === invoice.seller.name.toLowerCase(),
         );
+
+        // Check for free plan limit
+        const isFree = !user || user.plan === "free";
+        const sellerCount = contacts.filter((c) => c.type === "seller").length;
+
         if (!sellerExists) {
-          await storage.saveContact({
-            ...invoice.seller,
-            type: "seller",
-          });
+          if (isFree && sellerCount >= 1) {
+            showToast(
+              "Free plan limit reached: Seller contact was not saved.",
+              "info",
+            );
+          } else {
+            await storage.saveContact({
+              ...invoice.seller,
+              type: "seller",
+            });
+          }
         }
       }
       if (invoice.customer.name) {

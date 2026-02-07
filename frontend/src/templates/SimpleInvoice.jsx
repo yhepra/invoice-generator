@@ -42,7 +42,15 @@ export default function SimpleInvoice({ invoice, user }) {
               {details.headerTitle || t("invoice")}
             </h1>
             {isFree && (
-              <p className="mt-1 text-xs text-gray-500">{t("generatedWith")}</p>
+              <a
+                href="https://generateinvoice.id"
+                target="_blank"
+                rel="noreferrer"
+                className="mt-1 block text-xs text-gray-500 hover:text-gray-700 hover:underline"
+                style={{ textDecoration: "none" }}
+              >
+                {t("generatedWith")}
+              </a>
             )}
           </div>
         </div>
