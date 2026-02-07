@@ -11,6 +11,7 @@ export default function SellerForm({ seller, onChange, settings, user }) {
   const [isDragging, setIsDragging] = useState(false);
   const [savedLogos, setSavedLogos] = useState([]);
   const [showLogoHistory, setShowLogoHistory] = useState(false);
+  const [isExisting, setIsExisting] = useState(false);
   const wrapperRef = useRef(null);
   const fileInputRef = useRef(null);
 
@@ -46,8 +47,9 @@ export default function SellerForm({ seller, onChange, settings, user }) {
   }, []);
 
   const handleNameChange = (e) => {
-    onChange({ name: e.target.value });
+    onChange({ name: e.target.value, saveToDatabase: true });
     setShowSuggestions(true);
+    setIsExisting(false);
   };
 
   const handleSelectSuggestion = (contact) => {
@@ -56,8 +58,10 @@ export default function SellerForm({ seller, onChange, settings, user }) {
       address: contact.address,
       phone: contact.phone,
       email: contact.email,
+      saveToDatabase: false
     });
     setShowSuggestions(false);
+    setIsExisting(true);
   };
 
   const handleDragEnter = (e) => {
@@ -171,6 +175,20 @@ export default function SellerForm({ seller, onChange, settings, user }) {
           </ul>
         )}
       </div>
+      {!isExisting && seller.name && (
+        <div className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            id="saveSeller"
+            checked={seller.saveToDatabase !== false}
+            onChange={(e) => onChange({ saveToDatabase: e.target.checked })}
+            className="h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"
+          />
+          <label htmlFor="saveSeller" className="text-sm text-gray-600 cursor-pointer select-none">
+            {t("saveToDatabase")}
+          </label>
+        </div>
+      )}
       <textarea
         value={seller.address}
         onChange={(e) => onChange({ address: e.target.value })}

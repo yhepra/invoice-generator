@@ -305,7 +305,7 @@ export default function App() {
 
     try {
       const contacts = await storage.getContacts();
-      if (invoice.seller.name) {
+      if (invoice.seller.name && invoice.seller.saveToDatabase !== false) {
         const sellerExists = contacts.some(
           (c) =>
             c.type === "seller" &&
@@ -330,7 +330,7 @@ export default function App() {
           }
         }
       }
-      if (invoice.customer.name) {
+      if (invoice.customer.name && invoice.customer.saveToDatabase !== false) {
         const customerExists = contacts.some(
           (c) =>
             c.type === "customer" &&

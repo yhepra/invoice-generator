@@ -14,13 +14,15 @@ const defaultInvoice = {
     address: "",
     email: "",
     phone: "",
-    logo: null
+    logo: null,
+    saveToDatabase: true
   },
   customer: {
     name: "",
     address: "",
     email: "",
-    phone: ""
+    phone: "",
+    saveToDatabase: true
   },
   details: {
     headerTitle: "",

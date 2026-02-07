@@ -271,6 +271,8 @@ export const translations = {
       "Join thousands of freelancers and small business owners today.",
     ctaButton: "Start for Free",
 
+    saveToDatabase: "Save to database",
+    
     // Auth
     signInTitle: "Sign in to your account",
     or: "Or",
@@ -559,6 +561,8 @@ export const translations = {
     ctaSubtitle:
       "Bergabunglah dengan ribuan pekerja lepas dan pemilik bisnis kecil hari ini.",
     ctaButton: "Mulai Gratis",
+
+    saveToDatabase: "Simpan ke database",
 
     // Auth
     signInTitle: "Masuk ke akun Anda",

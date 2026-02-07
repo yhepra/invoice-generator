@@ -5,8 +5,10 @@ import Logo from "./Logo"
 import { getTranslation } from "../../data/translations.js"
 
 export default function Header({ title, onGoHome, onGoEditor, onGoSettings, onGoHistory, onGoUpgrade, onGoProfile, user, onLogin, onLogout, settings, onUpdateSettings }) {
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isMenuOpen, setIsMenuOpen] = useState(false) // Desktop Dropdown
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false) // Mobile Burger Menu
   const menuRef = useRef(null)
+  const mobileMenuRef = useRef(null)
   const t = (key) => getTranslation(settings?.language, key);
 
   const toggleLanguage = () => {
@@ -20,6 +22,9 @@ export default function Header({ title, onGoHome, onGoEditor, onGoSettings, onGo
     function handleClickOutside(event) {
       if (menuRef.current && !menuRef.current.contains(event.target)) {
         setIsMenuOpen(false)
+      }
+      if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target) && !event.target.closest('.burger-button')) {
+        setIsMobileMenuOpen(false)
       }
     }
     document.addEventListener("mousedown", handleClickOutside)
@@ -59,7 +64,8 @@ export default function Header({ title, onGoHome, onGoEditor, onGoSettings, onGo
           )}
         </div>
         
-        <div className="flex items-center gap-3">
+        {/* Desktop Navigation */}
+        <div className="hidden md:flex items-center gap-3">
           {user && (
             <button
               onClick={onGoHome}
@@ -69,7 +75,7 @@ export default function Header({ title, onGoHome, onGoEditor, onGoSettings, onGo
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
               </svg>
-              <span className="hidden sm:inline">{t('home')}</span>
+              <span>{t('home')}</span>
             </button>
           )}
 
@@ -104,7 +110,7 @@ export default function Header({ title, onGoHome, onGoEditor, onGoSettings, onGo
                     {getInitials(user.name)}
                   </div>
                 )}
-                <div className="hidden flex-col items-start sm:flex">
+                <div className="flex flex-col items-start">
                   <span className="text-sm font-medium text-gray-700">{user.name}</span>
                 </div>
                 <svg 
@@ -118,15 +124,9 @@ export default function Header({ title, onGoHome, onGoEditor, onGoSettings, onGo
                 </svg>
               </button>
 
-              {/* Dropdown Menu */}
+              {/* Desktop Dropdown Menu */}
               {isMenuOpen && (
                 <div className="absolute right-0 mt-2 w-56 origin-top-right rounded-lg bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
-                  {/* Mobile User Info Section (Visible only on small screens) */}
-                  <div className="border-b px-4 py-3 sm:hidden">
-                    <p className="text-sm font-medium text-gray-900">{user.name}</p>
-                    <p className="truncate text-xs text-gray-500">{user.email}</p>
-                  </div>
-                  
                   <div className="py-1">
                     <button
                       onClick={() => {
@@ -226,7 +226,163 @@ export default function Header({ title, onGoHome, onGoEditor, onGoSettings, onGo
             </Button>
           )}
         </div>
+
+        {/* Mobile Burger Button */}
+        <div className="flex md:hidden items-center">
+           <button
+             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+             className="burger-button inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-brand-500"
+             aria-expanded={isMobileMenuOpen}
+           >
+             <span className="sr-only">Open main menu</span>
+             {isMobileMenuOpen ? (
+               <svg className="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+               </svg>
+             ) : (
+               <svg className="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+               </svg>
+             )}
+           </button>
+        </div>
       </div>
+
+      {/* Mobile Menu Overlay */}
+      {isMobileMenuOpen && (
+        <div className="md:hidden border-t border-gray-200 bg-white" ref={mobileMenuRef}>
+          <div className="space-y-1 px-2 pb-3 pt-2 shadow-lg">
+            {user ? (
+              <>
+                <div className="flex items-center px-3 py-3 border-b border-gray-100 mb-2">
+                   {user.avatar ? (
+                      <img 
+                        src={user.avatar} 
+                        alt={user.name} 
+                        className="h-10 w-10 rounded-full object-cover border border-gray-200"
+                      />
+                    ) : (
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-100 text-sm font-bold text-brand-700">
+                        {getInitials(user.name)}
+                      </div>
+                    )}
+                    <div className="ml-3">
+                      <div className="text-base font-medium text-gray-800">{user.name}</div>
+                      <div className="text-sm font-medium text-gray-500">{user.email}</div>
+                    </div>
+                </div>
+
+                <button
+                  onClick={() => {
+                    onGoHome()
+                    setIsMobileMenuOpen(false)
+                  }}
+                  className="block w-full text-left rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-brand-700"
+                >
+                   {t('home')}
+                </button>
+                
+                <button
+                  onClick={() => {
+                    onGoEditor()
+                    setIsMobileMenuOpen(false)
+                  }}
+                  className="block w-full text-left rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-brand-700"
+                >
+                   {t('createInvoice')}
+                </button>
+
+                <button
+                  onClick={() => {
+                    onGoHistory()
+                    setIsMobileMenuOpen(false)
+                  }}
+                  className="block w-full text-left rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-brand-700"
+                >
+                   {t('history')}
+                </button>
+
+                <button
+                  onClick={() => {
+                    onGoSettings()
+                    setIsMobileMenuOpen(false)
+                  }}
+                  className="block w-full text-left rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-brand-700"
+                >
+                   {t('settings')}
+                </button>
+
+                 <button
+                  onClick={() => {
+                    onGoProfile()
+                    setIsMobileMenuOpen(false)
+                  }}
+                  className="block w-full text-left rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-brand-700"
+                >
+                   {t('profile')}
+                </button>
+
+                {user.plan !== 'premium' && (
+                  <button
+                    onClick={() => {
+                      onGoUpgrade()
+                      setIsMobileMenuOpen(false)
+                    }}
+                    className="block w-full text-left rounded-md px-3 py-2 text-base font-medium text-brand-600 hover:bg-brand-50"
+                  >
+                     {t('upgradeToPremium')}
+                  </button>
+                )}
+                
+                <div className="border-t border-gray-200 my-2"></div>
+
+                <button
+                  onClick={() => {
+                    toggleLanguage()
+                    setIsMobileMenuOpen(false)
+                  }}
+                  className="block w-full text-left rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-brand-700"
+                >
+                   {t('switchLanguage')} ({settings?.language === 'id' ? 'ID' : 'EN'})
+                </button>
+
+                <button
+                  onClick={() => {
+                    onLogout()
+                    setIsMobileMenuOpen(false)
+                  }}
+                  className="block w-full text-left rounded-md px-3 py-2 text-base font-medium text-red-600 hover:bg-red-50"
+                >
+                   {t('logout')}
+                </button>
+              </>
+            ) : (
+              <div className="px-3 py-2">
+                 <Button onClick={() => {
+                   onLogin()
+                   setIsMobileMenuOpen(false)
+                 }} className="w-full justify-center">
+                    {t('loginRegister')}
+                  </Button>
+                  <div className="mt-4 pt-4 border-t border-gray-100">
+                     <button
+                        onClick={() => {
+                          toggleLanguage()
+                          setIsMobileMenuOpen(false)
+                        }}
+                        className="flex items-center gap-2 text-gray-600 font-medium"
+                      >
+                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          <span>{t('switchLanguage')} ({settings?.language === 'id' ? 'ID' : 'EN'})</span>
+                      </button>
+                  </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </header>
   )
 }

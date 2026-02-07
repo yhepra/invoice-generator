@@ -1,12 +1,16 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { auth } from "../services/auth";
 
 export default function AuthCallback({ onLogin }) {
   const navigate = useNavigate();
   const location = useLocation();
+  const processingRef = useRef(false);
 
   useEffect(() => {
+    if (processingRef.current) return;
+    processingRef.current = true;
+
     const params = new URLSearchParams(location.search);
     const token = params.get("token");
 
