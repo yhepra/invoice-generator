@@ -17,7 +17,7 @@ export const translations = {
     amount: "Amount",
     notes: "Notes",
     terms: "Terms & Conditions",
-    generatedWith: "Generated with GenerateInvoice",
+    generatedWith: "Generated with generateinvoice.id",
 
     // UI - Editor
     editor: "Editor",
@@ -306,7 +306,7 @@ export const translations = {
     amount: "Jumlah",
     notes: "Catatan",
     terms: "Syarat & Ketentuan",
-    generatedWith: "Dibuat dengan GenerateInvoice",
+    generatedWith: "Dibuat dengan generateinvoice.id",
 
     // UI - Editor
     editor: "Editor",
