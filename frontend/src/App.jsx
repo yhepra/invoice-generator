@@ -9,6 +9,7 @@ import {
 import InvoiceEditorPage from "./pages/InvoiceEditorPage.jsx";
 import Landing from "./pages/Landing.jsx";
 import Settings from "./pages/Settings.jsx";
+import Contacts from "./pages/Contacts.jsx";
 import History from "./pages/History.jsx";
 import Login from "./pages/Login.jsx";
 import Register from "./pages/Register.jsx";
@@ -408,6 +409,7 @@ export default function App() {
         onGoHome={() => navigate("/")}
         onGoEditor={() => navigate("/create")}
         onGoSettings={() => navigate("/settings")}
+        onGoContacts={() => navigate("/contacts")}
         onGoHistory={() => navigate("/history")}
         onGoUpgrade={() => navigate("/upgrade")}
         onGoProfile={() => navigate("/profile")}
@@ -467,6 +469,15 @@ export default function App() {
                 settings={invoice.settings}
                 onChange={updateSettings}
                 isSaving={isSaving}
+                user={user}
+              />
+            }
+          />
+          <Route
+            path="/contacts"
+            element={
+              <Contacts
+                settings={invoice.settings}
                 user={user}
               />
             }

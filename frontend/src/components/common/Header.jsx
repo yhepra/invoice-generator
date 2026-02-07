@@ -4,7 +4,7 @@ import Button from "./Button"
 import Logo from "./Logo"
 import { getTranslation } from "../../data/translations.js"
 
-export default function Header({ title, onGoHome, onGoEditor, onGoSettings, onGoHistory, onGoUpgrade, onGoProfile, user, onLogin, onLogout, settings, onUpdateSettings }) {
+export default function Header({ title, onGoHome, onGoEditor, onGoSettings, onGoContacts, onGoHistory, onGoUpgrade, onGoProfile, user, onLogin, onLogout, settings, onUpdateSettings }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false) // Desktop Dropdown
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false) // Mobile Burger Menu
   const menuRef = useRef(null)
@@ -156,6 +156,19 @@ export default function Header({ title, onGoHome, onGoEditor, onGoSettings, onGo
 
                     <button
                       onClick={() => {
+                        onGoContacts()
+                        setIsMenuOpen(false)
+                      }}
+                      className="group flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-brand-600"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="mr-3 h-5 w-5 text-gray-400 group-hover:text-brand-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                      </svg>
+                      {t('contacts')}
+                    </button>
+
+                    <button
+                      onClick={() => {
                         onGoSettings()
                         setIsMenuOpen(false)
                       }}
@@ -300,6 +313,16 @@ export default function Header({ title, onGoHome, onGoEditor, onGoSettings, onGo
                   className="block w-full text-left rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-brand-700"
                 >
                    {t('history')}
+                </button>
+
+                <button
+                  onClick={() => {
+                    onGoContacts()
+                    setIsMobileMenuOpen(false)
+                  }}
+                  className="block w-full text-left rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-brand-700"
+                >
+                   {t('contacts')}
                 </button>
 
                 <button

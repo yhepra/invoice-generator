@@ -1,7 +1,6 @@
 import React from "react"
 import PropTypes from "prop-types"
 import SettingsForm from "../components/forms/SettingsForm.jsx"
-import ContactsManager from "../components/forms/ContactsManager.jsx"
 import { getTranslation } from "../data/translations.js"
 
 export default function Settings({ settings, onChange, isSaving, user }) {
@@ -27,13 +26,6 @@ export default function Settings({ settings, onChange, isSaving, user }) {
           <h2 className="mb-4 text-lg font-semibold text-gray-900">{t('generalSettings')}</h2>
           <div className="rounded-lg border bg-white p-4">
             <SettingsForm settings={settings} onChange={onChange} />
-          </div>
-        </section>
-
-        <section>
-          <h2 className="mb-4 text-lg font-semibold text-gray-900">{t('contactsManagement')}</h2>
-          <div className="rounded-lg border bg-white p-4">
-            <ContactsManager settings={settings} user={user} />
           </div>
         </section>
       </div>
