@@ -15,6 +15,13 @@ class UserSetting extends Model
         'locale',
         'language',
         'footerText',
+        'logo_history',
+        'signature_history',
+    ];
+
+    protected $casts = [
+        'logo_history' => 'array',
+        'signature_history' => 'array',
     ];
 
     public function user()

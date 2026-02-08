@@ -32,6 +32,8 @@ class SettingsController extends Controller
             'locale' => 'nullable|string',
             'language' => 'nullable|string',
             'footerText' => 'nullable|string',
+            'logo_history' => 'nullable|array',
+            'signature_history' => 'nullable|array',
         ]);
 
         $settings = UserSetting::updateOrCreate(

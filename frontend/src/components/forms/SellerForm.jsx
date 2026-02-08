@@ -177,6 +177,16 @@ export default function SellerForm({ seller, onChange, settings, user }) {
     reader.readAsDataURL(file);
   };
 
+  const handleDeleteLogo = async (logoToDelete) => {
+    await storage.removeLogo(logoToDelete);
+    setSavedLogos((prev) => prev.filter((l) => l !== logoToDelete));
+  };
+
+  const handleDeleteSignature = async (signatureToDelete) => {
+    await storage.removeSignature(signatureToDelete);
+    setSavedSignatures((prev) => prev.filter((s) => s !== signatureToDelete));
+  };
+
   const filteredSuggestions = suggestions.filter(
     (s) =>
       s.name.toLowerCase().includes((seller.name || "").toLowerCase()) &&
@@ -292,6 +302,28 @@ export default function SellerForm({ seller, onChange, settings, user }) {
                     alt={`History ${i}`}
                     className="max-h-full max-w-full object-contain"
                   />
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteLogo(l);
+                    }}
+                    className="absolute -top-2 -right-2 hidden h-5 w-5 items-center justify-center rounded-full bg-white text-gray-400 shadow-md border border-gray-200 hover:text-red-500 group-hover:flex z-10"
+                    title={t("delete") || "Delete"}
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-3 w-3"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  </button>
                 </div>
               ))}
             </div>
@@ -414,6 +446,28 @@ export default function SellerForm({ seller, onChange, settings, user }) {
                     alt={`Signature History ${i}`}
                     className="max-h-full max-w-full object-contain"
                   />
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteSignature(l);
+                    }}
+                    className="absolute -top-2 -right-2 hidden h-5 w-5 items-center justify-center rounded-full bg-white text-gray-400 shadow-md border border-gray-200 hover:text-red-500 group-hover:flex z-10"
+                    title={t("delete") || "Delete"}
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-3 w-3"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  </button>
                 </div>
               ))}
             </div>
@@ -499,6 +553,33 @@ export default function SellerForm({ seller, onChange, settings, user }) {
           )}
         </div>
       </div>
+      
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className="block text-sm text-gray-600 mb-1">
+            {t("signatoryName")}
+          </label>
+          <input
+            type="text"
+            value={seller.signatoryName || ""}
+            onChange={(e) => onChange({ signatoryName: e.target.value })}
+            placeholder={t("placeholderSignatoryName")}
+            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+          />
+        </div>
+        <div>
+          <label className="block text-sm text-gray-600 mb-1">
+            {t("signatoryJobTitle")}
+          </label>
+          <input
+            type="text"
+            value={seller.signatoryJobTitle || ""}
+            onChange={(e) => onChange({ signatoryJobTitle: e.target.value })}
+            placeholder={t("placeholderSignatoryJobTitle")}
+            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+          />
+        </div>
+      </div>
     </div>
   );
 }
@@ -511,6 +592,8 @@ SellerForm.propTypes = {
     email: PropTypes.string,
     logo: PropTypes.string,
     signature: PropTypes.string,
+    signatoryName: PropTypes.string,
+    signatoryJobTitle: PropTypes.string,
   }).isRequired,
   onChange: PropTypes.func.isRequired,
   user: PropTypes.object,

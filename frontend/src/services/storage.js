@@ -84,7 +84,10 @@ export const storage = {
         });
       }
 
-      localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(settings));
+      const existing = localStorage.getItem(STORAGE_KEYS.SETTINGS);
+      const current = existing ? JSON.parse(existing) : {};
+      const updated = { ...current, ...settings };
+      localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(updated));
     } catch (e) {
       console.error("Error saving settings", e);
     }
@@ -222,6 +225,38 @@ export const storage = {
       console.error("Error deleting invoice", e);
     }
   },
+  removeLogo: async (logo) => {
+    try {
+      const token = localStorage.getItem("token");
+      if (token) {
+        const settings = await storage.getSettings();
+        const logos = settings?.logo_history || [];
+        const newLogos = logos.filter((l) => l !== logo);
+        await storage.saveSettings({ logo_history: newLogos });
+        return;
+      }
+
+      const data = localStorage.getItem(STORAGE_KEYS.LOGOS);
+      const logos = data ? JSON.parse(data) : [];
+      const newLogos = logos.filter((l) => l !== logo);
+      localStorage.setItem(STORAGE_KEYS.LOGOS, JSON.stringify(newLogos));
+    } catch (e) {
+      console.error("Error removing logo", e);
+    }
+  },
+  removeSignature: async (signature) => {
+    try {
+      const data = localStorage.getItem(STORAGE_KEYS.SIGNATURES);
+      const signatures = data ? JSON.parse(data) : [];
+      const newSignatures = signatures.filter((s) => s !== signature);
+      localStorage.setItem(
+        STORAGE_KEYS.SIGNATURES,
+        JSON.stringify(newSignatures),
+      );
+    } catch (e) {
+      console.error("Error removing signature", e);
+    }
+  },
 
   // Contacts (Backend API)
   getContacts: async () => {
@@ -291,6 +326,12 @@ export const storage = {
   // Logo History
   getLogos: async () => {
     try {
+      const token = localStorage.getItem("token");
+      if (token) {
+        const settings = await storage.getSettings();
+        return settings?.logo_history || [];
+      }
+
       const data = localStorage.getItem(STORAGE_KEYS.LOGOS);
       return data ? JSON.parse(data) : [];
     } catch (e) {
@@ -302,6 +343,18 @@ export const storage = {
   saveLogo: async (logoData) => {
     try {
       if (!logoData) return;
+
+      const token = localStorage.getItem("token");
+      if (token) {
+        const settings = await storage.getSettings();
+        const logos = settings?.logo_history || [];
+        if (!logos.includes(logoData)) {
+          const newLogos = [logoData, ...logos].slice(0, 10);
+          await storage.saveSettings({ logo_history: newLogos });
+        }
+        return;
+      }
+
       // Get current logos
       const data = localStorage.getItem(STORAGE_KEYS.LOGOS);
       const logos = data ? JSON.parse(data) : [];
@@ -320,6 +373,12 @@ export const storage = {
   // Signature History
   getSignatures: async () => {
     try {
+      const token = localStorage.getItem("token");
+      if (token) {
+        const settings = await storage.getSettings();
+        return settings?.signature_history || [];
+      }
+
       const data = localStorage.getItem(STORAGE_KEYS.SIGNATURES);
       return data ? JSON.parse(data) : [];
     } catch (e) {
@@ -331,6 +390,18 @@ export const storage = {
   saveSignature: async (signatureData) => {
     try {
       if (!signatureData) return;
+
+      const token = localStorage.getItem("token");
+      if (token) {
+        const settings = await storage.getSettings();
+        const signatures = settings?.signature_history || [];
+        if (!signatures.includes(signatureData)) {
+          const newSignatures = [signatureData, ...signatures].slice(0, 10);
+          await storage.saveSettings({ signature_history: newSignatures });
+        }
+        return;
+      }
+
       // Get current signatures
       const data = localStorage.getItem(STORAGE_KEYS.SIGNATURES);
       const signatures = data ? JSON.parse(data) : [];
@@ -339,10 +410,36 @@ export const storage = {
       if (!signatures.includes(signatureData)) {
         // Keep last 10
         const newSignatures = [signatureData, ...signatures].slice(0, 10);
-        localStorage.setItem(STORAGE_KEYS.SIGNATURES, JSON.stringify(newSignatures));
+        localStorage.setItem(
+          STORAGE_KEYS.SIGNATURES,
+          JSON.stringify(newSignatures),
+        );
       }
     } catch (e) {
       console.error("Error saving signature", e);
+    }
+  },
+
+  removeSignature: async (signature) => {
+    try {
+      const token = localStorage.getItem("token");
+      if (token) {
+        const settings = await storage.getSettings();
+        const signatures = settings?.signature_history || [];
+        const newSignatures = signatures.filter((s) => s !== signature);
+        await storage.saveSettings({ signature_history: newSignatures });
+        return;
+      }
+
+      const data = localStorage.getItem(STORAGE_KEYS.SIGNATURES);
+      const signatures = data ? JSON.parse(data) : [];
+      const newSignatures = signatures.filter((s) => s !== signature);
+      localStorage.setItem(
+        STORAGE_KEYS.SIGNATURES,
+        JSON.stringify(newSignatures),
+      );
+    } catch (e) {
+      console.error("Error removing signature", e);
     }
   },
 

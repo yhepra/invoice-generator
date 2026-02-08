@@ -15,7 +15,9 @@ const defaultInvoice = {
     email: "",
     phone: "",
     logo: null,
-    signature: null
+    signature: null,
+    signatoryName: "",
+    signatoryJobTitle: ""
   },
   customer: {
     name: "",

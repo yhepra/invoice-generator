@@ -181,9 +181,6 @@ export default function SimpleInvoice({ invoice, user }) {
 
       {seller.signature && (
         <div className="mt-10 ml-auto w-48 text-center break-inside-avoid">
-          <p className="mb-4 text-xs font-semibold text-gray-700">
-            {t("signHere") || "Sign Here"}
-          </p>
           <div className="relative h-24 mb-2 flex items-end justify-center">
             <img
               src={seller.signature}
@@ -192,7 +189,14 @@ export default function SimpleInvoice({ invoice, user }) {
             />
           </div>
           <div className="border-t border-gray-400 pt-1">
-            <p className="text-xs text-gray-700 font-medium">{seller.name}</p>
+            <p className="text-xs text-gray-700 font-medium">
+              {seller.signatoryName || seller.name}
+            </p>
+            {seller.signatoryJobTitle && (
+              <p className="text-[10px] text-gray-500">
+                {seller.signatoryJobTitle}
+              </p>
+            )}
           </div>
         </div>
       )}
