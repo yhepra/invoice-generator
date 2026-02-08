@@ -11,9 +11,12 @@ export default function SellerForm({ seller, onChange, settings, user }) {
   const [isDragging, setIsDragging] = useState(false);
   const [savedLogos, setSavedLogos] = useState([]);
   const [showLogoHistory, setShowLogoHistory] = useState(false);
-  const [isExisting, setIsExisting] = useState(false);
+  const [isDraggingSignature, setIsDraggingSignature] = useState(false);
+  const [savedSignatures, setSavedSignatures] = useState([]);
+  const [showSignatureHistory, setShowSignatureHistory] = useState(false);
   const wrapperRef = useRef(null);
   const fileInputRef = useRef(null);
+  const signatureInputRef = useRef(null);
 
   const t = (key) => getTranslation(settings?.language, key);
   const isFree = !user || user.plan === "free";
@@ -34,8 +37,13 @@ export default function SellerForm({ seller, onChange, settings, user }) {
       const logos = await storage.getLogos();
       setSavedLogos(logos);
     };
+    const fetchSignatures = async () => {
+      const signatures = await storage.getSignatures();
+      setSavedSignatures(signatures);
+    };
     fetchContacts();
     fetchLogos();
+    fetchSignatures();
 
     function handleClickOutside(event) {
       if (wrapperRef.current && !wrapperRef.current.contains(event.target)) {
@@ -47,9 +55,8 @@ export default function SellerForm({ seller, onChange, settings, user }) {
   }, []);
 
   const handleNameChange = (e) => {
-    onChange({ name: e.target.value, saveToDatabase: true });
+    onChange({ name: e.target.value });
     setShowSuggestions(true);
-    setIsExisting(false);
   };
 
   const handleSelectSuggestion = (contact) => {
@@ -58,10 +65,8 @@ export default function SellerForm({ seller, onChange, settings, user }) {
       address: contact.address,
       phone: contact.phone,
       email: contact.email,
-      saveToDatabase: false
     });
     setShowSuggestions(false);
-    setIsExisting(true);
   };
 
   const handleDragEnter = (e) => {
@@ -108,6 +113,60 @@ export default function SellerForm({ seller, onChange, settings, user }) {
       // Save to history
       storage.saveLogo(result).then(() => {
         setSavedLogos((prev) => {
+          if (!prev.includes(result)) {
+            return [result, ...prev].slice(0, 10);
+          }
+          return prev;
+        });
+      });
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleSignatureDragEnter = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDraggingSignature(true);
+  };
+
+  const handleSignatureDragLeave = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDraggingSignature(false);
+  };
+
+  const handleSignatureDragOver = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!isDraggingSignature) setIsDraggingSignature(true);
+  };
+
+  const handleSignatureDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDraggingSignature(false);
+
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith("image/")) {
+      processSignatureFile(file);
+    }
+  };
+
+  const handleSignatureFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      processSignatureFile(file);
+    }
+  };
+
+  const processSignatureFile = (file) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const result = reader.result;
+      onChange({ signature: result });
+      // Save to history
+      storage.saveSignature(result).then(() => {
+        setSavedSignatures((prev) => {
           if (!prev.includes(result)) {
             return [result, ...prev].slice(0, 10);
           }
@@ -175,20 +234,6 @@ export default function SellerForm({ seller, onChange, settings, user }) {
           </ul>
         )}
       </div>
-      {!isExisting && seller.name && (
-        <div className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            id="saveSeller"
-            checked={seller.saveToDatabase !== false}
-            onChange={(e) => onChange({ saveToDatabase: e.target.checked })}
-            className="h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"
-          />
-          <label htmlFor="saveSeller" className="text-sm text-gray-600 cursor-pointer select-none">
-            {t("saveToDatabase")}
-          </label>
-        </div>
-      )}
       <textarea
         value={seller.address}
         onChange={(e) => onChange({ address: e.target.value })}
@@ -332,6 +377,128 @@ export default function SellerForm({ seller, onChange, settings, user }) {
           )}
         </div>
       </div>
+      <div>
+        <div className="flex justify-between items-center mb-1">
+          <label className="block text-sm text-gray-600">{t("signature")}</label>
+          {savedSignatures.length > 0 && (
+            <button
+              type="button"
+              onClick={() => setShowSignatureHistory(!showSignatureHistory)}
+              className="text-xs text-brand-600 hover:text-brand-700"
+            >
+              {showSignatureHistory
+                ? t("hideHistory") || "Hide History"
+                : t("showHistory") || "Show History"}
+            </button>
+          )}
+        </div>
+
+        {showSignatureHistory && savedSignatures.length > 0 && (
+          <div className="mt-3 mb-4">
+            <p className="text-xs text-gray-500 mb-2">
+              {t("selectFromHistory") || "Select from history"}:
+            </p>
+            <div className="grid grid-cols-5 gap-2">
+              {savedSignatures.map((l, i) => (
+                <div
+                  key={i}
+                  className="relative aspect-square cursor-pointer rounded-md border border-gray-200 p-1 hover:border-brand-500 bg-white flex items-center justify-center group"
+                  onClick={() => {
+                    onChange({ signature: l });
+                    setShowSignatureHistory(false);
+                  }}
+                  title={t("useThisSignature") || "Use this signature"}
+                >
+                  <img
+                    src={l}
+                    alt={`Signature History ${i}`}
+                    className="max-h-full max-w-full object-contain"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        <div
+          className={`relative flex flex-col items-center justify-center rounded-lg border-2 border-dashed p-6 transition-colors ${
+            isDraggingSignature
+              ? "border-brand-500 bg-brand-50"
+              : "border-gray-300 hover:border-gray-400 bg-white"
+          }`}
+          onDragEnter={handleSignatureDragEnter}
+          onDragOver={handleSignatureDragOver}
+          onDragLeave={handleSignatureDragLeave}
+          onDrop={handleSignatureDrop}
+          onClick={() => signatureInputRef.current?.click()}
+          style={{ cursor: "pointer", minHeight: "120px" }}
+        >
+          <input
+            ref={signatureInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleSignatureFileChange}
+            className="hidden"
+          />
+
+          {seller.signature ? (
+            <div className="text-center group">
+              <div className="relative inline-block">
+                <img
+                  src={seller.signature}
+                  alt="Signature"
+                  className="mx-auto h-20 w-auto object-contain mb-2"
+                />
+                <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all rounded-md"></div>
+              </div>
+              <p className="text-xs text-gray-500">{t("clickToChange")}</p>
+            </div>
+          ) : (
+            <div className="text-center">
+              <svg
+                className="mx-auto h-12 w-12 text-gray-400"
+                stroke="currentColor"
+                fill="none"
+                viewBox="0 0 48 48"
+                aria-hidden="true"
+              >
+                <path
+                  d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              <p className="mt-1 text-sm text-gray-600">
+                {t("dragDropOrClick")}
+              </p>
+            </div>
+          )}
+
+          {seller.signature && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onChange({ signature: "" });
+              }}
+              className="absolute top-2 right-2 rounded-full bg-white p-1 text-gray-400 hover:text-red-500 shadow-sm border border-gray-200"
+              title={t("removeSignature")}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </button>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
@@ -343,6 +510,7 @@ SellerForm.propTypes = {
     phone: PropTypes.string,
     email: PropTypes.string,
     logo: PropTypes.string,
+    signature: PropTypes.string,
   }).isRequired,
   onChange: PropTypes.func.isRequired,
   user: PropTypes.object,

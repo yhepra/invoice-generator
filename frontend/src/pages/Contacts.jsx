@@ -9,7 +9,7 @@ export default function Contacts({ settings, user }) {
   return (
     <div className="mx-auto max-w-4xl p-4 md:p-8 min-h-screen">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">{t('contacts')}</h1>
+        <h1 className="text-2xl font-bold">{t('contactsManagement')}</h1>
       </div>
       
       <div className="rounded-lg border bg-white p-4">
@@ -20,6 +20,6 @@ export default function Contacts({ settings, user }) {
 }
 
 Contacts.propTypes = {
-  settings: PropTypes.object.isRequired,
+  settings: PropTypes.object,
   user: PropTypes.object
 }

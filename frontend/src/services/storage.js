@@ -5,6 +5,7 @@ const API_URL = "https://be.generateinvoice.id/api";
 const STORAGE_KEYS = {
   SETTINGS: "invoice_gen_settings",
   LOGOS: "invoice_gen_logos",
+  SIGNATURES: "invoice_gen_signatures",
   HISTORY_VIEW_MODE: "invoice_gen_history_view_mode",
 };
 
@@ -313,6 +314,35 @@ export const storage = {
       }
     } catch (e) {
       console.error("Error saving logo", e);
+    }
+  },
+
+  // Signature History
+  getSignatures: async () => {
+    try {
+      const data = localStorage.getItem(STORAGE_KEYS.SIGNATURES);
+      return data ? JSON.parse(data) : [];
+    } catch (e) {
+      console.error("Error reading signatures", e);
+      return [];
+    }
+  },
+
+  saveSignature: async (signatureData) => {
+    try {
+      if (!signatureData) return;
+      // Get current signatures
+      const data = localStorage.getItem(STORAGE_KEYS.SIGNATURES);
+      const signatures = data ? JSON.parse(data) : [];
+
+      // Avoid duplicates
+      if (!signatures.includes(signatureData)) {
+        // Keep last 10
+        const newSignatures = [signatureData, ...signatures].slice(0, 10);
+        localStorage.setItem(STORAGE_KEYS.SIGNATURES, JSON.stringify(newSignatures));
+      }
+    } catch (e) {
+      console.error("Error saving signature", e);
     }
   },
 

@@ -179,6 +179,24 @@ export default function SimpleInvoice({ invoice, user }) {
         </section>
       ) : null}
 
+      {seller.signature && (
+        <div className="mt-10 ml-auto w-48 text-center break-inside-avoid">
+          <p className="mb-4 text-xs font-semibold text-gray-700">
+            {t("signHere") || "Sign Here"}
+          </p>
+          <div className="relative h-24 mb-2 flex items-end justify-center">
+            <img
+              src={seller.signature}
+              alt="Signature"
+              className="absolute bottom-0 max-h-24 max-w-full object-contain"
+            />
+          </div>
+          <div className="border-t border-gray-400 pt-1">
+            <p className="text-xs text-gray-700 font-medium">{seller.name}</p>
+          </div>
+        </div>
+      )}
+
       <section className="invoice-footer text-xs mt-6">
         <div className="text-[10px] text-gray-600 self-start">
           {settings.footerText || "Thank you for your business."}

@@ -24,6 +24,7 @@ import useInvoice from "./hooks/useInvoice.js";
 import { storage } from "./services/storage";
 import { auth } from "./services/auth";
 import defaultInvoice from "./data/defaultInvoice";
+import generateInvoiceNumber from "./utils/generateInvoiceNumber.js";
 
 export default function App() {
   const navigate = useNavigate();
@@ -183,8 +184,16 @@ export default function App() {
 
   const handleResetInvoice = useCallback(() => {
     // Keep current settings but reset content
+    const freshInvoice = JSON.parse(JSON.stringify(defaultInvoice));
+    freshInvoice.details.number = generateInvoiceNumber();
+    
+    // Ensure dates are current (fix for long-running tabs)
+    const today = new Date().toISOString().slice(0, 10);
+    freshInvoice.details.invoiceDate = today;
+    freshInvoice.details.dueDate = today;
+
     setInvoice((prev) => ({
-      ...JSON.parse(JSON.stringify(defaultInvoice)),
+      ...freshInvoice,
       settings: prev.settings,
     }));
   }, [setInvoice]);
@@ -306,7 +315,7 @@ export default function App() {
 
     try {
       const contacts = await storage.getContacts();
-      if (invoice.seller.name && invoice.seller.saveToDatabase !== false) {
+      if (invoice.seller.name) {
         const sellerExists = contacts.some(
           (c) =>
             c.type === "seller" &&
@@ -331,7 +340,7 @@ export default function App() {
           }
         }
       }
-      if (invoice.customer.name && invoice.customer.saveToDatabase !== false) {
+      if (invoice.customer.name) {
         const customerExists = contacts.some(
           (c) =>
             c.type === "customer" &&

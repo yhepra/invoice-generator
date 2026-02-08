@@ -8,7 +8,6 @@ export default function CustomerForm({ customer, onChange, settings }) {
   const [suggestions, setSuggestions] = useState([])
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
-  const [isExisting, setIsExisting] = useState(false)
   const wrapperRef = useRef(null)
   
   const t = (key) => getTranslation(settings?.language, key);
@@ -36,9 +35,8 @@ export default function CustomerForm({ customer, onChange, settings }) {
   }, [])
 
   const handleNameChange = (e) => {
-    onChange({ name: e.target.value, saveToDatabase: true })
+    onChange({ name: e.target.value })
     setShowSuggestions(true)
-    setIsExisting(false)
   }
 
   const handleSelectSuggestion = (contact) => {
@@ -46,11 +44,9 @@ export default function CustomerForm({ customer, onChange, settings }) {
       name: contact.name,
       address: contact.address,
       phone: contact.phone,
-      email: contact.email,
-      saveToDatabase: false
+      email: contact.email
     })
     setShowSuggestions(false)
-    setIsExisting(true)
   }
 
   const filteredSuggestions = suggestions.filter(
@@ -98,20 +94,6 @@ export default function CustomerForm({ customer, onChange, settings }) {
           </ul>
         )}
       </div>
-      {!isExisting && customer.name && (
-        <div className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            id="saveCustomer"
-            checked={customer.saveToDatabase !== false}
-            onChange={(e) => onChange({ saveToDatabase: e.target.checked })}
-            className="h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"
-          />
-          <label htmlFor="saveCustomer" className="text-sm text-gray-600 cursor-pointer select-none">
-            {t("saveToDatabase")}
-          </label>
-        </div>
-      )}
       <textarea
         value={customer.address}
         onChange={(e) => onChange({ address: e.target.value })}

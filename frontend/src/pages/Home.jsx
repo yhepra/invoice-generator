@@ -48,7 +48,7 @@ export default function Home({
       const contacts = await storage.getContacts()
       
       // Check and save Seller
-      if (invoice.seller.name && invoice.seller.saveToDatabase !== false) {
+      if (invoice.seller.name) {
         const sellerExists = contacts.some(
           c => c.type === 'seller' && c.name.toLowerCase() === invoice.seller.name.toLowerCase()
         )
@@ -61,7 +61,7 @@ export default function Home({
       }
 
       // Check and save Customer
-      if (invoice.customer.name && invoice.customer.saveToDatabase !== false) {
+      if (invoice.customer.name) {
         const customerExists = contacts.some(
           c => c.type === 'customer' && c.name.toLowerCase() === invoice.customer.name.toLowerCase()
         )

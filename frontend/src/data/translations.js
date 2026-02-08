@@ -40,6 +40,10 @@ export const translations = {
     logo: "Logo",
     uploadLogo: "Upload Logo",
     removeLogo: "Remove Logo",
+    signature: "Signature",
+    uploadSignature: "Upload Signature",
+    removeSignature: "Remove Signature",
+    useThisSignature: "Use this signature",
     clickToChange: "Click to change",
     dragDropOrClick: "Drag and drop or click to upload",
     headerTitle: "Header Title",
@@ -52,7 +56,6 @@ export const translations = {
     itemName: "Item Name",
     generalSettings: "General Settings",
     contactsManagement: "Contacts Management",
-    contacts: "Contacts",
     customers: "Customers",
     sellers: "Sellers",
     savedContacts: "Saved Contacts",
@@ -91,6 +94,7 @@ export const translations = {
     logout: "Logout",
     upgradeToPremium: "Upgrade to Premium",
     loginRegister: "Login / Register",
+    switchLanguage: "Switch Language",
 
     // History
     historyTitle: "Invoice History",
@@ -272,8 +276,6 @@ export const translations = {
       "Join thousands of freelancers and small business owners today.",
     ctaButton: "Start for Free",
 
-    saveToDatabase: "Save to database",
-    
     // Auth
     signInTitle: "Sign in to your account",
     or: "Or",
@@ -335,6 +337,10 @@ export const translations = {
     logo: "Logo",
     uploadLogo: "Unggah Logo",
     removeLogo: "Hapus Logo",
+    signature: "Tanda Tangan",
+    uploadSignature: "Unggah Tanda Tangan",
+    removeSignature: "Hapus Tanda Tangan",
+    useThisSignature: "Gunakan tanda tangan ini",
     clickToChange: "Klik untuk mengubah",
     dragDropOrClick: "Geser file atau klik untuk mengunggah",
     headerTitle: "Judul Header",
@@ -347,7 +353,6 @@ export const translations = {
     itemName: "Nama Barang",
     generalSettings: "Pengaturan Umum",
     contactsManagement: "Manajemen Kontak",
-    contacts: "Kontak",
     customers: "Pelanggan",
     sellers: "Penjual",
     savedContacts: "Kontak Tersimpan",
@@ -563,8 +568,6 @@ export const translations = {
     ctaSubtitle:
       "Bergabunglah dengan ribuan pekerja lepas dan pemilik bisnis kecil hari ini.",
     ctaButton: "Mulai Gratis",
-
-    saveToDatabase: "Simpan ke database",
 
     // Auth
     signInTitle: "Masuk ke akun Anda",
