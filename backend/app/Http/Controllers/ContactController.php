@@ -23,8 +23,10 @@ class ContactController extends Controller
 
         $user = Auth::user();
         if ($user->plan === 'free') {
+            $limit = $request->type === 'seller' ? 1 : 5;
             $count = Contact::where('user_id', $user->id)->where('type', $request->type)->count();
-            if ($count >= 5) {
+            
+            if ($count >= $limit) {
                 return response()->json(['message' => "Free plan limit reached. Upgrade to Premium for unlimited {$request->type}s."], 403);
             }
         }

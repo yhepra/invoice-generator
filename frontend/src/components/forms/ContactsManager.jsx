@@ -37,14 +37,12 @@ export default function ContactsManager({ settings, user }) {
 
     // Free Plan Limit Check
     const isFree = !user || user.plan === "free";
-    if (activeTab === "seller" && isFree) {
-      // Check if we are creating a new one (not editing existing)
-      const isCreatingNew = !formData.id;
-      // Count existing sellers
-      const sellerCount = contacts.filter(c => c.type === 'seller').length;
+    if (isFree && !formData.id) { // Only check when creating new
+      const limit = activeTab === 'seller' ? 1 : 5;
+      const currentCount = contacts.filter(c => c.type === activeTab).length;
       
-      if (isCreatingNew && sellerCount >= 1) {
-        alert(t("freePlanSellerLimit") || "Free plan limit reached: You can only save 1 seller contact.");
+      if (currentCount >= limit) {
+        alert(`Free plan limit reached: You can only save ${limit} ${activeTab} contact(s).`);
         return;
       }
     }

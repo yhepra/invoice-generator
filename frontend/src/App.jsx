@@ -275,6 +275,52 @@ export default function App() {
     return true;
   };
 
+  const saveContactsFromInvoice = async (currentInvoice) => {
+    try {
+      const contacts = await storage.getContacts();
+      const isFree = !user || user.plan === "free";
+
+      const processContact = async (data, type) => {
+        if (!data.name) return;
+
+        const existing = contacts.find(
+          (c) =>
+            c.type === type &&
+            c.name.toLowerCase() === data.name.toLowerCase(),
+        );
+
+        if (existing) {
+          // Update existing
+          await storage.saveContact({
+            ...data,
+            type,
+            id: existing.id,
+          });
+        } else {
+          // Create new
+          const limit = type === "seller" ? 1 : 5;
+          const count = contacts.filter((c) => c.type === type).length;
+          if (isFree && count >= limit) {
+            return;
+          }
+          await storage.saveContact({
+            ...data,
+            type,
+          });
+        }
+      };
+
+      if (currentInvoice.seller.name) {
+        await processContact(currentInvoice.seller, "seller");
+      }
+      if (currentInvoice.customer.name) {
+        await processContact(currentInvoice.customer, "customer");
+      }
+    } catch (error) {
+      console.error("Error auto-saving contacts:", error);
+    }
+  };
+
   const handleSaveInvoice = async (showSuccessToast = true) => {
     if (!user) {
       setPendingAction("save");
@@ -290,6 +336,10 @@ export default function App() {
     try {
       const savedInvoice = await storage.saveInvoice(invoice);
       setInvoice((prev) => ({ ...prev, historyId: savedInvoice.historyId }));
+
+      // Auto-save contacts (create or update)
+      await saveContactsFromInvoice(invoice);
+
       if (showSuccessToast) showToast("Invoice saved to history!", "success");
 
       // Update URL to /edit/:id if not already
@@ -312,50 +362,6 @@ export default function App() {
 
     const saved = await handleSaveInvoice(false);
     if (!saved) return;
-
-    try {
-      const contacts = await storage.getContacts();
-      if (invoice.seller.name) {
-        const sellerExists = contacts.some(
-          (c) =>
-            c.type === "seller" &&
-            c.name.toLowerCase() === invoice.seller.name.toLowerCase(),
-        );
-
-        // Check for free plan limit
-        const isFree = !user || user.plan === "free";
-        const sellerCount = contacts.filter((c) => c.type === "seller").length;
-
-        if (!sellerExists) {
-          if (isFree && sellerCount >= 1) {
-            showToast(
-              "Free plan limit reached: Seller contact was not saved.",
-              "info",
-            );
-          } else {
-            await storage.saveContact({
-              ...invoice.seller,
-              type: "seller",
-            });
-          }
-        }
-      }
-      if (invoice.customer.name) {
-        const customerExists = contacts.some(
-          (c) =>
-            c.type === "customer" &&
-            c.name.toLowerCase() === invoice.customer.name.toLowerCase(),
-        );
-        if (!customerExists) {
-          await storage.saveContact({
-            ...invoice.customer,
-            type: "customer",
-          });
-        }
-      }
-    } catch (error) {
-      console.error("Error auto-saving contacts:", error);
-    }
 
     downloadPDF();
   };

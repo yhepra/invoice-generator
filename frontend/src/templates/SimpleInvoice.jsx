@@ -34,7 +34,7 @@ export default function SimpleInvoice({ invoice, user }) {
             <img
               src={seller.logo}
               alt="Logo"
-              className="h-24 w-24 object-contain"
+              className="h-24 w-auto max-w-[150px] object-contain"
             />
           )}
           <div>
