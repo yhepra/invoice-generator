@@ -1,6 +1,14 @@
 import React, { useState, useEffect } from "react";
+import * as XLSX from "xlsx";
 import adminService from "../services/admin";
-import { Users, Crown, Activity, FileText, DollarSign } from "lucide-react";
+import {
+  Users,
+  Crown,
+  Activity,
+  FileText,
+  DollarSign,
+  Download,
+} from "lucide-react";
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("stats");
@@ -72,6 +80,42 @@ const AdminDashboard = () => {
     }
   };
 
+  const handleExport = (type) => {
+    let data = [];
+    let filename = "";
+
+    if (type === "users") {
+      data = users.map((user) => ({
+        Name: user.name,
+        Email: user.email,
+        Plan: user.plan,
+        Expires:
+          user.plan === "premium" && user.subscription_expires_at
+            ? new Date(user.subscription_expires_at).toLocaleDateString()
+            : "-",
+        Role: user.role,
+        Invoices: user.invoices_count,
+        Joined: new Date(user.created_at).toLocaleDateString(),
+      }));
+      filename = "users_export.xlsx";
+    } else if (type === "payments") {
+      data = payments.map((payment) => ({
+        User: payment.user?.name || "N/A",
+        Email: payment.user?.email || "N/A",
+        Amount: payment.amount,
+        Status: payment.status,
+        Method: payment.payment_method,
+        Date: new Date(payment.created_at).toLocaleDateString(),
+      }));
+      filename = "payments_export.xlsx";
+    }
+
+    const worksheet = XLSX.utils.json_to_sheet(data);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
+    XLSX.writeFile(workbook, filename);
+  };
+
   return (
     <div className="container mx-auto p-6 max-w-7xl">
       <h1 className="text-3xl font-bold mb-6 text-slate-800">
@@ -109,36 +153,41 @@ const AdminDashboard = () => {
             title="Total Users"
             value={stats.total_users}
             icon={Users}
-            color="bg-blue-100"
-            iconColor="text-blue-600"
+            gradient="bg-gradient-to-br from-blue-500 to-blue-600"
+            iconWrapperClass="bg-blue-400/30"
+            titleClass="text-blue-100"
           />
           <StatCard
             title="Premium Users"
             value={stats.premium_users}
             icon={Crown}
-            color="bg-amber-100"
-            iconColor="text-amber-600"
+            gradient="bg-gradient-to-br from-amber-500 to-amber-600"
+            iconWrapperClass="bg-amber-400/30"
+            titleClass="text-amber-100"
           />
           <StatCard
             title="Active Users (30d)"
             value={stats.active_users}
             icon={Activity}
-            color="bg-emerald-100"
-            iconColor="text-emerald-600"
+            gradient="bg-gradient-to-br from-emerald-500 to-emerald-600"
+            iconWrapperClass="bg-emerald-400/30"
+            titleClass="text-emerald-100"
           />
           <StatCard
             title="Total Invoices"
             value={stats.total_invoices}
             icon={FileText}
-            color="bg-purple-100"
-            iconColor="text-purple-600"
+            gradient="bg-gradient-to-br from-purple-500 to-purple-600"
+            iconWrapperClass="bg-purple-400/30"
+            titleClass="text-purple-100"
           />
           <StatCard
             title="Total Revenue"
             value={`Rp ${parseInt(stats.total_revenue).toLocaleString()}`}
             icon={DollarSign}
-            color="bg-rose-100"
-            iconColor="text-rose-600"
+            gradient="bg-gradient-to-br from-rose-500 to-rose-600"
+            iconWrapperClass="bg-rose-400/30"
+            titleClass="text-rose-100"
           />
         </div>
       )}
@@ -159,6 +208,13 @@ const AdminDashboard = () => {
               className="bg-blue-600 text-white px-4 py-2 rounded"
             >
               Search
+            </button>
+            <button
+              onClick={() => handleExport("users")}
+              className="bg-green-600 text-white px-4 py-2 rounded flex items-center gap-2"
+            >
+              <Download size={18} />
+              Export
             </button>
           </div>
           <div className="overflow-x-auto bg-white rounded-lg shadow">
@@ -269,6 +325,15 @@ const AdminDashboard = () => {
 
       {!loading && !error && activeTab === "payments" && (
         <div>
+          <div className="flex justify-end mb-4">
+            <button
+              onClick={() => handleExport("payments")}
+              className="bg-green-600 text-white px-4 py-2 rounded flex items-center gap-2"
+            >
+              <Download size={18} />
+              Export
+            </button>
+          </div>
           <div className="overflow-x-auto bg-white rounded-lg shadow">
             <table className="w-full text-left text-sm">
               <thead className="bg-slate-50 border-b">
@@ -332,14 +397,29 @@ const AdminDashboard = () => {
   );
 };
 
-const StatCard = ({ title, value, icon: Icon, color, iconColor }) => (
-  <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 flex items-center justify-between transition-all hover:shadow-md">
-    <div>
-      <h3 className="text-slate-500 text-sm font-medium mb-1">{title}</h3>
-      <div className="text-2xl font-bold text-slate-800">{value}</div>
+const StatCard = ({
+  title,
+  value,
+  icon: Icon,
+  gradient,
+  iconWrapperClass,
+  titleClass,
+}) => (
+  <div
+    className={`relative overflow-hidden rounded-xl ${gradient} p-6 text-white shadow-lg transition-transform hover:scale-105`}
+  >
+    <div className="relative z-10">
+      <div className="flex items-center gap-2">
+        <div className={`rounded-full ${iconWrapperClass} p-2`}>
+          <Icon size={20} className="text-white" />
+        </div>
+        <p className={`font-medium ${titleClass}`}>{title}</p>
+      </div>
+      <p className="mt-4 text-3xl font-bold tracking-tight">{value}</p>
     </div>
-    <div className={`p-3 rounded-lg ${color}`}>
-      <Icon size={24} className={iconColor} />
+    {/* Decorative Icon */}
+    <div className="absolute -right-6 -bottom-6 opacity-10">
+      <Icon size={128} />
     </div>
   </div>
 );
