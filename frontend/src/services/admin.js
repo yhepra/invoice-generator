@@ -1,6 +1,7 @@
 import axios from "axios";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000/api";
+const API_URL = "https://be.generateinvoice.id/api";
+// const API_URL = import.meta.env.VITE_API_URL || "https://be.generateinvoice.id/api";
 
 const getHeaders = () => {
   const token = localStorage.getItem("token");
@@ -45,7 +46,7 @@ const admin = {
       const response = await axios.put(
         `${API_URL}/admin/users/${id}`,
         data,
-        getHeaders()
+        getHeaders(),
       );
       return response.data;
     } catch (error) {

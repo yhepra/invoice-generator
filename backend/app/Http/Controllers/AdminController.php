@@ -63,7 +63,21 @@ class AdminController extends Controller
             'plan' => 'sometimes|in:free,premium',
         ]);
 
+        if (isset($validated['plan'])) {
+            if ($validated['plan'] === 'premium') {
+                // If switching to premium and no expiry date set, default to 1 year
+                if (!$user->subscription_expires_at) {
+                    $user->subscription_expires_at = now()->addYear();
+                }
+            } else {
+                // If switching to free, remove expiry date
+                $user->subscription_expires_at = null;
+            }
+        }
+
         $user->update($validated);
+        // Explicitly save the subscription_expires_at change if it wasn't in $validated
+        $user->save();
         
         return response()->json($user);
     }

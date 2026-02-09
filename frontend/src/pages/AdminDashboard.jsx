@@ -102,7 +102,7 @@ const AdminDashboard = () => {
 
       {loading && <div className="text-center py-10">Loading...</div>}
 
-      {!loading && activeTab === "stats" && stats && (
+      {!loading && !error && activeTab === "stats" && stats && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <StatCard title="Total Users" value={stats.total_users} />
           <StatCard title="Premium Users" value={stats.premium_users} />
@@ -115,7 +115,7 @@ const AdminDashboard = () => {
         </div>
       )}
 
-      {!loading && activeTab === "users" && (
+      {!loading && !error && activeTab === "users" && (
         <div>
           <div className="mb-4 flex gap-2">
             <input
@@ -140,6 +140,9 @@ const AdminDashboard = () => {
                   <th className="px-6 py-4 font-medium text-gray-500">Name</th>
                   <th className="px-6 py-4 font-medium text-gray-500">Email</th>
                   <th className="px-6 py-4 font-medium text-gray-500">Plan</th>
+                  <th className="px-6 py-4 font-medium text-gray-500">
+                    Expires
+                  </th>
                   <th className="px-6 py-4 font-medium text-gray-500">Role</th>
                   <th className="px-6 py-4 font-medium text-gray-500">
                     Invoices
@@ -172,6 +175,13 @@ const AdminDashboard = () => {
                         >
                           {user.plan}
                         </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {user.plan === "premium" && user.subscription_expires_at
+                          ? new Date(
+                              user.subscription_expires_at,
+                            ).toLocaleDateString()
+                          : "-"}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {user.role}
@@ -212,7 +222,7 @@ const AdminDashboard = () => {
                 ) : (
                   <tr>
                     <td
-                      colSpan="7"
+                      colSpan="8"
                       className="px-6 py-10 text-center text-gray-500"
                     >
                       No users found.
@@ -229,7 +239,7 @@ const AdminDashboard = () => {
         </div>
       )}
 
-      {!loading && activeTab === "payments" && (
+      {!loading && !error && activeTab === "payments" && (
         <div>
           <div className="overflow-x-auto bg-white rounded-lg shadow">
             <table className="w-full text-left text-sm">
