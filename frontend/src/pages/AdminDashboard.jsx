@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import adminService from "../services/admin";
+import { Users, Crown, Activity, FileText, DollarSign } from "lucide-react";
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("stats");
@@ -104,13 +105,40 @@ const AdminDashboard = () => {
 
       {!loading && !error && activeTab === "stats" && stats && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <StatCard title="Total Users" value={stats.total_users} />
-          <StatCard title="Premium Users" value={stats.premium_users} />
-          <StatCard title="Active Users (30d)" value={stats.active_users} />
-          <StatCard title="Total Invoices" value={stats.total_invoices} />
+          <StatCard
+            title="Total Users"
+            value={stats.total_users}
+            icon={Users}
+            color="bg-blue-100"
+            iconColor="text-blue-600"
+          />
+          <StatCard
+            title="Premium Users"
+            value={stats.premium_users}
+            icon={Crown}
+            color="bg-amber-100"
+            iconColor="text-amber-600"
+          />
+          <StatCard
+            title="Active Users (30d)"
+            value={stats.active_users}
+            icon={Activity}
+            color="bg-emerald-100"
+            iconColor="text-emerald-600"
+          />
+          <StatCard
+            title="Total Invoices"
+            value={stats.total_invoices}
+            icon={FileText}
+            color="bg-purple-100"
+            iconColor="text-purple-600"
+          />
           <StatCard
             title="Total Revenue"
             value={`Rp ${parseInt(stats.total_revenue).toLocaleString()}`}
+            icon={DollarSign}
+            color="bg-rose-100"
+            iconColor="text-rose-600"
           />
         </div>
       )}
@@ -304,10 +332,15 @@ const AdminDashboard = () => {
   );
 };
 
-const StatCard = ({ title, value }) => (
-  <div className="bg-white p-6 rounded-lg shadow border border-slate-100">
-    <h3 className="text-slate-500 text-sm font-medium mb-2">{title}</h3>
-    <div className="text-3xl font-bold text-slate-800">{value}</div>
+const StatCard = ({ title, value, icon: Icon, color, iconColor }) => (
+  <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 flex items-center justify-between transition-all hover:shadow-md">
+    <div>
+      <h3 className="text-slate-500 text-sm font-medium mb-1">{title}</h3>
+      <div className="text-2xl font-bold text-slate-800">{value}</div>
+    </div>
+    <div className={`p-3 rounded-lg ${color}`}>
+      <Icon size={24} className={iconColor} />
+    </div>
   </div>
 );
 
