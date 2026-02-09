@@ -145,54 +145,61 @@ const AdminDashboard = () => {
         </div>
       )}
 
-      {loading && <div className="text-center py-10">Loading...</div>}
+      {activeTab === "stats" &&
+        (loading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[...Array(4)].map((_, i) => (
+              <SkeletonCard key={i} />
+            ))}
+          </div>
+        ) : (
+          stats && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <StatCard
+                title="Total Users"
+                value={stats.total_users}
+                icon={Users}
+                gradient="bg-gradient-to-br from-blue-500 to-blue-600"
+                iconWrapperClass="bg-blue-400/30"
+                titleClass="text-blue-100"
+              />
+              <StatCard
+                title="Premium Users"
+                value={stats.premium_users}
+                icon={Crown}
+                gradient="bg-gradient-to-br from-amber-500 to-amber-600"
+                iconWrapperClass="bg-amber-400/30"
+                titleClass="text-amber-100"
+              />
+              <StatCard
+                title="Active Users (30d)"
+                value={stats.active_users}
+                icon={Activity}
+                gradient="bg-gradient-to-br from-emerald-500 to-emerald-600"
+                iconWrapperClass="bg-emerald-400/30"
+                titleClass="text-emerald-100"
+              />
+              <StatCard
+                title="Total Invoices"
+                value={stats.total_invoices}
+                icon={FileText}
+                gradient="bg-gradient-to-br from-purple-500 to-purple-600"
+                iconWrapperClass="bg-purple-400/30"
+                titleClass="text-purple-100"
+              />
+              <StatCard
+                title="Total Revenue"
+                value={`Rp ${parseInt(stats.total_revenue).toLocaleString()}`}
+                icon={DollarSign}
+                gradient="bg-gradient-to-br from-rose-500 to-rose-600"
+                iconWrapperClass="bg-rose-400/30"
+                titleClass="text-rose-100"
+              />
+            </div>
+          )
+        ))}
 
-      {!loading && !error && activeTab === "stats" && stats && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <StatCard
-            title="Total Users"
-            value={stats.total_users}
-            icon={Users}
-            gradient="bg-gradient-to-br from-blue-500 to-blue-600"
-            iconWrapperClass="bg-blue-400/30"
-            titleClass="text-blue-100"
-          />
-          <StatCard
-            title="Premium Users"
-            value={stats.premium_users}
-            icon={Crown}
-            gradient="bg-gradient-to-br from-amber-500 to-amber-600"
-            iconWrapperClass="bg-amber-400/30"
-            titleClass="text-amber-100"
-          />
-          <StatCard
-            title="Active Users (30d)"
-            value={stats.active_users}
-            icon={Activity}
-            gradient="bg-gradient-to-br from-emerald-500 to-emerald-600"
-            iconWrapperClass="bg-emerald-400/30"
-            titleClass="text-emerald-100"
-          />
-          <StatCard
-            title="Total Invoices"
-            value={stats.total_invoices}
-            icon={FileText}
-            gradient="bg-gradient-to-br from-purple-500 to-purple-600"
-            iconWrapperClass="bg-purple-400/30"
-            titleClass="text-purple-100"
-          />
-          <StatCard
-            title="Total Revenue"
-            value={`Rp ${parseInt(stats.total_revenue).toLocaleString()}`}
-            icon={DollarSign}
-            gradient="bg-gradient-to-br from-rose-500 to-rose-600"
-            iconWrapperClass="bg-rose-400/30"
-            titleClass="text-rose-100"
-          />
-        </div>
-      )}
-
-      {!loading && !error && activeTab === "users" && (
+      {activeTab === "users" && (
         <div>
           <div className="mb-4 flex gap-2">
             <input
@@ -217,113 +224,131 @@ const AdminDashboard = () => {
               Export
             </button>
           </div>
-          <div className="overflow-x-auto bg-white rounded-lg shadow">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-slate-50 border-b">
-                <tr>
-                  <th className="px-6 py-4 font-medium text-gray-500">Name</th>
-                  <th className="px-6 py-4 font-medium text-gray-500">Email</th>
-                  <th className="px-6 py-4 font-medium text-gray-500">Plan</th>
-                  <th className="px-6 py-4 font-medium text-gray-500">
-                    Expires
-                  </th>
-                  <th className="px-6 py-4 font-medium text-gray-500">Role</th>
-                  <th className="px-6 py-4 font-medium text-gray-500">
-                    Invoices
-                  </th>
-                  <th className="px-6 py-4 font-medium text-gray-500">
-                    Joined
-                  </th>
-                  <th className="px-6 py-4 font-medium text-gray-500 text-right">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {users.length > 0 ? (
-                  users.map((user) => (
-                    <tr key={user.id} className="hover:bg-slate-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {user.name}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {user.email}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        <span
-                          className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                            user.plan === "premium"
-                              ? "bg-green-100 text-green-800"
-                              : "bg-gray-100 text-gray-800"
-                          }`}
-                        >
-                          {user.plan}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {user.plan === "premium" && user.subscription_expires_at
-                          ? new Date(
-                              user.subscription_expires_at,
-                            ).toLocaleDateString()
-                          : "-"}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {user.role}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {user.invoices_count}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {new Date(user.created_at).toLocaleDateString()}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium flex gap-2 justify-end">
-                        <button
-                          onClick={() =>
-                            handleUpdateUser(user.id, {
-                              plan: user.plan === "free" ? "premium" : "free",
-                            })
-                          }
-                          className="text-blue-600 hover:text-blue-900"
-                        >
-                          Switch Plan
-                        </button>
-                        <button
-                          onClick={() =>
-                            handleUpdateUser(user.id, {
-                              role:
-                                user.role === "super_admin"
-                                  ? "user"
-                                  : "super_admin",
-                            })
-                          }
-                          className="text-amber-600 hover:text-amber-900 ml-2"
-                        >
-                          {user.role === "super_admin" ? "Demote" : "Promote"}
-                        </button>
-                      </td>
+          {loading ? (
+            <SkeletonTable cols={8} />
+          ) : (
+            <>
+              <div className="overflow-x-auto bg-white rounded-lg shadow">
+                <table className="w-full text-left text-sm">
+                  <thead className="bg-slate-50 border-b">
+                    <tr>
+                      <th className="px-6 py-4 font-medium text-gray-500">
+                        Name
+                      </th>
+                      <th className="px-6 py-4 font-medium text-gray-500">
+                        Email
+                      </th>
+                      <th className="px-6 py-4 font-medium text-gray-500">
+                        Plan
+                      </th>
+                      <th className="px-6 py-4 font-medium text-gray-500">
+                        Expires
+                      </th>
+                      <th className="px-6 py-4 font-medium text-gray-500">
+                        Role
+                      </th>
+                      <th className="px-6 py-4 font-medium text-gray-500">
+                        Invoices
+                      </th>
+                      <th className="px-6 py-4 font-medium text-gray-500">
+                        Joined
+                      </th>
+                      <th className="px-6 py-4 font-medium text-gray-500 text-right">
+                        Actions
+                      </th>
                     </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td
-                      colSpan="8"
-                      className="px-6 py-10 text-center text-gray-500"
-                    >
-                      No users found.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-          <Pagination
-            data={pagination}
-            onPageChange={(page) => fetchUsers(page)}
-          />
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {users.length > 0 ? (
+                      users.map((user) => (
+                        <tr key={user.id} className="hover:bg-slate-50">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            {user.name}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {user.email}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <span
+                              className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                user.plan === "premium"
+                                  ? "bg-green-100 text-green-800"
+                                  : "bg-gray-100 text-gray-800"
+                              }`}
+                            >
+                              {user.plan}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {user.plan === "premium" &&
+                            user.subscription_expires_at
+                              ? new Date(
+                                  user.subscription_expires_at,
+                                ).toLocaleDateString()
+                              : "-"}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {user.role}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {user.invoices_count}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {new Date(user.created_at).toLocaleDateString()}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium flex gap-2 justify-end">
+                            <button
+                              onClick={() =>
+                                handleUpdateUser(user.id, {
+                                  plan:
+                                    user.plan === "free" ? "premium" : "free",
+                                })
+                              }
+                              className="text-blue-600 hover:text-blue-900"
+                            >
+                              Switch Plan
+                            </button>
+                            <button
+                              onClick={() =>
+                                handleUpdateUser(user.id, {
+                                  role:
+                                    user.role === "super_admin"
+                                      ? "user"
+                                      : "super_admin",
+                                })
+                              }
+                              className="text-amber-600 hover:text-amber-900 ml-2"
+                            >
+                              {user.role === "super_admin"
+                                ? "Demote"
+                                : "Promote"}
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td
+                          colSpan="8"
+                          className="px-6 py-10 text-center text-gray-500"
+                        >
+                          No users found.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+              <Pagination
+                data={pagination}
+                onPageChange={(page) => fetchUsers(page)}
+              />
+            </>
+          )}
         </div>
       )}
 
-      {!loading && !error && activeTab === "payments" && (
+      {activeTab === "payments" && (
         <div>
           <div className="flex justify-end mb-4">
             <button
@@ -334,63 +359,77 @@ const AdminDashboard = () => {
               Export
             </button>
           </div>
-          <div className="overflow-x-auto bg-white rounded-lg shadow">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-slate-50 border-b">
-                <tr>
-                  <th className="p-4">User</th>
-                  <th className="p-4">Amount</th>
-                  <th className="p-4">Status</th>
-                  <th className="p-4">Method</th>
-                  <th className="p-4">Date</th>
-                </tr>
-              </thead>
-              <tbody>
-                {payments.length > 0 ? (
-                  payments.map((payment) => (
-                    <tr key={payment.id} className="border-b hover:bg-slate-50">
-                      <td className="p-4">
-                        <div className="font-medium">{payment.user?.name}</div>
-                        <div className="text-slate-500 text-xs">
-                          {payment.user?.email}
-                        </div>
-                      </td>
-                      <td className="p-4">
-                        Rp {parseInt(payment.amount).toLocaleString()}
-                      </td>
-                      <td className="p-4">
-                        <span
-                          className={`px-2 py-1 rounded text-xs ${
-                            payment.status === "PAID"
-                              ? "bg-green-100 text-green-800"
-                              : "bg-red-100 text-red-800"
-                          }`}
-                        >
-                          {payment.status}
-                        </span>
-                      </td>
-                      <td className="p-4">
-                        {payment.payment_channel} - {payment.payment_method}
-                      </td>
-                      <td className="p-4">
-                        {new Date(payment.created_at).toLocaleDateString()}
-                      </td>
+          {loading ? (
+            <SkeletonTable cols={5} />
+          ) : (
+            <>
+              <div className="overflow-x-auto bg-white rounded-lg shadow">
+                <table className="w-full text-left text-sm">
+                  <thead className="bg-slate-50 border-b">
+                    <tr>
+                      <th className="p-4">User</th>
+                      <th className="p-4">Amount</th>
+                      <th className="p-4">Status</th>
+                      <th className="p-4">Method</th>
+                      <th className="p-4">Date</th>
                     </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="5" className="p-10 text-center text-slate-500">
-                      No payments found.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-          <Pagination
-            data={pagination}
-            onPageChange={(page) => fetchPayments(page)}
-          />
+                  </thead>
+                  <tbody>
+                    {payments.length > 0 ? (
+                      payments.map((payment) => (
+                        <tr
+                          key={payment.id}
+                          className="border-b hover:bg-slate-50"
+                        >
+                          <td className="p-4">
+                            <div className="font-medium">
+                              {payment.user?.name}
+                            </div>
+                            <div className="text-slate-500 text-xs">
+                              {payment.user?.email}
+                            </div>
+                          </td>
+                          <td className="p-4">
+                            Rp {parseInt(payment.amount).toLocaleString()}
+                          </td>
+                          <td className="p-4">
+                            <span
+                              className={`px-2 py-1 rounded text-xs ${
+                                payment.status === "PAID"
+                                  ? "bg-green-100 text-green-800"
+                                  : "bg-red-100 text-red-800"
+                              }`}
+                            >
+                              {payment.status}
+                            </span>
+                          </td>
+                          <td className="p-4">
+                            {payment.payment_channel} - {payment.payment_method}
+                          </td>
+                          <td className="p-4">
+                            {new Date(payment.created_at).toLocaleDateString()}
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td
+                          colSpan="5"
+                          className="p-10 text-center text-slate-500"
+                        >
+                          No payments found.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+              <Pagination
+                data={pagination}
+                onPageChange={(page) => fetchPayments(page)}
+              />
+            </>
+          )}
         </div>
       )}
     </div>
@@ -421,6 +460,43 @@ const StatCard = ({
     <div className="absolute -right-6 -bottom-6 opacity-10">
       <Icon size={128} />
     </div>
+  </div>
+);
+
+const SkeletonCard = () => (
+  <div className="relative overflow-hidden rounded-xl bg-gray-200 p-6 shadow-lg animate-pulse h-40">
+    <div className="flex items-center gap-2 mb-4">
+      <div className="h-10 w-10 rounded-full bg-gray-300"></div>
+      <div className="h-4 w-24 bg-gray-300 rounded"></div>
+    </div>
+    <div className="h-8 w-16 bg-gray-300 rounded"></div>
+  </div>
+);
+
+const SkeletonTable = ({ cols = 5, rows = 5 }) => (
+  <div className="overflow-x-auto bg-white rounded-lg shadow">
+    <table className="w-full text-left text-sm">
+      <thead className="bg-slate-50 border-b">
+        <tr>
+          {[...Array(cols)].map((_, i) => (
+            <th key={i} className="px-6 py-4">
+              <div className="h-4 bg-gray-200 rounded w-20 animate-pulse"></div>
+            </th>
+          ))}
+        </tr>
+      </thead>
+      <tbody className="divide-y divide-gray-200">
+        {[...Array(rows)].map((_, i) => (
+          <tr key={i}>
+            {[...Array(cols)].map((_, j) => (
+              <td key={j} className="px-6 py-4 whitespace-nowrap">
+                <div className="h-4 bg-gray-100 rounded w-full animate-pulse"></div>
+              </td>
+            ))}
+          </tr>
+        ))}
+      </tbody>
+    </table>
   </div>
 );
 
