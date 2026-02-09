@@ -147,55 +147,66 @@ const AdminDashboard = () => {
 
       {activeTab === "stats" &&
         (loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[...Array(4)].map((_, i) => (
-              <SkeletonCard key={i} />
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+              {[...Array(3)].map((_, i) => (
+                <SkeletonCard key={`top-${i}`} />
+              ))}
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {[...Array(2)].map((_, i) => (
+                <SkeletonCard key={`bottom-${i}`} />
+              ))}
+            </div>
+          </>
         ) : (
           stats && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <StatCard
-                title="Total Users"
-                value={stats.total_users}
-                icon={Users}
-                gradient="bg-gradient-to-br from-blue-500 to-blue-600"
-                iconWrapperClass="bg-blue-400/30"
-                titleClass="text-blue-100"
-              />
-              <StatCard
-                title="Premium Users"
-                value={stats.premium_users}
-                icon={Crown}
-                gradient="bg-gradient-to-br from-amber-500 to-amber-600"
-                iconWrapperClass="bg-amber-400/30"
-                titleClass="text-amber-100"
-              />
-              <StatCard
-                title="Active Users (30d)"
-                value={stats.active_users}
-                icon={Activity}
-                gradient="bg-gradient-to-br from-emerald-500 to-emerald-600"
-                iconWrapperClass="bg-emerald-400/30"
-                titleClass="text-emerald-100"
-              />
-              <StatCard
-                title="Total Invoices"
-                value={stats.total_invoices}
-                icon={FileText}
-                gradient="bg-gradient-to-br from-purple-500 to-purple-600"
-                iconWrapperClass="bg-purple-400/30"
-                titleClass="text-purple-100"
-              />
-              <StatCard
-                title="Total Revenue"
-                value={`Rp ${parseInt(stats.total_revenue).toLocaleString()}`}
-                icon={DollarSign}
-                gradient="bg-gradient-to-br from-rose-500 to-rose-600"
-                iconWrapperClass="bg-rose-400/30"
-                titleClass="text-rose-100"
-              />
-            </div>
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <StatCard
+                  title="Total Users"
+                  value={stats.total_users}
+                  icon={Users}
+                  gradient="bg-gradient-to-br from-blue-500 to-blue-600"
+                  iconWrapperClass="bg-blue-400/30"
+                  titleClass="text-blue-100"
+                />
+                <StatCard
+                  title="Premium Users"
+                  value={stats.premium_users}
+                  icon={Crown}
+                  gradient="bg-gradient-to-br from-amber-500 to-amber-600"
+                  iconWrapperClass="bg-amber-400/30"
+                  titleClass="text-amber-100"
+                />
+                <StatCard
+                  title="Active Users (30d)"
+                  value={stats.active_users}
+                  icon={Activity}
+                  gradient="bg-gradient-to-br from-emerald-500 to-emerald-600"
+                  iconWrapperClass="bg-emerald-400/30"
+                  titleClass="text-emerald-100"
+                />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <StatCard
+                  title="Total Invoices"
+                  value={stats.total_invoices}
+                  icon={FileText}
+                  gradient="bg-gradient-to-br from-purple-500 to-purple-600"
+                  iconWrapperClass="bg-purple-400/30"
+                  titleClass="text-purple-100"
+                />
+                <StatCard
+                  title="Total Revenue"
+                  value={`Rp ${parseInt(stats.total_revenue).toLocaleString()}`}
+                  icon={DollarSign}
+                  gradient="bg-gradient-to-br from-rose-500 to-rose-600"
+                  iconWrapperClass="bg-rose-400/30"
+                  titleClass="text-rose-100"
+                />
+              </div>
+            </>
           )
         ))}
 
