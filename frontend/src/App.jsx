@@ -370,6 +370,11 @@ export default function App() {
     setUser(user);
     showToast(`Welcome back, ${user.name}!`, "success");
 
+    if (user.role === "super_admin") {
+      navigate("/admin");
+      return;
+    }
+
     if (pendingAction) {
       navigate("/create"); // Or back to where they were
       // Handle pending action logic if needed
@@ -428,6 +433,7 @@ export default function App() {
         onGoHistory={() => navigate("/history")}
         onGoUpgrade={() => navigate("/upgrade")}
         onGoProfile={() => navigate("/profile")}
+        onGoAdmin={() => navigate("/admin")}
         user={user}
         onLogin={() => navigate("/login")}
         onLogout={handleLogout}

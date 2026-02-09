@@ -45,7 +45,7 @@ class AdminController extends Controller
             });
         }
 
-        if ($request->has('plan')) {
+        if ($request->has('plan') && !empty($request->plan)) {
             $query->where('plan', $request->plan);
         }
 

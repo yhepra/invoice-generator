@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
+import { Navigate } from "react-router-dom";
 import { storage } from "../services/storage";
 import formatCurrency from "../utils/formatCurrency";
 import Button from "../components/common/Button";
@@ -36,6 +37,10 @@ export default function Landing({
       loadData();
     }
   }, [user]);
+
+  if (user && user.role === "super_admin") {
+    return <Navigate to="/admin" replace />;
+  }
 
   if (user) {
     return (

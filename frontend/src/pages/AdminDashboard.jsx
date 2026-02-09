@@ -9,6 +9,7 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(false);
   const [pagination, setPagination] = useState({});
   const [search, setSearch] = useState("");
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     if (activeTab === "stats") fetchStats();
@@ -18,11 +19,13 @@ const AdminDashboard = () => {
 
   const fetchStats = async () => {
     setLoading(true);
+    setError(null);
     try {
       const data = await adminService.getStats();
       setStats(data);
     } catch (error) {
       console.error(error);
+      setError("Failed to load stats. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -30,12 +33,14 @@ const AdminDashboard = () => {
 
   const fetchUsers = async (page = 1) => {
     setLoading(true);
+    setError(null);
     try {
       const data = await adminService.getUsers(page, search);
       setUsers(data.data);
       setPagination(data);
     } catch (error) {
       console.error(error);
+      setError("Failed to load users. Please check your connection.");
     } finally {
       setLoading(false);
     }
@@ -43,12 +48,14 @@ const AdminDashboard = () => {
 
   const fetchPayments = async (page = 1) => {
     setLoading(true);
+    setError(null);
     try {
       const data = await adminService.getPayments(page);
       setPayments(data.data);
       setPagination(data);
     } catch (error) {
       console.error(error);
+      setError("Failed to load payments.");
     } finally {
       setLoading(false);
     }
@@ -66,7 +73,9 @@ const AdminDashboard = () => {
 
   return (
     <div className="container mx-auto p-6 max-w-7xl">
-      <h1 className="text-3xl font-bold mb-6 text-slate-800">Admin Dashboard</h1>
+      <h1 className="text-3xl font-bold mb-6 text-slate-800">
+        Admin Dashboard
+      </h1>
 
       {/* Tabs */}
       <div className="flex gap-4 mb-6 border-b border-slate-200">
@@ -84,6 +93,12 @@ const AdminDashboard = () => {
           </button>
         ))}
       </div>
+
+      {error && (
+        <div className="bg-red-50 text-red-600 p-4 rounded-md mb-6">
+          {error}
+        </div>
+      )}
 
       {loading && <div className="text-center py-10">Loading...</div>}
 
@@ -122,55 +137,88 @@ const AdminDashboard = () => {
             <table className="w-full text-left text-sm">
               <thead className="bg-slate-50 border-b">
                 <tr>
-                  <th className="p-4">Name</th>
-                  <th className="p-4">Email</th>
-                  <th className="p-4">Plan</th>
-                  <th className="p-4">Role</th>
-                  <th className="p-4">Invoices</th>
-                  <th className="p-4">Joined</th>
-                  <th className="p-4">Actions</th>
+                  <th className="px-6 py-4 font-medium text-gray-500">Name</th>
+                  <th className="px-6 py-4 font-medium text-gray-500">Email</th>
+                  <th className="px-6 py-4 font-medium text-gray-500">Plan</th>
+                  <th className="px-6 py-4 font-medium text-gray-500">Role</th>
+                  <th className="px-6 py-4 font-medium text-gray-500">
+                    Invoices
+                  </th>
+                  <th className="px-6 py-4 font-medium text-gray-500">
+                    Joined
+                  </th>
+                  <th className="px-6 py-4 font-medium text-gray-500 text-right">
+                    Actions
+                  </th>
                 </tr>
               </thead>
-              <tbody>
-                {users.map((user) => (
-                  <tr key={user.id} className="border-b hover:bg-slate-50">
-                    <td className="p-4 font-medium">{user.name}</td>
-                    <td className="p-4">{user.email}</td>
-                    <td className="p-4">
-                      <span
-                        className={`px-2 py-1 rounded text-xs ${
-                          user.plan === "premium"
-                            ? "bg-amber-100 text-amber-800"
-                            : "bg-slate-100 text-slate-600"
-                        }`}
-                      >
-                        {user.plan}
-                      </span>
-                    </td>
-                    <td className="p-4">{user.role}</td>
-                    <td className="p-4">{user.invoices_count}</td>
-                    <td className="p-4">
-                      {new Date(user.created_at).toLocaleDateString()}
-                    </td>
-                    <td className="p-4 flex gap-2">
-                      <button
-                        onClick={() =>
-                          handleUpdateUser(user.id, {
-                            role:
-                              user.role === "super_admin"
-                                ? "user"
-                                : "super_admin",
-                          })
-                        }
-                        className="text-xs bg-slate-200 px-2 py-1 rounded hover:bg-slate-300"
-                      >
-                        {user.role === "super_admin"
-                          ? "Demote to User"
-                          : "Promote to Admin"}
-                      </button>
+              <tbody className="divide-y divide-gray-200">
+                {users.length > 0 ? (
+                  users.map((user) => (
+                    <tr key={user.id} className="hover:bg-slate-50">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        {user.name}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {user.email}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <span
+                          className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                            user.plan === "premium"
+                              ? "bg-green-100 text-green-800"
+                              : "bg-gray-100 text-gray-800"
+                          }`}
+                        >
+                          {user.plan}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {user.role}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {user.invoices_count}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {new Date(user.created_at).toLocaleDateString()}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium flex gap-2 justify-end">
+                        <button
+                          onClick={() =>
+                            handleUpdateUser(user.id, {
+                              plan: user.plan === "free" ? "premium" : "free",
+                            })
+                          }
+                          className="text-blue-600 hover:text-blue-900"
+                        >
+                          Switch Plan
+                        </button>
+                        <button
+                          onClick={() =>
+                            handleUpdateUser(user.id, {
+                              role:
+                                user.role === "super_admin"
+                                  ? "user"
+                                  : "super_admin",
+                            })
+                          }
+                          className="text-amber-600 hover:text-amber-900 ml-2"
+                        >
+                          {user.role === "super_admin" ? "Demote" : "Promote"}
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td
+                      colSpan="7"
+                      className="px-6 py-10 text-center text-gray-500"
+                    >
+                      No users found.
                     </td>
                   </tr>
-                ))}
+                )}
               </tbody>
             </table>
           </div>
@@ -195,36 +243,44 @@ const AdminDashboard = () => {
                 </tr>
               </thead>
               <tbody>
-                {payments.map((payment) => (
-                  <tr key={payment.id} className="border-b hover:bg-slate-50">
-                    <td className="p-4">
-                      <div className="font-medium">{payment.user?.name}</div>
-                      <div className="text-slate-500 text-xs">
-                        {payment.user?.email}
-                      </div>
-                    </td>
-                    <td className="p-4">
-                      Rp {parseInt(payment.amount).toLocaleString()}
-                    </td>
-                    <td className="p-4">
-                      <span
-                        className={`px-2 py-1 rounded text-xs ${
-                          payment.status === "PAID"
-                            ? "bg-green-100 text-green-800"
-                            : "bg-red-100 text-red-800"
-                        }`}
-                      >
-                        {payment.status}
-                      </span>
-                    </td>
-                    <td className="p-4">
-                      {payment.payment_channel} - {payment.payment_method}
-                    </td>
-                    <td className="p-4">
-                      {new Date(payment.created_at).toLocaleDateString()}
+                {payments.length > 0 ? (
+                  payments.map((payment) => (
+                    <tr key={payment.id} className="border-b hover:bg-slate-50">
+                      <td className="p-4">
+                        <div className="font-medium">{payment.user?.name}</div>
+                        <div className="text-slate-500 text-xs">
+                          {payment.user?.email}
+                        </div>
+                      </td>
+                      <td className="p-4">
+                        Rp {parseInt(payment.amount).toLocaleString()}
+                      </td>
+                      <td className="p-4">
+                        <span
+                          className={`px-2 py-1 rounded text-xs ${
+                            payment.status === "PAID"
+                              ? "bg-green-100 text-green-800"
+                              : "bg-red-100 text-red-800"
+                          }`}
+                        >
+                          {payment.status}
+                        </span>
+                      </td>
+                      <td className="p-4">
+                        {payment.payment_channel} - {payment.payment_method}
+                      </td>
+                      <td className="p-4">
+                        {new Date(payment.created_at).toLocaleDateString()}
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="5" className="p-10 text-center text-slate-500">
+                      No payments found.
                     </td>
                   </tr>
-                ))}
+                )}
               </tbody>
             </table>
           </div>
@@ -264,8 +320,8 @@ const Pagination = ({ data, onPageChange }) => {
             link.active
               ? "bg-blue-600 text-white"
               : !link.url
-              ? "text-slate-300"
-              : "bg-white border hover:bg-slate-50"
+                ? "text-slate-300"
+                : "bg-white border hover:bg-slate-50"
           }`}
           dangerouslySetInnerHTML={{ __html: link.label }}
         />

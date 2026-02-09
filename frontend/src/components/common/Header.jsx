@@ -86,7 +86,7 @@ export default function Header({
 
         {/* Desktop Navigation */}
         <div className="hidden md:flex items-center gap-3">
-          {user && (
+          {user && user.role !== "super_admin" && (
             <button
               onClick={onGoHome}
               className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 hover:text-brand-600"
@@ -176,107 +176,111 @@ export default function Header({
                 {isMenuOpen && (
                   <div className="absolute right-0 mt-2 w-56 origin-top-right rounded-lg bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
                     <div className="py-1">
-                      <button
-                        onClick={() => {
-                          onGoEditor();
-                          setIsMenuOpen(false);
-                        }}
-                        className="group flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-brand-600"
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="mr-3 h-5 w-5 text-gray-400 group-hover:text-brand-500"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M12 4v16m8-8H4"
-                          />
-                        </svg>
-                        {t("createInvoice")}
-                      </button>
+                      {user.role !== "super_admin" && (
+                        <>
+                          <button
+                            onClick={() => {
+                              onGoEditor();
+                              setIsMenuOpen(false);
+                            }}
+                            className="group flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-brand-600"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="mr-3 h-5 w-5 text-gray-400 group-hover:text-brand-500"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M12 4v16m8-8H4"
+                              />
+                            </svg>
+                            {t("createInvoice")}
+                          </button>
 
-                      <button
-                        onClick={() => {
-                          onGoHistory();
-                          setIsMenuOpen(false);
-                        }}
-                        className="group flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-brand-600"
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="mr-3 h-5 w-5 text-gray-400 group-hover:text-brand-500"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                          />
-                        </svg>
-                        {t("history")}
-                      </button>
+                          <button
+                            onClick={() => {
+                              onGoHistory();
+                              setIsMenuOpen(false);
+                            }}
+                            className="group flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-brand-600"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="mr-3 h-5 w-5 text-gray-400 group-hover:text-brand-500"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                              />
+                            </svg>
+                            {t("history")}
+                          </button>
 
-                      <button
-                        onClick={() => {
-                          onGoContacts();
-                          setIsMenuOpen(false);
-                        }}
-                        className="group flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-brand-600"
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="mr-3 h-5 w-5 text-gray-400 group-hover:text-brand-500"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-                          />
-                        </svg>
-                        {t("contactsManagement")}
-                      </button>
+                          <button
+                            onClick={() => {
+                              onGoContacts();
+                              setIsMenuOpen(false);
+                            }}
+                            className="group flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-brand-600"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="mr-3 h-5 w-5 text-gray-400 group-hover:text-brand-500"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                              />
+                            </svg>
+                            {t("contactsManagement")}
+                          </button>
 
-                      <button
-                        onClick={() => {
-                          onGoSettings();
-                          setIsMenuOpen(false);
-                        }}
-                        className="group flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-brand-600"
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="mr-3 h-5 w-5 text-gray-400 group-hover:text-brand-500"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-                          />
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                          />
-                        </svg>
-                        {t("settings")}
-                      </button>
+                          <button
+                            onClick={() => {
+                              onGoSettings();
+                              setIsMenuOpen(false);
+                            }}
+                            className="group flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-brand-600"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="mr-3 h-5 w-5 text-gray-400 group-hover:text-brand-500"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+                              />
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                              />
+                            </svg>
+                            {t("settings")}
+                          </button>
+                        </>
+                      )}
 
                       {user.role === "super_admin" && (
                         <button
@@ -470,55 +474,71 @@ export default function Header({
                   </div>
                 </div>
 
-                <button
-                  onClick={() => {
-                    onGoHome();
-                    setIsMobileMenuOpen(false);
-                  }}
-                  className="block w-full text-left rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-brand-700"
-                >
-                  {t("home")}
-                </button>
+                {user.role !== "super_admin" && (
+                  <>
+                    <button
+                      onClick={() => {
+                        onGoHome();
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="block w-full text-left rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-brand-700"
+                    >
+                      {t("home")}
+                    </button>
 
-                <button
-                  onClick={() => {
-                    onGoEditor();
-                    setIsMobileMenuOpen(false);
-                  }}
-                  className="block w-full text-left rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-brand-700"
-                >
-                  {t("createInvoice")}
-                </button>
+                    <button
+                      onClick={() => {
+                        onGoEditor();
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="block w-full text-left rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-brand-700"
+                    >
+                      {t("createInvoice")}
+                    </button>
 
-                <button
-                  onClick={() => {
-                    onGoHistory();
-                    setIsMobileMenuOpen(false);
-                  }}
-                  className="block w-full text-left rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-brand-700"
-                >
-                  {t("history")}
-                </button>
+                    <button
+                      onClick={() => {
+                        onGoHistory();
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="block w-full text-left rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-brand-700"
+                    >
+                      {t("history")}
+                    </button>
 
-                <button
-                  onClick={() => {
-                    onGoContacts();
-                    setIsMobileMenuOpen(false);
-                  }}
-                  className="block w-full text-left rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-brand-700"
-                >
-                  {t("contactsManagement")}
-                </button>
+                    <button
+                      onClick={() => {
+                        onGoContacts();
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="block w-full text-left rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-brand-700"
+                    >
+                      {t("contactsManagement")}
+                    </button>
 
-                <button
-                  onClick={() => {
-                    onGoSettings();
-                    setIsMobileMenuOpen(false);
-                  }}
-                  className="block w-full text-left rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-brand-700"
-                >
-                  {t("settings")}
-                </button>
+                    <button
+                      onClick={() => {
+                        onGoSettings();
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="block w-full text-left rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-brand-700"
+                    >
+                      {t("settings")}
+                    </button>
+                  </>
+                )}
+
+                {user.role === "super_admin" && (
+                  <button
+                    onClick={() => {
+                      onGoAdmin();
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="block w-full text-left rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-brand-700"
+                  >
+                    Admin Dashboard
+                  </button>
+                )}
 
                 <button
                   onClick={() => {
