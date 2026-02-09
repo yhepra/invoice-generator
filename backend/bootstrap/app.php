@@ -19,6 +19,10 @@ return Application::configure(basePath: dirname(__DIR__))
         
         // Ensure CORS middleware is applied
         $middleware->append(\Illuminate\Http\Middleware\HandleCors::class);
+        
+        $middleware->alias([
+            'super_admin' => \App\Http\Middleware\EnsureSuperAdmin::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

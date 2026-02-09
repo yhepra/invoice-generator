@@ -7,6 +7,7 @@ use App\Http\Controllers\ContactController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\WebhookController;
+use App\Http\Controllers\AdminController;
 
 Route::get('/ping', function () {
     return response()->json(['message' => 'Backend API is running']);
@@ -36,4 +37,12 @@ Route::middleware('auth:sanctum')->group(function () {
     
     Route::get('/settings', [SettingsController::class, 'index']);
     Route::post('/settings', [SettingsController::class, 'update']);
+
+    // Admin Routes
+    Route::middleware('super_admin')->prefix('admin')->group(function () {
+        Route::get('/stats', [AdminController::class, 'getStats']);
+        Route::get('/users', [AdminController::class, 'getUsers']);
+        Route::put('/users/{id}', [AdminController::class, 'updateUser']);
+        Route::get('/payments', [AdminController::class, 'getPayments']);
+    });
 });

@@ -23,6 +23,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'email',
         'password',
         'plan',
+        'role',
         'subscription_expires_at',
         'google_id',
         'avatar',
@@ -55,5 +56,10 @@ class User extends Authenticatable implements MustVerifyEmail
     public function contacts()
     {
         return $this->hasMany(Contact::class);
+    }
+
+    public function invoices()
+    {
+        return $this->hasMany(Invoice::class);
     }
 }

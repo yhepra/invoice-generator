@@ -19,6 +19,7 @@ import AuthCallback from "./pages/AuthCallback.jsx";
 import Header from "./components/common/Header.jsx";
 import Upgrade from "./pages/Upgrade.jsx";
 import Profile from "./pages/Profile.jsx";
+import AdminDashboard from "./pages/AdminDashboard.jsx";
 import Toast from "./components/common/Toast.jsx";
 import useInvoice from "./hooks/useInvoice.js";
 import { storage } from "./services/storage";
@@ -186,7 +187,7 @@ export default function App() {
     // Keep current settings but reset content
     const freshInvoice = JSON.parse(JSON.stringify(defaultInvoice));
     freshInvoice.details.number = generateInvoiceNumber();
-    
+
     // Ensure dates are current (fix for long-running tabs)
     const today = new Date().toISOString().slice(0, 10);
     freshInvoice.details.invoiceDate = today;
@@ -285,8 +286,7 @@ export default function App() {
 
         const existing = contacts.find(
           (c) =>
-            c.type === type &&
-            c.name.toLowerCase() === data.name.toLowerCase(),
+            c.type === type && c.name.toLowerCase() === data.name.toLowerCase(),
         );
 
         if (existing) {
@@ -490,11 +490,16 @@ export default function App() {
           />
           <Route
             path="/contacts"
+            element={<Contacts settings={invoice.settings} user={user} />}
+          />
+          <Route
+            path="/admin"
             element={
-              <Contacts
-                settings={invoice.settings}
-                user={user}
-              />
+              user && user.role === "super_admin" ? (
+                <AdminDashboard />
+              ) : (
+                <Navigate to="/" />
+              )
             }
           />
           <Route
