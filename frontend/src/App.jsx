@@ -136,6 +136,7 @@ export default function App() {
   }, [user, loadingUser]);
 
   const [isSaving, setIsSaving] = useState(false);
+  const [isSavingInvoice, setIsSavingInvoice] = useState(false);
 
   // Save settings when they change
   useEffect(() => {
@@ -333,6 +334,8 @@ export default function App() {
       return false;
     }
 
+    setIsSavingInvoice(true);
+
     try {
       const savedInvoice = await storage.saveInvoice(invoice);
       setInvoice((prev) => ({ ...prev, historyId: savedInvoice.historyId }));
@@ -349,6 +352,8 @@ export default function App() {
     } catch (error) {
       showToast(error.message || "Failed to save invoice.", "error");
       return false;
+    } finally {
+      setIsSavingInvoice(false);
     }
   };
 
@@ -467,6 +472,7 @@ export default function App() {
                 onSave={handleSaveInvoice}
                 onDownload={handleDownloadPDF}
                 user={user}
+                isSaving={isSavingInvoice}
               />
             }
           />
@@ -480,6 +486,7 @@ export default function App() {
                 onSave={handleSaveInvoice}
                 onDownload={handleDownloadPDF}
                 user={user}
+                isSaving={isSavingInvoice}
               />
             }
           />

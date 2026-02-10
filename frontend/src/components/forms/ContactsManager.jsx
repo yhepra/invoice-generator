@@ -3,6 +3,7 @@ import PropTypes from "prop-types"
 import { storage } from "../../services/storage"
 import Button from "../common/Button"
 import ConfirmModal from "../common/ConfirmModal"
+import PhoneInput from "../common/PhoneInput.jsx"
 import { getTranslation } from "../../data/translations.js"
 
 export default function ContactsManager({ settings, user }) {
@@ -175,25 +176,22 @@ export default function ContactsManager({ settings, user }) {
                 rows={2}
               />
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="mb-1 block text-xs font-medium text-gray-700">{t('phone')}</label>
-                <input
-                  type="text"
-                  value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
-                />
-              </div>
-              <div>
-                <label className="mb-1 block text-xs font-medium text-gray-700">{t('email')}</label>
-                <input
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
-                />
-              </div>
+            <div>
+              <label className="mb-1 block text-xs font-medium text-gray-700">{t('phone')}</label>
+              <PhoneInput
+                value={formData.phone}
+                onChange={(val) => setFormData({ ...formData, phone: val })}
+                placeholder={t('placeholderPhone')}
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-xs font-medium text-gray-700">{t('email')}</label>
+              <input
+                type="email"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+              />
             </div>
             <div className="flex justify-end gap-2 pt-2">
               {isEditing && (
