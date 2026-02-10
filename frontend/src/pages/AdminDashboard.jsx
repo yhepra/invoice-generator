@@ -88,6 +88,10 @@ const AdminDashboard = () => {
       data = users.map((user) => ({
         Name: user.name,
         Email: user.email,
+        Type: user.google_id ? "Google" : "Email",
+        Verified: user.email_verified_at
+          ? new Date(user.email_verified_at).toLocaleDateString()
+          : "No",
         Plan: user.plan,
         Expires:
           user.plan === "premium" && user.subscription_expires_at
@@ -236,7 +240,7 @@ const AdminDashboard = () => {
             </button>
           </div>
           {loading ? (
-            <SkeletonTable cols={8} />
+            <SkeletonTable cols={10} />
           ) : (
             <>
               <div className="overflow-x-auto bg-white rounded-lg shadow">
@@ -248,6 +252,12 @@ const AdminDashboard = () => {
                       </th>
                       <th className="px-6 py-4 font-medium text-gray-500">
                         Email
+                      </th>
+                      <th className="px-6 py-4 font-medium text-gray-500">
+                        Type
+                      </th>
+                      <th className="px-6 py-4 font-medium text-gray-500">
+                        Verified
                       </th>
                       <th className="px-6 py-4 font-medium text-gray-500">
                         Plan
@@ -274,6 +284,26 @@ const AdminDashboard = () => {
                       users.map((user) => (
                         <tr key={user.id} className="hover:bg-slate-50">
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            {user.google_id ? (
+                              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
+                                Google
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
+                                Email
+                              </span>
+                            )}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {user.email_verified_at ? (
+                              <span className="text-green-600">
+                                {new Date(user.email_verified_at).toLocaleDateString()}
+                              </span>
+                            ) : (
+                              <span className="text-red-500">Unverified</span>
+                            )}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             {user.name}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
