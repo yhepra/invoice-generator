@@ -254,13 +254,13 @@ const AdminDashboard = () => {
                         Type
                       </th>
                       <th className="px-6 py-4 font-medium text-gray-500">
-                        Email Verifieid
+                        Verified
                       </th>
                       <th className="px-6 py-4 font-medium text-gray-500">
                         Name
                       </th>
                       <th className="px-6 py-4 font-medium text-gray-500">
-                        Verified
+                        Email
                       </th>
                       <th className="px-6 py-4 font-medium text-gray-500">
                         Plan
@@ -303,12 +303,14 @@ const AdminDashboard = () => {
                             )}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {user.email_verified_at ? (
+                            {user.google_id || user.email_verified_at ? (
                               <span className="text-green-600">
-                                {new Date(user.email_verified_at).toLocaleDateString()}
+                                {user.email_verified_at
+                                  ? new Date(user.email_verified_at).toLocaleDateString()
+                                  : "Verified"}
                               </span>
                             ) : (
-                              <span className="text-green-600">Auto Verified by Google</span>
+                              <span className="text-red-500">Unverified</span>
                             )}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
