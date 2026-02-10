@@ -240,7 +240,7 @@ const AdminDashboard = () => {
             </button>
           </div>
           {loading ? (
-            <SkeletonTable cols={10} />
+            <SkeletonTable cols={11} />
           ) : (
             <>
               <div className="overflow-x-auto bg-white rounded-lg shadow">
@@ -248,13 +248,16 @@ const AdminDashboard = () => {
                   <thead className="bg-slate-50 border-b">
                     <tr>
                       <th className="px-6 py-4 font-medium text-gray-500">
-                        Name
-                      </th>
-                      <th className="px-6 py-4 font-medium text-gray-500">
-                        Email
+                        No
                       </th>
                       <th className="px-6 py-4 font-medium text-gray-500">
                         Type
+                      </th>
+                      <th className="px-6 py-4 font-medium text-gray-500">
+                        Email Verifieid
+                      </th>
+                      <th className="px-6 py-4 font-medium text-gray-500">
+                        Name
                       </th>
                       <th className="px-6 py-4 font-medium text-gray-500">
                         Verified
@@ -281,11 +284,16 @@ const AdminDashboard = () => {
                   </thead>
                   <tbody className="divide-y divide-gray-200">
                     {users.length > 0 ? (
-                      users.map((user) => (
+                      users.map((user, index) => (
                         <tr key={user.id} className="hover:bg-slate-50">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {(pagination.current_page - 1) * pagination.per_page +
+                              index +
+                              1}
+                          </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                             {user.google_id ? (
-                              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
+                              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
                                 Google
                               </span>
                             ) : (
@@ -300,7 +308,7 @@ const AdminDashboard = () => {
                                 {new Date(user.email_verified_at).toLocaleDateString()}
                               </span>
                             ) : (
-                              <span className="text-red-500">Unverified</span>
+                              <span className="text-green-600">Auto Verified by Google</span>
                             )}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
