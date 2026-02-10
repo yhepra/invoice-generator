@@ -23,12 +23,31 @@ class AdminController extends Controller
             $query->where('created_at', '>=', now()->subDays(30));
         })->count();
 
+        // Weekly user growth (last 12 weeks)
+        $weeklyUsers = User::select(
+            DB::raw('MIN(created_at) as week_start'),
+            DB::raw('COUNT(*) as count')
+        )
+        ->groupBy(DB::raw('YEARWEEK(created_at, 1)'))
+        ->orderBy('week_start', 'desc')
+        ->limit(12)
+        ->get()
+        ->map(function ($item) {
+            return [
+                'name' => \Carbon\Carbon::parse($item->week_start)->format('d M'),
+                'users' => $item->count
+            ];
+        })
+        ->reverse()
+        ->values();
+
         return response()->json([
             'total_users' => $totalUsers,
             'premium_users' => $totalPremiumUsers,
             'active_users' => $activeUsers,
             'total_invoices' => $totalInvoices,
             'total_revenue' => $totalRevenue,
+            'weekly_users' => $weeklyUsers,
         ]);
     }
 
