@@ -29,45 +29,64 @@ export default function SimpleInvoice({ invoice, user }) {
   return (
     <div className="invoice-content flex w-full flex-col bg-white text-sm text-gray-900 relative">
       <header className="flex items-start justify-between border-b border-gray-200 pb-6 relative z-10">
-        <div className="flex items-start gap-6">
-          <div className={seller.logo ? "flex flex-col items-center" : "flex flex-col items-start"}>
-            {!seller.logo && (
-              <h1 className="text-3xl font-bold tracking-tight">
-                {details.headerTitle || t("invoice")}
-              </h1>
-            )}
-            {seller.logo && (
+        {/* Left column: Title always, details when logo exists */}
+        <div className="flex-1">
+          <h1 className="text-3xl font-bold tracking-tight">
+            {details.headerTitle || t("invoice")}
+          </h1>
+          {seller.logo ? (
+            <div className="mt-2 text-xs">
+              <p className="font-semibold">{t("number")}</p>
+              <p className="text-gray-700">{details.number}</p>
+              <p className="mt-2 font-semibold">{t("date")}</p>
+              <p className="text-gray-700">{formatDate(details.invoiceDate)}</p>
+              <p className="mt-2 font-semibold">{t("dueDate")}</p>
+              <p className="text-gray-700">{formatDate(details.dueDate)}</p>
+            </div>
+          ) : null}
+          {!seller.logo && isFree && (
+            <a
+              href="https://generateinvoice.id"
+              target="_blank"
+              rel="noreferrer"
+              className="mt-2 block text-xs text-gray-500 hover:text-gray-700 hover:underline"
+              style={{ textDecoration: "none" }}
+            >
+              {t("generatedWith")}
+            </a>
+          )}
+        </div>
+        {/* Right column: Logo when exists, details when no logo */}
+        <div className="text-right text-xs">
+          {seller.logo ? (
+            <>
               <img
                 src={seller.logo}
                 alt="Logo"
-                className="h-24 w-auto max-w-[150px] object-contain"
+                className="h-24 w-auto max-w-[150px] object-contain ml-auto"
               />
-            )}
-            {isFree && (
-              <a
-                href="https://generateinvoice.id"
-                target="_blank"
-                rel="noreferrer"
-                className="mt-2 block text-xs text-gray-500 hover:text-gray-700 hover:underline"
-                style={{ textDecoration: "none" }}
-              >
-                {t("generatedWith")}
-              </a>
-            )}
-          </div>
-        </div>
-        <div className="text-right text-xs">
-          {seller.logo && (
-            <h1 className="text-3xl font-bold tracking-tight">
-              {details.headerTitle || t("invoice")}
-            </h1>
+              {isFree && (
+                <a
+                  href="https://generateinvoice.id"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mt-2 block text-xs text-gray-500 hover:text-gray-700 hover:underline"
+                  style={{ textDecoration: "none" }}
+                >
+                  {t("generatedWith")}
+                </a>
+              )}
+            </>
+          ) : (
+            <>
+              <p className="font-semibold">{t("number")}</p>
+              <p className="text-gray-700">{details.number}</p>
+              <p className="mt-2 font-semibold">{t("date")}</p>
+              <p className="text-gray-700">{formatDate(details.invoiceDate)}</p>
+              <p className="mt-2 font-semibold">{t("dueDate")}</p>
+              <p className="text-gray-700">{formatDate(details.dueDate)}</p>
+            </>
           )}
-          <p className="font-semibold">{t("number")}</p>
-          <p className="text-gray-700">{details.number}</p>
-          <p className="mt-2 font-semibold">{t("date")}</p>
-          <p className="text-gray-700">{formatDate(details.invoiceDate)}</p>
-          <p className="mt-2 font-semibold">{t("dueDate")}</p>
-          <p className="text-gray-700">{formatDate(details.dueDate)}</p>
         </div>
       </header>
 
