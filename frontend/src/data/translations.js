@@ -2,6 +2,7 @@ export const translations = {
   en: {
     // Invoice Template
     invoice: "INVOICE",
+    quotation: "QUOTATION",
     number: "Invoice No.",
     date: "Invoice Date",
     dueDate: "Due Date",
@@ -51,6 +52,7 @@ export const translations = {
     clickToChange: "Click to change",
     dragDropOrClick: "Drag and drop or click to upload",
     headerTitle: "Header Title",
+    documentType: "Document Type",
     currency: "Currency",
     language: "Language",
     footerText: "Footer Text",
@@ -303,6 +305,7 @@ export const translations = {
   id: {
     // Invoice Template
     invoice: "FAKTUR",
+    quotation: "PENAWARAN",
     number: "No. Faktur",
     date: "Tanggal Faktur",
     dueDate: "Jatuh Tempo",
@@ -352,6 +355,7 @@ export const translations = {
     clickToChange: "Klik untuk mengubah",
     dragDropOrClick: "Geser file atau klik untuk mengunggah",
     headerTitle: "Judul Header",
+    documentType: "Jenis Dokumen",
     currency: "Mata Uang",
     language: "Bahasa",
     footerText: "Teks Footer",

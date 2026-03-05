@@ -10,6 +10,22 @@ export default function InvoiceDetailsForm({ details, onChange, user, settings }
     <div className="space-y-3">
       <h2 className="text-lg font-semibold">{t('details')}</h2>
       <div>
+        <label className="block text-sm text-gray-600 mb-1">{t('documentType')}</label>
+        <select
+          value={
+            (details.headerTitle || t('invoice')) === t('quotation') ? 'quotation' : 'invoice'
+          }
+          onChange={(e) => {
+            const type = e.target.value;
+            onChange({ headerTitle: type === 'quotation' ? t('quotation') : t('invoice') });
+          }}
+          className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+        >
+          <option value="invoice">{t('invoice')}</option>
+          <option value="quotation">{t('quotation')}</option>
+        </select>
+      </div>
+      <div>
         <label className="block text-sm text-gray-600 mb-1">{t('headerTitle')}</label>
         <input
           type="text"
