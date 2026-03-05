@@ -31,6 +31,11 @@ export default function SimpleInvoice({ invoice, user }) {
       <header className="flex items-start justify-between border-b border-gray-200 pb-6 relative z-10">
         <div className="flex items-start gap-6">
           <div className={seller.logo ? "flex flex-col items-center" : "flex flex-col items-start"}>
+            {!seller.logo && (
+              <h1 className="text-3xl font-bold tracking-tight">
+                {details.headerTitle || t("invoice")}
+              </h1>
+            )}
             {seller.logo && (
               <img
                 src={seller.logo}
@@ -52,9 +57,11 @@ export default function SimpleInvoice({ invoice, user }) {
           </div>
         </div>
         <div className="text-right text-xs">
-          <h1 className="text-3xl font-bold tracking-tight">
-            {details.headerTitle || t("invoice")}
-          </h1>
+          {seller.logo && (
+            <h1 className="text-3xl font-bold tracking-tight">
+              {details.headerTitle || t("invoice")}
+            </h1>
+          )}
           <p className="font-semibold">{t("number")}</p>
           <p className="text-gray-700">{details.number}</p>
           <p className="mt-2 font-semibold">{t("date")}</p>
