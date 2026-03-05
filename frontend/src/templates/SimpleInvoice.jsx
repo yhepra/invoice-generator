@@ -30,17 +30,17 @@ export default function SimpleInvoice({ invoice, user }) {
     <div className="invoice-content flex w-full flex-col bg-white text-sm text-gray-900 relative">
       <header className="flex items-start justify-between border-b border-gray-200 pb-6 relative z-10">
         <div className="flex items-start gap-6">
-          {seller.logo && (
-            <img
-              src={seller.logo}
-              alt="Logo"
-              className="h-24 w-auto max-w-[150px] object-contain"
-            />
-          )}
-          <div>
+          <div className={seller.logo ? "flex flex-col items-center" : "flex flex-col items-start"}>
             <h1 className="text-3xl font-bold tracking-tight">
               {details.headerTitle || t("invoice")}
             </h1>
+            {seller.logo && (
+              <img
+                src={seller.logo}
+                alt="Logo"
+                className="mt-2 h-24 w-auto max-w-[150px] object-contain"
+              />
+            )}
             {isFree && (
               <a
                 href="https://generateinvoice.id"
