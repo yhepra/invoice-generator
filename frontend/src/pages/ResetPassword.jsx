@@ -12,16 +12,23 @@ export default function ResetPassword({ onCancel, onLogin }) {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Extract parameters from URL hash
-    const hash = window.location.hash;
-    // Format: #/reset-password?token=...&email=...
-    if (hash.includes('?')) {
+    const paramsFromSearch = new URLSearchParams(window.location.search);
+    const tokenFromSearch = paramsFromSearch.get('token');
+    const emailFromSearch = paramsFromSearch.get('email');
+
+    if (tokenFromSearch) setToken(tokenFromSearch);
+    if (emailFromSearch) setEmail(emailFromSearch);
+
+    if (!tokenFromSearch || !emailFromSearch) {
+      const hash = window.location.hash;
+      if (hash.includes('?')) {
         const query = hash.split('?')[1];
-        const params = new URLSearchParams(query);
-        const tokenParam = params.get('token');
-        const emailParam = params.get('email');
-        if (tokenParam) setToken(tokenParam);
-        if (emailParam) setEmail(emailParam);
+        const paramsFromHash = new URLSearchParams(query);
+        const tokenFromHash = paramsFromHash.get('token');
+        const emailFromHash = paramsFromHash.get('email');
+        if (!tokenFromSearch && tokenFromHash) setToken(tokenFromHash);
+        if (!emailFromSearch && emailFromHash) setEmail(emailFromHash);
+      }
     }
   }, []);
 

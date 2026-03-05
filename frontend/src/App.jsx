@@ -112,9 +112,14 @@ export default function App() {
     }
 
     // Check for reset password URL
-    if (window.location.hash.includes("reset-password")) {
-      // Navigate is handled by Router now, but hash routing might need manual check if we use standard Routes
-      // Assuming /reset-password route exists
+    const hash = window.location.hash;
+    if (hash.startsWith("#/reset-password")) {
+      if (hash.includes("?")) {
+        const query = hash.split("?")[1];
+        navigate(`/reset-password?${query}`, { replace: true });
+      } else {
+        navigate("/reset-password", { replace: true });
+      }
     }
   }, []);
 
