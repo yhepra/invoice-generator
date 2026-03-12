@@ -8,6 +8,14 @@ export default function SimpleInvoice({ invoice, user }) {
   const { seller, customer, details, items, totals, settings } = invoice;
   const isFree = !user || user.plan === "free";
   const t = (key) => getTranslation(settings.language, key);
+  const headerTitleNormalized = String(details.headerTitle || "").trim().toLowerCase();
+  const isQuotation =
+    headerTitleNormalized.startsWith("quotation") ||
+    headerTitleNormalized.startsWith("penawaran") ||
+    headerTitleNormalized === String(t("quotation")).trim().toLowerCase();
+  const numberLabel = isQuotation ? t("quotationNumber") : t("number");
+  const dateLabel = isQuotation ? t("quotationDate") : t("date");
+  const dueDateLabel = isQuotation ? t("validUntil") : t("dueDate");
 
   const formatDate = (dateValue) => {
     // If empty, use current date as requested
@@ -36,11 +44,11 @@ export default function SimpleInvoice({ invoice, user }) {
           </h1>
           {seller.logo ? (
             <div className="mt-2 text-xs">
-              <p className="font-semibold">{t("number")}</p>
+              <p className="font-semibold">{numberLabel}</p>
               <p className="text-gray-700">{details.number}</p>
-              <p className="mt-2 font-semibold">{t("date")}</p>
+              <p className="mt-2 font-semibold">{dateLabel}</p>
               <p className="text-gray-700">{formatDate(details.invoiceDate)}</p>
-              <p className="mt-2 font-semibold">{t("dueDate")}</p>
+              <p className="mt-2 font-semibold">{dueDateLabel}</p>
               <p className="text-gray-700">{formatDate(details.dueDate)}</p>
             </div>
           ) : null}
@@ -79,11 +87,11 @@ export default function SimpleInvoice({ invoice, user }) {
             </>
           ) : (
             <>
-              <p className="font-semibold">{t("number")}</p>
+              <p className="font-semibold">{numberLabel}</p>
               <p className="text-gray-700">{details.number}</p>
-              <p className="mt-2 font-semibold">{t("date")}</p>
+              <p className="mt-2 font-semibold">{dateLabel}</p>
               <p className="text-gray-700">{formatDate(details.invoiceDate)}</p>
-              <p className="mt-2 font-semibold">{t("dueDate")}</p>
+              <p className="mt-2 font-semibold">{dueDateLabel}</p>
               <p className="text-gray-700">{formatDate(details.dueDate)}</p>
             </>
           )}

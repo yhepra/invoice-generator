@@ -5,6 +5,14 @@ import { getTranslation } from "../../data/translations.js"
 export default function InvoiceDetailsForm({ details, onChange, user, settings }) {
   const isPremium = user && user.plan === 'premium';
   const t = (key) => getTranslation(settings?.language, key);
+  const headerTitleNormalized = String(details.headerTitle || "").trim().toLowerCase();
+  const isQuotation =
+    headerTitleNormalized.startsWith("quotation") ||
+    headerTitleNormalized.startsWith("penawaran") ||
+    headerTitleNormalized === String(t("quotation")).trim().toLowerCase();
+  const numberLabel = isQuotation ? t("quotationNumber") : t("number");
+  const dateLabel = isQuotation ? t("quotationDate") : t("date");
+  const dueDateLabel = isQuotation ? t("validUntil") : t("dueDate");
 
   return (
     <div className="space-y-3">
@@ -12,9 +20,7 @@ export default function InvoiceDetailsForm({ details, onChange, user, settings }
       <div>
         <label className="block text-sm text-gray-600 mb-1">{t('documentType')}</label>
         <select
-          value={
-            (details.headerTitle || t('invoice')) === t('quotation') ? 'quotation' : 'invoice'
-          }
+          value={isQuotation ? "quotation" : "invoice"}
           onChange={(e) => {
             const type = e.target.value;
             onChange({ headerTitle: type === 'quotation' ? t('quotation') : t('invoice') });
@@ -43,7 +49,7 @@ export default function InvoiceDetailsForm({ details, onChange, user, settings }
         {!isPremium && <p className="text-xs text-gray-500 mt-1">{t('upgradeToPremiumHeader')}</p>}
       </div>
       <div>
-        <label className="block text-sm text-gray-600 mb-1">{t('number')} <span className="text-red-500">*</span></label>
+        <label className="block text-sm text-gray-600 mb-1">{numberLabel} <span className="text-red-500">*</span></label>
         <input
           type="text"
           value={details.number}
@@ -56,7 +62,7 @@ export default function InvoiceDetailsForm({ details, onChange, user, settings }
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-sm text-gray-600 mb-1">{t('date')} <span className="text-red-500">*</span></label>
+          <label className="block text-sm text-gray-600 mb-1">{dateLabel} <span className="text-red-500">*</span></label>
           <input
             type="date"
             value={details.invoiceDate}
@@ -65,7 +71,7 @@ export default function InvoiceDetailsForm({ details, onChange, user, settings }
           />
         </div>
         <div>
-          <label className="block text-sm text-gray-600 mb-1">{t('dueDate')} <span className="text-red-500">*</span></label>
+          <label className="block text-sm text-gray-600 mb-1">{dueDateLabel} <span className="text-red-500">*</span></label>
           <input
             type="date"
             value={details.dueDate}
