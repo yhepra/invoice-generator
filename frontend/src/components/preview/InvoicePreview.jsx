@@ -1,12 +1,20 @@
 import React from "react"
 import PropTypes from "prop-types"
 import SimpleInvoice from "../../templates/SimpleInvoice.jsx"
+import CompactInvoice from "../../templates/CompactInvoice.jsx"
+import YellowInvoice from "../../templates/YellowInvoice.jsx"
 
 export default function InvoicePreview({ invoice, totals, previewRef, user }) {
   return (
     <div className="rounded-lg border bg-white shadow-sm">
       <div ref={previewRef} id="invoice-preview" className="invoice-a4">
-        <SimpleInvoice invoice={{ ...invoice, totals }} user={user} />
+        {invoice.settings?.template === "yellow" ? (
+          <YellowInvoice invoice={{ ...invoice, totals }} user={user} />
+        ) : invoice.settings?.template === "compact" ? (
+          <CompactInvoice invoice={{ ...invoice, totals }} user={user} />
+        ) : (
+          <SimpleInvoice invoice={{ ...invoice, totals }} user={user} />
+        )}
       </div>
     </div>
   )
@@ -26,5 +34,6 @@ InvoicePreview.propTypes = {
     taxAmount: PropTypes.number,
     total: PropTypes.number
   }).isRequired,
-  previewRef: PropTypes.object.isRequired
+  previewRef: PropTypes.object.isRequired,
+  user: PropTypes.object
 }

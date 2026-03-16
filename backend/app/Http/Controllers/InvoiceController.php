@@ -39,7 +39,7 @@ class InvoiceController extends Controller
 
         return DB::transaction(function () use ($request) {
             $data = $request->only([
-                'number', 'date', 'due_date', 'seller_info', 'customer_info', 'notes', 'terms', 'status'
+                'number', 'date', 'due_date', 'seller_info', 'customer_info', 'notes', 'terms', 'status', 'template'
             ]);
             $data['user_id'] = Auth::id();
             
@@ -87,7 +87,7 @@ class InvoiceController extends Controller
         
         return DB::transaction(function () use ($request, $invoice) {
             $invoice->update($request->only([
-                'number', 'date', 'due_date', 'seller_info', 'customer_info', 'notes', 'terms', 'status'
+                'number', 'date', 'due_date', 'seller_info', 'customer_info', 'notes', 'terms', 'status', 'template'
             ]));
 
             if ($request->has('items')) {

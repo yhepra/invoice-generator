@@ -20,6 +20,7 @@ class Invoice extends Model
         'notes',
         'terms',
         'status',
+        'template',
     ];
 
     protected $casts = [

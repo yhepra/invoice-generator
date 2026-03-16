@@ -32,6 +32,10 @@ export const translations = {
     details: "Details",
     items: "Items",
     summary: "Summary",
+    template: "Template",
+    templateSimple: "Simple",
+    templateCompact: "Compact",
+    templateYellow: "Yellow Accent",
     save: "Save",
     download: "Download",
     loading: "Loading...",
@@ -341,6 +345,10 @@ export const translations = {
     save: "Simpan",
     download: "Unduh",
     loading: "Memuat...",
+    template: "Templat",
+    templateSimple: "Sederhana",
+    templateCompact: "Kompak",
+    templateYellow: "Aksen Kuning",
 
     // Forms
     name: "Nama",
