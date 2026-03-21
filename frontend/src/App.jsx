@@ -98,7 +98,7 @@ export default function App() {
           });
       } else {
         // Fallback to simple user check if no ID found (legacy behavior)
-        checkUser().then((u) => {
+        checkUser().then(() => {
           showToast("Upgrade process completed.", "info");
           navigate("/");
         });
@@ -208,7 +208,8 @@ export default function App() {
   const handleCreateInvoiceWrapper = useCallback(() => {
     // Check for location state (if loaded from Landing)
     if (location.state?.initialData) {
-      const { savedAt, ...data } = location.state.initialData;
+      const data = { ...location.state.initialData };
+      delete data.savedAt;
       setInvoice(data);
       // Clear state so refresh resets? Or replace history?
       window.history.replaceState({}, document.title);

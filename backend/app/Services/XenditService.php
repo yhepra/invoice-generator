@@ -14,15 +14,18 @@ class XenditService
         Configuration::setXenditKey(env('XENDIT_SECRET_KEY'));
     }
 
-    public function createInvoice($user, $amount = 49000)
+    public function createInvoice($user, $period = 'month')
     {
         $apiInstance = new InvoiceApi();
-        $external_id = 'upgrade_' . $user->id . '_' . time();
+        $period = $period === 'year' ? 'year' : 'month';
+        $amount = $period === 'year' ? 299000 : 49000;
+        $external_id = 'upgrade_' . $user->id . '_' . $period . '_' . time();
         $frontendUrl = env('APP_FRONTEND_URL', 'http://localhost:5173');
+        $planLabel = $period === 'year' ? 'Premium Plan (1 Year)' : 'Premium Plan (Monthly)';
 
         $create_invoice_request = new CreateInvoiceRequest([
             'external_id' => $external_id,
-            'description' => 'Upgrade to Premium Plan',
+            'description' => $planLabel,
             'amount' => $amount,
             'payer_email' => $user->email,
             'success_redirect_url' => $frontendUrl . '/upgrade/success',
@@ -30,7 +33,7 @@ class XenditService
             'currency' => 'IDR',
             'items' => [
                 [
-                    'name' => 'Premium Plan',
+                    'name' => $planLabel,
                     'quantity' => 1,
                     'price' => $amount,
                     'category' => 'Subscription'

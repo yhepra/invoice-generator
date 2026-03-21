@@ -7,10 +7,10 @@ export default function Upgrade({ user, onUpgradeSuccess, onCancel, settings }) 
   const [isLoading, setIsLoading] = useState(false)
   const t = (key) => getTranslation(settings?.language, key);
 
-  const handleUpgrade = async () => {
+  const handleUpgrade = async (period) => {
     setIsLoading(true)
     try {
-      const response = await auth.upgrade() 
+      const response = await auth.upgrade(period) 
       
       if (response.payment_url) {
         // Store invoice ID for verification on return
@@ -34,13 +34,13 @@ export default function Upgrade({ user, onUpgradeSuccess, onCancel, settings }) 
   }
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-8">
+    <div className="mx-auto max-w-6xl px-4 py-8">
       <div className="mb-8 text-center">
         <h1 className="mb-4 text-3xl font-bold text-gray-900">{t("upgradeToPremium")}</h1>
         <p className="text-lg text-gray-600">{t("plansSubtitle")}</p>
       </div>
 
-      <div className="grid gap-8 md:grid-cols-2">
+      <div className="grid gap-8 md:grid-cols-3">
         {/* Free Plan (Current) */}
         <div className="rounded-2xl border border-gray-200 bg-white p-8 shadow-sm opacity-70">
           <div className="mb-4 flex items-center justify-between">
@@ -110,9 +110,52 @@ export default function Upgrade({ user, onUpgradeSuccess, onCancel, settings }) 
           
           {user?.plan !== 'premium' ? (
             <Button 
-              onClick={handleUpgrade} 
+              onClick={() => handleUpgrade("month")} 
               className="w-full justify-center py-3 text-lg"
               disabled={isLoading}
+            >
+              {isLoading ? 'Processing...' : t("upgradeNow")}
+            </Button>
+          ) : (
+            <div className="rounded-lg bg-green-50 p-4 text-center text-green-800 font-medium">
+              You are currently on Premium
+            </div>
+          )}
+        </div>
+
+        {/* Premium Yearly Plan */}
+        <div className="rounded-2xl border border-gray-200 bg-white p-8 shadow-sm">
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-xl font-bold text-gray-900">{t("planPremiumYearly")}</h2>
+          </div>
+          <div className="mb-6">
+            <span className="text-4xl font-bold text-gray-900">{t("planPremiumYearlyPrice")}</span>
+            <span className="text-gray-500">{t("planPremiumYearlyPeriod")}</span>
+          </div>
+          <ul className="mb-8 space-y-4">
+            {[
+              t("featUnlimitedContacts"),
+              t("featUnlimitedInvoices"),
+              t("featNoWatermark"),
+              t("featCustomHeader"),
+              t("featCustomNumber"),
+              t("featPrioritySupport")
+            ].map((feat, i) => (
+              <li key={i} className="flex items-center text-gray-600">
+                <svg className="mr-3 h-5 w-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+                {feat}
+              </li>
+            ))}
+          </ul>
+
+          {user?.plan !== 'premium' ? (
+            <Button
+              onClick={() => handleUpgrade("year")}
+              className="w-full justify-center py-3 text-lg"
+              disabled={isLoading}
+              variant="outline"
             >
               {isLoading ? 'Processing...' : t("upgradeNow")}
             </Button>

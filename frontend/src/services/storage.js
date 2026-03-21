@@ -244,19 +244,6 @@ export const storage = {
       console.error("Error removing logo", e);
     }
   },
-  removeSignature: async (signature) => {
-    try {
-      const data = localStorage.getItem(STORAGE_KEYS.SIGNATURES);
-      const signatures = data ? JSON.parse(data) : [];
-      const newSignatures = signatures.filter((s) => s !== signature);
-      localStorage.setItem(
-        STORAGE_KEYS.SIGNATURES,
-        JSON.stringify(newSignatures),
-      );
-    } catch (e) {
-      console.error("Error removing signature", e);
-    }
-  },
 
   // Contacts (Backend API)
   getContacts: async () => {

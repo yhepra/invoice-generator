@@ -28,13 +28,22 @@ class AuthController extends Controller
 
     public function redirectToGoogle()
     {
-        return Socialite::driver('google')->stateless()->redirect();
+        $provider = Socialite::driver('google');
+        if ($provider instanceof \Laravel\Socialite\Two\AbstractProvider) {
+            $provider = $provider->stateless();
+        }
+
+        return $provider->redirect();
     }
 
     public function handleGoogleCallback()
     {
         try {
-            $googleUser = Socialite::driver('google')->stateless()->user();
+            $provider = Socialite::driver('google');
+            if ($provider instanceof \Laravel\Socialite\Two\AbstractProvider) {
+                $provider = $provider->stateless();
+            }
+            $googleUser = $provider->user();
         } catch (\Exception $e) {
             return redirect(env('APP_FRONTEND_URL', 'http://localhost:5173') . '/login?error=google_auth_failed');
         }
@@ -268,12 +277,17 @@ class AuthController extends Controller
         /** @var \App\Models\User $user */
         $user = $request->user();
 
+        $validated = $request->validate([
+            'period' => 'sometimes|in:month,year',
+        ]);
+        $period = $validated['period'] ?? 'month';
+
         if ($user->plan === 'premium') {
             return response()->json(['message' => 'User is already premium'], 400);
         }
 
         try {
-            $invoice = $this->xenditService->createInvoice($user);
+            $invoice = $this->xenditService->createInvoice($user, $period);
             return response()->json([
                 'message' => 'Payment link generated successfully',
                 'payment_url' => $invoice['invoice_url'],
@@ -295,6 +309,24 @@ class AuthController extends Controller
             $invoice = $this->xenditService->getInvoice($request->invoice_id);
             
             if ($invoice['status'] === 'PAID' || $invoice['status'] === 'SETTLED') {
+                $externalId = $invoice['external_id'] ?? '';
+                $parts = explode('_', (string) $externalId);
+                $externalUserId = null;
+                $period = 'month';
+
+                if (count($parts) >= 4 && $parts[0] === 'upgrade') {
+                    $externalUserId = $parts[1] ?? null;
+                    $periodCandidate = $parts[2] ?? 'month';
+                    $period = $periodCandidate === 'year' ? 'year' : 'month';
+                } elseif (count($parts) >= 3 && $parts[0] === 'upgrade') {
+                    $externalUserId = $parts[1] ?? null;
+                    $period = 'month';
+                }
+
+                if ($externalUserId !== null && (string) $externalUserId !== (string) $user->id) {
+                    return response()->json(['message' => 'Invoice does not belong to the authenticated user'], 403);
+                }
+
                 // Record Payment
                 Payment::updateOrCreate(
                     ['external_id' => $invoice['external_id']],
@@ -309,12 +341,16 @@ class AuthController extends Controller
                     ]
                 );
 
-                if ($user->plan !== 'premium') {
-                    $user->plan = 'premium';
-                    // Set expiration to 1 month from now
-                    $user->subscription_expires_at = now()->addMonth();
-                    $user->save();
-                }
+                $base = ($user->subscription_expires_at && $user->subscription_expires_at->isFuture())
+                    ? $user->subscription_expires_at
+                    : now();
+
+                $user->plan = 'premium';
+                $user->subscription_expires_at = $period === 'year'
+                    ? $base->copy()->addYear()
+                    : $base->copy()->addMonth();
+                $user->save();
+
                 return response()->json([
                     'status' => 'success',
                     'message' => 'Payment verified, upgraded to premium',

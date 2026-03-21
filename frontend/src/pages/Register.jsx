@@ -3,7 +3,7 @@ import { auth } from '../services/auth';
 import Button from '../components/common/Button';
 import { getTranslation } from '../data/translations';
 
-export default function Register({ onRegister, onLoginClick, onCancel, settings }) {
+export default function Register({ onLoginClick, onCancel, settings }) {
   const t = (key) => getTranslation(settings?.language, key);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -26,7 +26,7 @@ export default function Register({ onRegister, onLoginClick, onCancel, settings 
     setLoading(true);
 
     try {
-      const response = await auth.register(name, email, password, passwordConfirmation);
+      await auth.register(name, email, password, passwordConfirmation);
       setSuccess(true);
     } catch (err) {
       setError(err.message);

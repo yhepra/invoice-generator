@@ -3,7 +3,7 @@ import PropTypes from "prop-types"
 import SettingsForm from "../components/forms/SettingsForm.jsx"
 import { getTranslation } from "../data/translations.js"
 
-export default function Settings({ settings, onChange, isSaving, user }) {
+export default function Settings({ settings, onChange, isSaving }) {
   const t = (key) => getTranslation(settings?.language, key);
 
   return (

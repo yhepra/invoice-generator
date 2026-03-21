@@ -56,11 +56,6 @@ export default function History({ onLoadInvoice, settings }) {
     setCurrentPage(1);
   }, [viewMode, searchQuery, filterPeriod, filterStatus]);
 
-  const confirmDelete = (invoice) => {
-    setInvoiceToDelete(invoice);
-    setIsDeleteModalOpen(true);
-  };
-
   const handleDelete = async () => {
     if (invoiceToDelete) {
       await storage.deleteInvoice(invoiceToDelete.historyId);

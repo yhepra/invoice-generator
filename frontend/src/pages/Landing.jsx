@@ -451,7 +451,7 @@ export default function Landing({
             </h2>
             <p className="mt-4 text-xl text-gray-600">{t("plansSubtitle")}</p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
             {/* Free Plan */}
             <div className="bg-white rounded-2xl shadow-sm p-8 border border-gray-200">
               <h3 className="text-2xl font-bold text-gray-900 mb-2">
@@ -538,6 +538,50 @@ export default function Landing({
                 ))}
               </ul>
               <Button onClick={onRegister} className="w-full">
+                {t("getPremium")}
+              </Button>
+            </div>
+
+            {/* Premium Yearly Plan */}
+            <div className="bg-white rounded-2xl shadow-sm p-8 border border-gray-200">
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                {t("planPremiumYearly")}
+              </h3>
+              <p className="text-gray-500 mb-6">{t("planPremiumDesc")}</p>
+              <div className="text-4xl font-extrabold text-gray-900 mb-6">
+                {t("planPremiumYearlyPrice")}{" "}
+                <span className="text-base font-normal text-gray-500">
+                  {t("planPremiumYearlyPeriod")}
+                </span>
+              </div>
+              <ul className="space-y-4 mb-8">
+                {[
+                  t("featUnlimitedContacts"),
+                  t("featUnlimitedInvoices"),
+                  t("featNoWatermark"),
+                  t("featCustomHeader"),
+                  t("featCustomNumber"),
+                  t("featPrioritySupport"),
+                ].map((feat, i) => (
+                  <li key={i} className="flex items-center text-gray-600">
+                    <svg
+                      className="h-5 w-5 text-green-500 mr-2"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M5 13l4 4L19 7"
+                      ></path>
+                    </svg>
+                    {feat}
+                  </li>
+                ))}
+              </ul>
+              <Button onClick={onRegister} variant="outline" className="w-full">
                 {t("getPremium")}
               </Button>
             </div>

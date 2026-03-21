@@ -133,7 +133,7 @@ export const auth = {
     return await response.json();
   },
 
-  upgrade: async () => {
+  upgrade: async (period = "month") => {
     const token = localStorage.getItem("token");
     if (!token) throw new Error("Not authenticated");
 
@@ -141,8 +141,10 @@ export const auth = {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
         Accept: "application/json",
       },
+      body: JSON.stringify({ period }),
     });
 
     if (!response.ok) {
