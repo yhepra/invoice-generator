@@ -496,10 +496,7 @@ export default function Landing({
             </div>
 
             {/* Premium Plan */}
-            <div className="bg-white rounded-2xl shadow-lg p-8 border-2 border-brand-500 relative transform md:-translate-y-4">
-              <div className="absolute top-0 right-0 bg-brand-500 text-white text-xs font-bold px-3 py-1 rounded-bl-lg rounded-tr-lg">
-                {t("recommended")}
-              </div>
+            <div className="bg-white rounded-2xl shadow-sm p-8 border border-gray-200">
               <h3 className="text-2xl font-bold text-gray-900 mb-2">
                 {t("planPremium")}
               </h3>
@@ -537,13 +534,16 @@ export default function Landing({
                   </li>
                 ))}
               </ul>
-              <Button onClick={onRegister} className="w-full">
+              <Button onClick={onRegister} variant="outline" className="w-full">
                 {t("getPremium")}
               </Button>
             </div>
 
             {/* Premium Yearly Plan */}
-            <div className="bg-white rounded-2xl shadow-sm p-8 border border-gray-200">
+            <div className="bg-white rounded-2xl shadow-lg p-8 border-2 border-brand-500 relative transform md:-translate-y-4">
+              <div className="absolute top-0 right-0 bg-brand-500 text-white text-xs font-bold px-3 py-1 rounded-bl-lg rounded-tr-lg">
+                {t("recommended")}
+              </div>
               <h3 className="text-2xl font-bold text-gray-900 mb-2">
                 {t("planPremiumYearly")}
               </h3>
@@ -581,7 +581,7 @@ export default function Landing({
                   </li>
                 ))}
               </ul>
-              <Button onClick={onRegister} variant="outline" className="w-full">
+              <Button onClick={onRegister} className="w-full">
                 {t("getPremium")}
               </Button>
             </div>

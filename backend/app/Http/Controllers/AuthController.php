@@ -28,22 +28,13 @@ class AuthController extends Controller
 
     public function redirectToGoogle()
     {
-        $provider = Socialite::driver('google');
-        if ($provider instanceof \Laravel\Socialite\Two\AbstractProvider) {
-            $provider = $provider->stateless();
-        }
-
-        return $provider->redirect();
+        return Socialite::driver('google')->stateless()->redirect();
     }
 
     public function handleGoogleCallback()
     {
         try {
-            $provider = Socialite::driver('google');
-            if ($provider instanceof \Laravel\Socialite\Two\AbstractProvider) {
-                $provider = $provider->stateless();
-            }
-            $googleUser = $provider->user();
+            $googleUser = Socialite::driver('google')->stateless()->user();
         } catch (\Exception $e) {
             return redirect(env('APP_FRONTEND_URL', 'http://localhost:5173') . '/login?error=google_auth_failed');
         }

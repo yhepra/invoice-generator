@@ -74,10 +74,7 @@ export default function Upgrade({ user, onUpgradeSuccess, onCancel, settings }) 
         </div>
 
         {/* Premium Plan */}
-        <div className="relative rounded-2xl border-2 border-brand-500 bg-white p-8 shadow-xl">
-          <div className="absolute -top-4 left-1/2 -translate-x-1/2 rounded-full bg-brand-600 px-4 py-1 text-sm font-bold text-white shadow-md">
-            {t("recommended")}
-          </div>
+        <div className="rounded-2xl border border-gray-200 bg-white p-8 shadow-sm">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-xl font-bold text-gray-900">{t("planPremium")}</h2>
             {user?.plan === 'premium' && (
@@ -113,6 +110,7 @@ export default function Upgrade({ user, onUpgradeSuccess, onCancel, settings }) 
               onClick={() => handleUpgrade("month")} 
               className="w-full justify-center py-3 text-lg"
               disabled={isLoading}
+              variant="outline"
             >
               {isLoading ? 'Processing...' : t("upgradeNow")}
             </Button>
@@ -124,7 +122,10 @@ export default function Upgrade({ user, onUpgradeSuccess, onCancel, settings }) 
         </div>
 
         {/* Premium Yearly Plan */}
-        <div className="rounded-2xl border border-gray-200 bg-white p-8 shadow-sm">
+        <div className="relative rounded-2xl border-2 border-brand-500 bg-white p-8 shadow-xl">
+          <div className="absolute -top-4 left-1/2 -translate-x-1/2 rounded-full bg-brand-600 px-4 py-1 text-sm font-bold text-white shadow-md">
+            {t("recommended")}
+          </div>
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-xl font-bold text-gray-900">{t("planPremiumYearly")}</h2>
           </div>
@@ -155,7 +156,6 @@ export default function Upgrade({ user, onUpgradeSuccess, onCancel, settings }) 
               onClick={() => handleUpgrade("year")}
               className="w-full justify-center py-3 text-lg"
               disabled={isLoading}
-              variant="outline"
             >
               {isLoading ? 'Processing...' : t("upgradeNow")}
             </Button>
