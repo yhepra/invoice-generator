@@ -14,7 +14,7 @@ class XenditService
         Configuration::setXenditKey(env('XENDIT_SECRET_KEY'));
     }
 
-    public function createInvoice($user, $amount = 1000)
+    public function createInvoice($user, $amount = 49000)
     {
         $apiInstance = new InvoiceApi();
         $external_id = 'upgrade_' . $user->id . '_' . time();
