@@ -32,6 +32,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/upgrade', [AuthController::class, 'upgrade']);
     Route::post('/upgrade/verify', [AuthController::class, 'verifyPayment']);
     
+    Route::patch('/invoices/{id}/status', [InvoiceController::class, 'updateStatus']);
+    Route::get('/invoices/history', [InvoiceController::class, 'history']);
     Route::apiResource('invoices', InvoiceController::class);
     Route::post('/invoices/{id}/send-email', [InvoiceController::class, 'sendEmail']);
     Route::apiResource('contacts', ContactController::class);

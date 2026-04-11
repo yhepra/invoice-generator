@@ -7,6 +7,7 @@ const STORAGE_KEYS = {
   LOGOS: "invoice_gen_logos",
   SIGNATURES: "invoice_gen_signatures",
   HISTORY_VIEW_MODE: "invoice_gen_history_view_mode",
+  HISTORY_CACHE: "invoice_gen_history_cache_v1",
   EMAIL_SETTINGS: "invoice_gen_email_settings",
 };
 
@@ -185,6 +186,83 @@ export const storage = {
     }
   },
 
+  getCachedInvoiceHistory: (params) => {
+    const key = `${STORAGE_KEYS.HISTORY_CACHE}:${JSON.stringify(params || {})}`;
+    return safeParseJson(localStorage.getItem(key));
+  },
+
+  saveCachedInvoiceHistory: (params, payload) => {
+    const key = `${STORAGE_KEYS.HISTORY_CACHE}:${JSON.stringify(params || {})}`;
+    localStorage.setItem(
+      key,
+      JSON.stringify({ ...payload, cachedAt: new Date().toISOString() }),
+    );
+  },
+
+  getInvoiceHistory: async ({
+    page = 1,
+    perPage = 10,
+    q = "",
+    period = "all",
+    status = "all",
+  } = {}) => {
+    const token = localStorage.getItem("token");
+    const headers = {
+      Accept: "application/json",
+    };
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+
+    const url = new URL(`${API_URL}/invoices/history`);
+    url.searchParams.set("page", String(page));
+    url.searchParams.set("per_page", String(perPage));
+    if (q) url.searchParams.set("q", String(q));
+    if (period) url.searchParams.set("period", String(period));
+    if (status) url.searchParams.set("status", String(status));
+
+    const response = await fetch(url.toString(), { headers });
+    if (!response.ok) throw new Error("Failed to fetch invoice history");
+    const json = await response.json();
+
+    const items = (json.data || []).map((inv) => ({
+      ...inv,
+      invoiceNumber: inv.number,
+      dueDate: inv.due_date,
+      seller: null,
+      customer: {
+        name: inv.customer_name,
+        email: inv.customer_email,
+      },
+      items: [],
+      itemsCount: Number(inv.items_count ?? 0),
+      totals: {
+        subtotal: Number(inv.subtotal ?? 0),
+        taxPercent: 0,
+        taxAmount: Number(inv.tax_amount ?? 0),
+        total: Number(inv.total ?? 0),
+      },
+      details: {
+        number: inv.number,
+      },
+      settings: { currency: "IDR", locale: "id-ID" },
+      historyId: inv.uuid || inv.id,
+      savedAt: inv.created_at,
+      status: calculateStatus(inv),
+    }));
+
+    const result = {
+      items,
+      meta: json.meta,
+      summary: json.summary,
+    };
+
+    storage.saveCachedInvoiceHistory(
+      { page, perPage, q, period, status },
+      result,
+    );
+
+    return result;
+  },
+
   getInvoice: async (id) => {
     const token = localStorage.getItem("token");
     const headers = {
@@ -226,6 +304,23 @@ export const storage = {
       savedAt: inv.created_at,
       status: calculateStatus(inv),
     };
+  },
+
+  updateInvoiceStatus: async (id, status) => {
+    const token = localStorage.getItem("token");
+    const headers = {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    };
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+
+    const response = await fetch(`${API_URL}/invoices/${id}/status`, {
+      method: "PATCH",
+      headers,
+      body: JSON.stringify({ status }),
+    });
+    if (!response.ok) throw new Error("Failed to update invoice status");
+    return response.json();
   },
 
   saveInvoice: async (invoice) => {

@@ -17,9 +17,15 @@ class Invoice extends Model
         'due_date',
         'seller_info',
         'customer_info',
+        'customer_name',
+        'customer_email',
         'notes',
         'terms',
         'status',
+        'subtotal',
+        'tax_amount',
+        'total',
+        'items_count',
     ];
 
     protected $casts = [
@@ -27,6 +33,10 @@ class Invoice extends Model
         'customer_info' => 'array',
         'date' => 'date',
         'due_date' => 'date',
+        'subtotal' => 'decimal:2',
+        'tax_amount' => 'decimal:2',
+        'total' => 'decimal:2',
+        'items_count' => 'integer',
     ];
 
     protected static function boot()

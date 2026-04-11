@@ -11,30 +11,115 @@ use Illuminate\Support\Facades\Mail;
 
 class InvoiceController extends Controller
 {
+    public function history(Request $request)
+    {
+        $page = max(1, (int) $request->query('page', 1));
+        $perPage = (int) $request->query('per_page', 20);
+        if ($perPage <= 0) $perPage = 20;
+        if ($perPage > 200) $perPage = 200;
+
+        $q = trim((string) $request->query('q', ''));
+        $period = (string) $request->query('period', 'all');
+        $status = (string) $request->query('status', 'all');
+
+        $query = Invoice::query()->where('user_id', Auth::id());
+
+        if ($period === '30days') {
+            $query->where('created_at', '>=', now()->subDays(30)->startOfDay());
+        } elseif ($period === 'thisMonth') {
+            $query->whereBetween('created_at', [now()->startOfMonth(), now()->endOfMonth()]);
+        } elseif ($period === 'lastMonth') {
+            $query->whereBetween('created_at', [
+                now()->subMonthNoOverflow()->startOfMonth(),
+                now()->subMonthNoOverflow()->endOfMonth(),
+            ]);
+        }
+
+        if ($status !== 'all') {
+            $query->where('status', $status);
+        }
+
+        if ($q !== '') {
+            $date = null;
+            if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $q)) {
+                $date = $q;
+            } elseif (preg_match('/^\d{1,2}\/\d{1,2}\/\d{4}$/', $q)) {
+                $parts = explode('/', $q);
+                if (count($parts) === 3) {
+                    $date = sprintf('%04d-%02d-%02d', (int) $parts[2], (int) $parts[1], (int) $parts[0]);
+                }
+            }
+
+            if ($date) {
+                $query->whereDate('created_at', $date);
+            } else {
+                $query->where(function ($sub) use ($q) {
+                    $sub->where('number', 'like', "%{$q}%")
+                        ->orWhere('customer_name', 'like', "%{$q}%");
+                });
+            }
+        }
+
+        $summaryRow = (clone $query)
+            ->selectRaw('COALESCE(SUM(total), 0) as total_sum')
+            ->selectRaw("COALESCE(SUM(CASE WHEN status = 'Paid' THEN total ELSE 0 END), 0) as paid_sum")
+            ->selectRaw("COALESCE(SUM(CASE WHEN status IN ('Unpaid', 'Overdue') THEN total ELSE 0 END), 0) as balance_sum")
+            ->first();
+
+        $paginator = $query
+            ->orderByDesc('created_at')
+            ->paginate(
+                $perPage,
+                [
+                    'id',
+                    'uuid',
+                    'number',
+                    'status',
+                    'created_at',
+                    'total',
+                    'items_count',
+                    'customer_name',
+                ],
+                'page',
+                $page,
+            );
+
+        return response()->json([
+            'data' => $paginator->items(),
+            'meta' => [
+                'current_page' => $paginator->currentPage(),
+                'last_page' => $paginator->lastPage(),
+                'per_page' => $paginator->perPage(),
+                'total' => $paginator->total(),
+            ],
+            'summary' => [
+                'total' => (float) ($summaryRow->total_sum ?? 0),
+                'paid' => (float) ($summaryRow->paid_sum ?? 0),
+                'balance' => (float) ($summaryRow->balance_sum ?? 0),
+            ],
+        ]);
+    }
+
     public function index(Request $request)
     {
         if ($request->boolean('summary')) {
-            $totals = DB::table('invoice_items')
-                ->select('invoice_id')
-                ->selectRaw('SUM(quantity * price) as subtotal')
-                ->selectRaw('SUM(quantity * price * (tax_percent / 100)) as tax_amount')
-                ->selectRaw('SUM(quantity * price * (1 + (tax_percent / 100))) as total')
-                ->groupBy('invoice_id');
-
             $invoices = Invoice::query()
-                ->where('invoices.user_id', Auth::id())
-                ->leftJoinSub($totals, 't', function ($join) {
-                    $join->on('t.invoice_id', '=', 'invoices.id');
-                })
-                ->withCount('items')
-                ->orderByDesc('invoices.created_at')
-                ->select('invoices.*')
-                ->addSelect([
-                    DB::raw('COALESCE(t.subtotal, 0) as subtotal'),
-                    DB::raw('COALESCE(t.tax_amount, 0) as tax_amount'),
-                    DB::raw('COALESCE(t.total, 0) as total'),
-                ])
-                ->get();
+                ->where('user_id', Auth::id())
+                ->orderByDesc('created_at')
+                ->get([
+                    'id',
+                    'uuid',
+                    'number',
+                    'date',
+                    'due_date',
+                    'customer_info',
+                    'status',
+                    'created_at',
+                    'subtotal',
+                    'tax_amount',
+                    'total',
+                    'items_count',
+                ]);
 
             return response()->json($invoices);
         }
@@ -63,6 +148,7 @@ class InvoiceController extends Controller
             'items.*.name' => 'required|string',
             'items.*.quantity' => 'required|numeric|min:0',
             'items.*.price' => 'required|numeric|min:0',
+            'items.*.tax_percent' => 'nullable|numeric|min:0',
         ]);
 
         return DB::transaction(function () use ($request) {
@@ -70,6 +156,17 @@ class InvoiceController extends Controller
                 'number', 'date', 'due_date', 'seller_info', 'customer_info', 'notes', 'terms', 'status'
             ]);
             $data['user_id'] = Auth::id();
+
+            if (is_array($data['customer_info'] ?? null)) {
+                $data['customer_name'] = $data['customer_info']['name'] ?? null;
+                $data['customer_email'] = $data['customer_info']['email'] ?? null;
+            }
+
+            $analytics = $this->calculateTotalsFromPayload($request->items);
+            $data['subtotal'] = $analytics['subtotal'];
+            $data['tax_amount'] = $analytics['taxAmount'];
+            $data['total'] = $analytics['total'];
+            $data['items_count'] = $analytics['itemsCount'];
             
             $invoice = Invoice::create($data);
 
@@ -111,12 +208,26 @@ class InvoiceController extends Controller
             'items.*.name' => 'required|string',
             'items.*.quantity' => 'required|numeric|min:0',
             'items.*.price' => 'required|numeric|min:0',
+            'items.*.tax_percent' => 'nullable|numeric|min:0',
         ]);
         
         return DB::transaction(function () use ($request, $invoice) {
-            $invoice->update($request->only([
+            $data = $request->only([
                 'number', 'date', 'due_date', 'seller_info', 'customer_info', 'notes', 'terms', 'status'
-            ]));
+            ]);
+
+            if (is_array($data['customer_info'] ?? null)) {
+                $data['customer_name'] = $data['customer_info']['name'] ?? null;
+                $data['customer_email'] = $data['customer_info']['email'] ?? null;
+            }
+
+            $analytics = $this->calculateTotalsFromPayload($request->items);
+            $data['subtotal'] = $analytics['subtotal'];
+            $data['tax_amount'] = $analytics['taxAmount'];
+            $data['total'] = $analytics['total'];
+            $data['items_count'] = $analytics['itemsCount'];
+
+            $invoice->update($data);
 
             if ($request->has('items')) {
                 $invoice->items()->delete();
@@ -127,6 +238,23 @@ class InvoiceController extends Controller
 
             return response()->json($invoice->load('items'));
         });
+    }
+
+    public function updateStatus(Request $request, $id)
+    {
+        $payload = $request->validate([
+            'status' => 'required|string|max:50',
+        ]);
+
+        $invoice = Invoice::where('user_id', Auth::id())
+            ->where(function ($query) use ($id) {
+                $query->where('uuid', $id)->orWhere('id', $id);
+            })
+            ->firstOrFail();
+
+        $invoice->update(['status' => $payload['status']]);
+
+        return response()->json($invoice);
     }
 
     public function destroy($id)
@@ -243,6 +371,33 @@ class InvoiceController extends Controller
             'subtotal' => $subtotal,
             'taxAmount' => $taxAmount,
             'total' => $subtotal + $taxAmount,
+        ];
+    }
+
+    private function calculateTotalsFromPayload($items)
+    {
+        $subtotal = 0.0;
+        $taxAmount = 0.0;
+        $itemsCount = 0;
+
+        foreach ($items as $item) {
+            $qty = (float) ($item['quantity'] ?? 0);
+            $price = (float) ($item['price'] ?? 0);
+            $line = $qty * $price;
+            $subtotal += $line;
+            $taxPercent = (float) ($item['tax_percent'] ?? 0);
+            $taxAmount += $line * ($taxPercent / 100.0);
+            $itemsCount++;
+        }
+
+        $subtotal = round($subtotal, 2);
+        $taxAmount = round($taxAmount, 2);
+
+        return [
+            'subtotal' => $subtotal,
+            'taxAmount' => $taxAmount,
+            'total' => round($subtotal + $taxAmount, 2),
+            'itemsCount' => $itemsCount,
         ];
     }
 }
