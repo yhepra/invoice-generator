@@ -5,26 +5,61 @@ import { storage } from "../../services/storage.js"
 
 export default function SettingsForm({ settings, onChange }) {
   const t = (key) => getTranslation(settings?.language, key);
-  const [emailSettings, setEmailSettings] = useState(storage.getEmailSettings())
+  const [emailSettings, setEmailSettings] = useState({
+    fromAddress: "",
+    fromName: "",
+    smtpHost: "",
+    smtpPort: "587",
+    smtpEncryption: "tls",
+    smtpUsername: "",
+    smtpPassword: "",
+  })
+  const [lastSavedEmailSettings, setLastSavedEmailSettings] = useState(null)
+  const [hasSmtpPassword, setHasSmtpPassword] = useState(false)
   const [savedBanner, setSavedBanner] = useState(false)
 
   useEffect(() => {
-    setEmailSettings(storage.getEmailSettings())
+    const load = async () => {
+      try {
+        const res = await storage.getEmailSettings()
+        setEmailSettings(res.emailSettings)
+        setLastSavedEmailSettings(res.emailSettings)
+        setHasSmtpPassword(res.hasSmtpPassword)
+      } catch {
+        setLastSavedEmailSettings({
+          fromAddress: "",
+          fromName: "",
+          smtpHost: "",
+          smtpPort: "587",
+          smtpEncryption: "tls",
+          smtpUsername: "",
+          smtpPassword: "",
+        })
+      }
+    }
+    load()
   }, [])
 
   const isEmailSettingsDirty = useMemo(() => {
-    const current = storage.getEmailSettings()
-    return JSON.stringify(current) !== JSON.stringify(emailSettings)
-  }, [emailSettings])
+    if (!lastSavedEmailSettings) return false
+    return JSON.stringify(lastSavedEmailSettings) !== JSON.stringify(emailSettings)
+  }, [emailSettings, lastSavedEmailSettings])
 
   const updateEmailSettings = (patch) => {
     setSavedBanner(false)
     setEmailSettings((prev) => ({ ...prev, ...patch }))
   }
 
-  const saveEmailSettings = () => {
-    storage.saveEmailSettings(emailSettings)
-    setSavedBanner(true)
+  const saveEmailSettings = async () => {
+    try {
+      const res = await storage.saveEmailSettings(emailSettings)
+      setEmailSettings(res.emailSettings)
+      setLastSavedEmailSettings(res.emailSettings)
+      setHasSmtpPassword(res.hasSmtpPassword)
+      setSavedBanner(true)
+    } catch {
+      setSavedBanner(false)
+    }
   }
 
   return (
@@ -139,6 +174,7 @@ export default function SettingsForm({ settings, onChange }) {
           onChange={(e) => updateEmailSettings({ smtpPassword: e.target.value })}
           className="w-full rounded-md border border-gray-300 px-3 py-2"
           autoComplete="new-password"
+          placeholder={hasSmtpPassword ? "********" : ""}
         />
       </div>
       <div className="flex items-center justify-end gap-3 pt-2">

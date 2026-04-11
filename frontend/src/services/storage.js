@@ -8,7 +8,6 @@ const STORAGE_KEYS = {
   SIGNATURES: "invoice_gen_signatures",
   HISTORY_VIEW_MODE: "invoice_gen_history_view_mode",
   HISTORY_CACHE: "invoice_gen_history_cache_v1",
-  EMAIL_SETTINGS: "invoice_gen_email_settings",
 };
 
 const safeParseJson = (value) => {
@@ -67,7 +66,16 @@ export const storage = {
         };
         const response = await fetch(`${API_URL}/settings`, { headers });
         if (response.ok) {
-          return await response.json();
+          const json = await response.json();
+          const rest = { ...(json || {}) };
+          delete rest.fromAddress;
+          delete rest.fromName;
+          delete rest.smtpHost;
+          delete rest.smtpPort;
+          delete rest.smtpEncryption;
+          delete rest.smtpUsername;
+          delete rest.hasSmtpPassword;
+          return rest;
         }
       }
 
@@ -80,6 +88,15 @@ export const storage = {
   },
   saveSettings: async (settings) => {
     try {
+      const safeSettings = { ...(settings || {}) };
+      delete safeSettings.fromAddress;
+      delete safeSettings.fromName;
+      delete safeSettings.smtpHost;
+      delete safeSettings.smtpPort;
+      delete safeSettings.smtpEncryption;
+      delete safeSettings.smtpUsername;
+      delete safeSettings.smtpPassword;
+      delete safeSettings.hasSmtpPassword;
       const token = localStorage.getItem("token");
       if (token) {
         const headers = {
@@ -90,38 +107,80 @@ export const storage = {
         await fetch(`${API_URL}/settings`, {
           method: "POST",
           headers,
-          body: JSON.stringify(settings),
+          body: JSON.stringify(safeSettings),
         });
       }
 
       const existing = localStorage.getItem(STORAGE_KEYS.SETTINGS);
       const current = safeParseJson(existing) || {};
-      const updated = { ...current, ...settings };
+      const updated = { ...current, ...safeSettings };
       localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(updated));
     } catch (e) {
       console.error("Error saving settings", e);
     }
   },
 
-  getEmailSettings: () => {
-    const raw = localStorage.getItem(STORAGE_KEYS.EMAIL_SETTINGS);
-    const parsed = safeParseJson(raw) || {};
+  getEmailSettings: async () => {
+    const token = localStorage.getItem("token");
+    const headers = { Accept: "application/json" };
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+
+    const response = await fetch(`${API_URL}/settings`, { headers });
+    if (!response.ok) throw new Error("Failed to fetch settings");
+    const json = await response.json();
+
     return {
-      fromAddress: parsed.fromAddress || "",
-      fromName: parsed.fromName || "",
-      smtpHost: parsed.smtpHost || "",
-      smtpPort: parsed.smtpPort || "587",
-      smtpEncryption: parsed.smtpEncryption || "tls",
-      smtpUsername: parsed.smtpUsername || "",
-      smtpPassword: parsed.smtpPassword || "",
+      emailSettings: {
+        fromAddress: json.fromAddress || "",
+        fromName: json.fromName || "",
+        smtpHost: json.smtpHost || "",
+        smtpPort: String(json.smtpPort || "587"),
+        smtpEncryption: json.smtpEncryption || "tls",
+        smtpUsername: json.smtpUsername || "",
+        smtpPassword: "",
+      },
+      hasSmtpPassword: Boolean(json.hasSmtpPassword),
     };
   },
 
-  saveEmailSettings: (patch) => {
-    const current = storage.getEmailSettings();
-    const updated = { ...current, ...patch };
-    localStorage.setItem(STORAGE_KEYS.EMAIL_SETTINGS, JSON.stringify(updated));
-    return updated;
+  saveEmailSettings: async (emailSettings) => {
+    const token = localStorage.getItem("token");
+    const headers = {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    };
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+
+    const payload = {
+      fromAddress: emailSettings.fromAddress || null,
+      fromName: emailSettings.fromName || null,
+      smtpHost: emailSettings.smtpHost || null,
+      smtpPort: emailSettings.smtpPort ? Number(emailSettings.smtpPort) : null,
+      smtpEncryption: emailSettings.smtpEncryption || null,
+      smtpUsername: emailSettings.smtpUsername || null,
+    };
+    if (emailSettings.smtpPassword) payload.smtpPassword = emailSettings.smtpPassword;
+
+    const response = await fetch(`${API_URL}/settings`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify(payload),
+    });
+    if (!response.ok) throw new Error("Failed to save email settings");
+    const json = await response.json();
+
+    return {
+      emailSettings: {
+        fromAddress: json.fromAddress || "",
+        fromName: json.fromName || "",
+        smtpHost: json.smtpHost || "",
+        smtpPort: String(json.smtpPort || "587"),
+        smtpEncryption: json.smtpEncryption || "tls",
+        smtpUsername: json.smtpUsername || "",
+        smtpPassword: "",
+      },
+      hasSmtpPassword: Boolean(json.hasSmtpPassword),
+    };
   },
 
   // Invoices (Backend API)

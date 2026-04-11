@@ -60,7 +60,7 @@ export const translations = {
     senderEmail: "Sender Email",
     senderName: "Sender Name",
     senderEmailHelp: "Must match the SMTP account configured on the server to avoid rejection.",
-    emailSettingsLocalOnly: "Saved only in your browser. Not stored in our database.",
+    emailSettingsLocalOnly: "Saved to your account and used by the server when sending emails.",
     smtpHost: "SMTP Host",
     smtpPort: "SMTP Port",
     smtpEncryption: "Encryption",
@@ -70,7 +70,7 @@ export const translations = {
     smtpUsername: "SMTP Username",
     smtpPassword: "SMTP Password",
     smtpRequired: "Please complete SMTP settings in Settings before sending email.",
-    emailSettingsSaved: "Saved in your browser.",
+    emailSettingsSaved: "Saved successfully.",
     loading: "Loading...",
 
     // Forms
@@ -405,7 +405,7 @@ export const translations = {
     senderEmail: "Email Pengirim",
     senderName: "Nama Pengirim",
     senderEmailHelp: "Harus sesuai akun SMTP yang dipakai server agar tidak ditolak.",
-    emailSettingsLocalOnly: "Disimpan hanya di browser Anda. Tidak disimpan di database kami.",
+    emailSettingsLocalOnly: "Disimpan di akun Anda dan digunakan server saat mengirim email.",
     smtpHost: "Host SMTP",
     smtpPort: "Port SMTP",
     smtpEncryption: "Enkripsi",
@@ -415,7 +415,7 @@ export const translations = {
     smtpUsername: "Username SMTP",
     smtpPassword: "Password SMTP",
     smtpRequired: "Lengkapi pengaturan SMTP di Settings sebelum mengirim email.",
-    emailSettingsSaved: "Tersimpan di browser Anda.",
+    emailSettingsSaved: "Berhasil disimpan.",
     loading: "Memuat...",
 
     // Forms

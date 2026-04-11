@@ -17,11 +17,24 @@ class UserSetting extends Model
         'footerText',
         'logo_history',
         'signature_history',
+        'fromAddress',
+        'fromName',
+        'smtpHost',
+        'smtpPort',
+        'smtpEncryption',
+        'smtpUsername',
+        'smtpPassword',
     ];
 
     protected $casts = [
         'logo_history' => 'array',
         'signature_history' => 'array',
+        'smtpPort' => 'integer',
+        'smtpPassword' => 'encrypted',
+    ];
+
+    protected $hidden = [
+        'smtpPassword',
     ];
 
     public function user()

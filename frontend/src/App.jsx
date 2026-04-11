@@ -382,15 +382,13 @@ export default function App() {
     if (!savedId) return false;
 
     try {
-      const emailSettings = storage.getEmailSettings()
+      const { emailSettings, hasSmtpPassword } = await storage.getEmailSettings()
       const missingSmtp =
         !emailSettings.smtpHost ||
         !emailSettings.smtpPort ||
         !emailSettings.smtpUsername ||
-        !emailSettings.smtpPassword
-      if (missingSmtp) {
-        throw new Error(t("smtpRequired"))
-      }
+        !hasSmtpPassword
+      if (missingSmtp) throw new Error(t("smtpRequired"))
 
       const pdf = await generatePDFForEmail();
       await storage.sendInvoiceEmail(savedId, {
@@ -402,13 +400,6 @@ export default function App() {
         locale: invoice?.settings?.locale || "id-ID",
         pdfBase64: pdf?.pdfBase64 || null,
         filename: pdf?.filename || null,
-        smtp_host: emailSettings.smtpHost,
-        smtp_port: Number(emailSettings.smtpPort),
-        smtp_encryption: emailSettings.smtpEncryption || "tls",
-        smtp_username: emailSettings.smtpUsername,
-        smtp_password: emailSettings.smtpPassword,
-        from_address: emailSettings.fromAddress || null,
-        from_name: emailSettings.fromName || null,
       });
       showToast(t("emailSent"), "success");
       return true;
