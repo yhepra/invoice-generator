@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Invoice;
+use App\Models\UserSetting;
 use App\Mail\InvoiceMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -280,11 +281,11 @@ class InvoiceController extends Controller
             'locale' => 'nullable|string|max:20',
             'pdfBase64' => 'nullable|string',
             'filename' => 'nullable|string|max:200',
-            'smtp_host' => 'required|string|max:255',
-            'smtp_port' => 'required|integer|min:1|max:65535',
+            'smtp_host' => 'nullable|string|max:255',
+            'smtp_port' => 'nullable|integer|min:1|max:65535',
             'smtp_encryption' => 'nullable|string|in:tls,ssl,none',
-            'smtp_username' => 'required|string|max:255',
-            'smtp_password' => 'required|string|max:255',
+            'smtp_username' => 'nullable|string|max:255',
+            'smtp_password' => 'nullable|string|max:255',
             'from_address' => 'nullable|email|max:200',
             'from_name' => 'nullable|string|max:200',
         ]);
@@ -317,21 +318,38 @@ class InvoiceController extends Controller
         }
 
         try {
-            $encryption = $payload['smtp_encryption'] ?? null;
+            $settings = UserSetting::where('user_id', Auth::id())->first();
+
+            $smtpHost = $payload['smtp_host'] ?? ($settings?->smtpHost ?? null);
+            $smtpPort = $payload['smtp_port'] ?? ($settings?->smtpPort ?? null);
+            $smtpEncryption = $payload['smtp_encryption'] ?? ($settings?->smtpEncryption ?? null);
+            $smtpUsername = $payload['smtp_username'] ?? ($settings?->smtpUsername ?? null);
+            $smtpPassword = $payload['smtp_password'] ?? ($settings?->smtpPassword ?? null);
+
+            if (empty($smtpHost) || empty($smtpPort) || empty($smtpUsername) || empty($smtpPassword)) {
+                return response()->json([
+                    'message' => 'SMTP settings not configured.',
+                ], 422);
+            }
+
+            $encryption = $smtpEncryption;
             if ($encryption === 'none') $encryption = null;
 
             config([
                 'mail.mailers.dynamic' => [
                     'transport' => 'smtp',
-                    'host' => $payload['smtp_host'],
-                    'port' => $payload['smtp_port'],
+                    'host' => $smtpHost,
+                    'port' => $smtpPort,
                     'encryption' => $encryption,
-                    'username' => $payload['smtp_username'],
-                    'password' => $payload['smtp_password'],
+                    'username' => $smtpUsername,
+                    'password' => $smtpPassword,
                     'timeout' => null,
                     'auth_mode' => null,
                 ],
             ]);
+
+            $fromAddress = $payload['from_address'] ?? ($settings?->fromAddress ?? null);
+            $fromName = $payload['from_name'] ?? ($settings?->fromName ?? null);
 
             Mail::mailer('dynamic')->to($payload['to'])->send(
                 new InvoiceMail($invoice, $totals, [
@@ -342,8 +360,8 @@ class InvoiceController extends Controller
                     'locale' => $payload['locale'] ?? 'id-ID',
                     'pdfBinary' => $pdfBinary,
                     'pdfFilename' => $pdfFilename,
-                    'fromAddress' => $payload['from_address'] ?? null,
-                    'fromName' => $payload['from_name'] ?? null,
+                    'fromAddress' => $fromAddress,
+                    'fromName' => $fromName,
                 ])
             );
         } catch (\Throwable $e) {
