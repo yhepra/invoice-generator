@@ -10,10 +10,18 @@ export default function History({ onLoadInvoice, settings }) {
   const [invoices, setInvoices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [meta, setMeta] = useState({
+    current_page: 1,
+    last_page: 1,
+    per_page: 10,
+    total: 0,
+  });
+  const [summary, setSummary] = useState({ total: 0, paid: 0, balance: 0 });
   const t = (key) => getTranslation(settings?.language, key);
 
   // Search & Filter State
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
   const [filterPeriod, setFilterPeriod] = useState("all"); // 'all', '30days', 'thisMonth', 'lastMonth'
   const [filterStatus, setFilterStatus] = useState("all"); // 'all', 'Draft', 'Unpaid', 'Paid', 'Overdue'
 
@@ -21,6 +29,7 @@ export default function History({ onLoadInvoice, settings }) {
   const [viewMode, setViewMode] = useState(() => storage.getViewMode()); // 'grid' | 'list'
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = viewMode === "grid" ? 9 : 10;
+  const [reloadKey, setReloadKey] = useState(0);
 
   // Save view mode when it changes
   useEffect(() => {
@@ -32,24 +41,75 @@ export default function History({ onLoadInvoice, settings }) {
   const [invoiceToDelete, setInvoiceToDelete] = useState(null);
 
   useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      setDebouncedQuery(searchQuery);
+    }, 250);
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery]);
+
+  useEffect(() => {
+    const canUseCache =
+      currentPage === 1 &&
+      !searchQuery &&
+      filterPeriod === "all" &&
+      filterStatus === "all" &&
+      invoices.length === 0;
+
+    if (canUseCache) {
+      const cached = storage.getCachedInvoiceHistory({
+        page: 1,
+        perPage: itemsPerPage,
+        q: "",
+        period: "all",
+        status: "all",
+      });
+      if (cached?.items?.length) {
+        setInvoices(cached.items);
+        if (cached.meta) setMeta(cached.meta);
+        if (cached.summary) setSummary(cached.summary);
+        setLoading(false);
+      }
+    }
+  }, [currentPage, filterPeriod, filterStatus, invoices.length, itemsPerPage, searchQuery]);
+
+  useEffect(() => {
+    let cancelled = false;
+
     const loadData = async () => {
       try {
-        setLoading(true);
-        const data = await storage.getInvoices({ summary: true });
-        // Sort by savedAt descending (newest first)
-        const sortedData = data.sort(
-          (a, b) => new Date(b.savedAt) - new Date(a.savedAt),
-        );
-        setInvoices(sortedData);
+        setError(null);
+        if (invoices.length === 0) setLoading(true);
+
+        const res = await storage.getInvoiceHistory({
+          page: currentPage,
+          perPage: itemsPerPage,
+          q: debouncedQuery,
+          period: filterPeriod,
+          status: filterStatus,
+        });
+
+        if (cancelled) return;
+        setInvoices(res.items || []);
+        setMeta(res.meta || meta);
+        setSummary(res.summary || summary);
+        setLoading(false);
+
+        if (res.meta?.last_page && currentPage > res.meta.last_page) {
+          setCurrentPage(res.meta.last_page);
+        }
       } catch (err) {
+        if (cancelled) return;
         console.error("Failed to load history:", err);
         setError("Failed to load invoices. Please try again later.");
-      } finally {
         setLoading(false);
       }
     };
+
     loadData();
-  }, []);
+    return () => {
+      cancelled = true;
+    };
+  }, [currentPage, debouncedQuery, filterPeriod, filterStatus, itemsPerPage, reloadKey]);
 
   // Reset page when view mode or filters change
   useEffect(() => {
@@ -59,12 +119,8 @@ export default function History({ onLoadInvoice, settings }) {
   const handleDelete = async () => {
     if (invoiceToDelete) {
       await storage.deleteInvoice(invoiceToDelete.historyId);
-      const data = await storage.getInvoices({ summary: true });
-      const sortedData = data.sort(
-        (a, b) => new Date(b.savedAt) - new Date(a.savedAt),
-      );
-      setInvoices(sortedData);
       setInvoiceToDelete(null);
+      setReloadKey((k) => k + 1);
     }
   };
 
@@ -77,7 +133,8 @@ export default function History({ onLoadInvoice, settings }) {
     setInvoices(updatedInvoices);
 
     try {
-      await storage.saveInvoice({ ...invoice, status: newStatus });
+      await storage.updateInvoiceStatus(invoice.historyId, newStatus);
+      setReloadKey((k) => k + 1);
     } catch (err) {
       console.error("Failed to update status", err);
       setError("Failed to update status");
@@ -85,93 +142,7 @@ export default function History({ onLoadInvoice, settings }) {
     }
   };
 
-  // Filter Logic
-  const filteredInvoices = invoices.filter((inv) => {
-    // 1. Search Filter
-    const query = searchQuery.toLowerCase();
-    const number = inv.details?.number?.toLowerCase() || "";
-    const customer = inv.customer?.name?.toLowerCase() || "";
-    // Format date for search matching
-    const dateObj = inv.savedAt ? new Date(inv.savedAt) : null;
-    const dateStr = dateObj ? dateObj.toLocaleDateString().toLowerCase() : "";
-
-    const matchesSearch =
-      number.includes(query) ||
-      customer.includes(query) ||
-      dateStr.includes(query);
-
-    if (!matchesSearch) return false;
-
-    // 2. Time Period Filter
-    if (filterPeriod !== "all") {
-      if (!dateObj) return false; // Should not happen if savedAt exists
-
-      const now = new Date();
-      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      const invDate = new Date(
-        dateObj.getFullYear(),
-        dateObj.getMonth(),
-        dateObj.getDate(),
-      );
-
-      if (filterPeriod === "30days") {
-        const thirtyDaysAgo = new Date(today);
-        thirtyDaysAgo.setDate(today.getDate() - 30);
-        if (invDate < thirtyDaysAgo) return false;
-      } else if (filterPeriod === "thisMonth") {
-        if (
-          invDate.getMonth() !== today.getMonth() ||
-          invDate.getFullYear() !== today.getFullYear()
-        )
-          return false;
-      } else if (filterPeriod === "lastMonth") {
-        const lastMonth = new Date(
-          today.getFullYear(),
-          today.getMonth() - 1,
-          1,
-        );
-        const endLastMonth = new Date(today.getFullYear(), today.getMonth(), 0);
-        if (invDate < lastMonth || invDate > endLastMonth) return false;
-      }
-    }
-
-    // 3. Status Filter
-    if (filterStatus !== "all") {
-      // Since backend might not store status yet, we use the derived status logic
-      // or check if 'status' property exists (if we added it to storage.js)
-      const status = inv.status || "Unpaid"; // Default if undefined
-      if (status !== filterStatus) return false;
-    }
-
-    return true;
-  });
-
-  // Calculate Summary
-  const summaryData = filteredInvoices.reduce(
-    (acc, inv) => {
-      const status = inv.status || "Unpaid";
-      const amount = inv.totals?.total || 0;
-
-      acc.total += amount;
-
-      if (status === "Paid") {
-        acc.paid += amount;
-      } else if (status === "Unpaid" || status === "Overdue") {
-        acc.balance += amount;
-      }
-      return acc;
-    },
-    { total: 0, paid: 0, balance: 0 },
-  );
-
-  // Pagination Logic
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredInvoices.slice(
-    indexOfFirstItem,
-    indexOfLastItem,
-  );
-  const totalPages = Math.ceil(filteredInvoices.length / itemsPerPage);
+  const totalPages = meta?.last_page || 1;
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
@@ -369,7 +340,7 @@ export default function History({ onLoadInvoice, settings }) {
       </div>
 
       {/* Summary Cards */}
-      {!loading && !error && invoices.length > 0 && (
+      {!error && invoices.length > 0 && (
         <div className="mb-8 grid grid-cols-1 gap-6 sm:grid-cols-3">
           {/* Total Tagihan */}
           <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 p-6 text-white shadow-lg transition-transform hover:scale-105">
@@ -392,7 +363,7 @@ export default function History({ onLoadInvoice, settings }) {
                 <p className="font-medium text-blue-100">{t("summaryTotal")}</p>
               </div>
               <p className="mt-4 text-3xl font-bold tracking-tight">
-                {formatCurrency(summaryData.total, settings)}
+                {formatCurrency(summary.total || 0, settings)}
               </p>
             </div>
             {/* Decorative Icon */}
@@ -435,7 +406,7 @@ export default function History({ onLoadInvoice, settings }) {
                 </p>
               </div>
               <p className="mt-4 text-3xl font-bold tracking-tight">
-                {formatCurrency(summaryData.paid, settings)}
+                {formatCurrency(summary.paid || 0, settings)}
               </p>
             </div>
             {/* Decorative Icon */}
@@ -476,7 +447,7 @@ export default function History({ onLoadInvoice, settings }) {
                 <p className="font-medium text-rose-100">{t("balanceDue")}</p>
               </div>
               <p className="mt-4 text-3xl font-bold tracking-tight">
-                {formatCurrency(summaryData.balance, settings)}
+                {formatCurrency(summary.balance || 0, settings)}
               </p>
             </div>
             {/* Decorative Icon */}
@@ -498,7 +469,7 @@ export default function History({ onLoadInvoice, settings }) {
         </div>
       )}
 
-      {loading ? (
+      {loading && invoices.length === 0 ? (
         <div className="flex h-64 items-center justify-center">
           <div className="text-gray-500">{t("loadingHistory")}</div>
         </div>
@@ -512,7 +483,7 @@ export default function History({ onLoadInvoice, settings }) {
         <>
           {viewMode === "grid" ? (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {currentItems.map((inv) => (
+              {invoices.map((inv) => (
                 <div
                   key={inv.historyId}
                   className="flex flex-col justify-between rounded-lg border bg-white p-4 shadow-sm transition-all hover:shadow-md hover:border-brand-200"
@@ -566,7 +537,8 @@ export default function History({ onLoadInvoice, settings }) {
                         {inv.customer?.name || "Unknown Customer"}
                       </p>
                       <p className="text-gray-500">
-                        {inv.items?.length || 0} {t("itemsCount")}
+                        {(inv.itemsCount ?? inv.items?.length ?? 0)}{" "}
+                        {t("itemsCount")}
                       </p>
                     </div>
                   </div>
@@ -575,7 +547,7 @@ export default function History({ onLoadInvoice, settings }) {
                     <div>
                       <p className="text-xs text-gray-500">{t("total")}</p>
                       <p className="font-bold text-brand-600">
-                        {formatCurrency(inv.totals?.total || 0, inv.settings)}
+                        {formatCurrency(inv.totals?.total || 0, settings)}
                       </p>
                     </div>
                     <div className="flex gap-2">
@@ -655,7 +627,7 @@ export default function History({ onLoadInvoice, settings }) {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {currentItems.map((inv) => (
+                    {invoices.map((inv) => (
                       <tr key={inv.historyId} className="hover:bg-gray-50">
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                           #{inv.details?.number || "N/A"}
@@ -704,7 +676,7 @@ export default function History({ onLoadInvoice, settings }) {
                           {inv.customer?.name || "-"}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-brand-600">
-                          {formatCurrency(inv.totals?.total || 0, inv.settings)}
+                          {formatCurrency(inv.totals?.total || 0, settings)}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                           <div className="flex justify-end gap-2">
