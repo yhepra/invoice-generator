@@ -11,6 +11,7 @@ export default function Header({
   onGoSettings,
   onGoContacts,
   onGoHistory,
+  onGoReceipts,
   onGoUpgrade,
   onGoProfile,
   onGoAdmin,
@@ -224,6 +225,30 @@ export default function Header({
                               />
                             </svg>
                             {t("history")}
+                          </button>
+
+                          <button
+                            onClick={() => {
+                              onGoReceipts && onGoReceipts();
+                              setIsMenuOpen(false);
+                            }}
+                            className="group flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-brand-600"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="mr-3 h-5 w-5 text-gray-400 group-hover:text-brand-500"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M9 12h6m-6 4h6M7 20h10a2 2 0 002-2V6a2 2 0 00-2-2H9l-2 2H7a2 2 0 00-2 2v10a2 2 0 002 2z"
+                              />
+                            </svg>
+                            {t("receiptsNav")}
                           </button>
 
                           <button
@@ -508,6 +533,16 @@ export default function Header({
 
                     <button
                       onClick={() => {
+                        onGoReceipts && onGoReceipts();
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="block w-full text-left rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-brand-700"
+                    >
+                      {t("receiptsNav")}
+                    </button>
+
+                    <button
+                      onClick={() => {
                         onGoContacts();
                         setIsMobileMenuOpen(false);
                       }}
@@ -640,6 +675,7 @@ Header.propTypes = {
   onGoSettings: PropTypes.func.isRequired,
   onGoContacts: PropTypes.func,
   onGoHistory: PropTypes.func,
+  onGoReceipts: PropTypes.func,
   onGoUpgrade: PropTypes.func,
   onGoProfile: PropTypes.func,
   user: PropTypes.object,

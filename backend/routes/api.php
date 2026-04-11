@@ -33,6 +33,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/upgrade/verify', [AuthController::class, 'verifyPayment']);
     
     Route::apiResource('invoices', InvoiceController::class);
+    Route::post('/invoices/{id}/send-email', [InvoiceController::class, 'sendEmail']);
     Route::apiResource('contacts', ContactController::class);
     
     Route::get('/settings', [SettingsController::class, 'index']);

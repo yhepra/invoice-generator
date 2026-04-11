@@ -11,6 +11,7 @@ import Landing from "./pages/Landing.jsx";
 import Settings from "./pages/Settings.jsx";
 import Contacts from "./pages/Contacts.jsx";
 import History from "./pages/History.jsx";
+import Receipts from "./pages/Receipts.jsx";
 import Login from "./pages/Login.jsx";
 import Register from "./pages/Register.jsx";
 import ForgotPassword from "./pages/ForgotPassword.jsx";
@@ -26,6 +27,7 @@ import { storage } from "./services/storage";
 import { auth } from "./services/auth";
 import defaultInvoice from "./data/defaultInvoice";
 import generateInvoiceNumber from "./utils/generateInvoiceNumber.js";
+import { getTranslation } from "./data/translations.js";
 
 export default function App() {
   const navigate = useNavigate();
@@ -124,7 +126,8 @@ export default function App() {
   }, []);
 
   const invoiceApi = useInvoice(defaultInvoice);
-  const { invoice, updateSettings, setInvoice, downloadPDF } = invoiceApi;
+  const { invoice, updateSettings, setInvoice, downloadPDF, generatePDFForEmail } = invoiceApi;
+  const t = (key) => getTranslation(invoice?.settings?.language, key);
 
   // Load settings when user changes or app starts
   useEffect(() => {
@@ -354,7 +357,7 @@ export default function App() {
       // Update URL to /edit/:id if not already
       navigate(`/edit/${savedInvoice.historyId}`, { replace: true });
 
-      return true;
+      return savedInvoice.historyId;
     } catch (error) {
       showToast(error.message || "Failed to save invoice.", "error");
       return false;
@@ -375,6 +378,54 @@ export default function App() {
     if (!saved) return;
 
     downloadPDF();
+  };
+
+  const handleSendInvoiceEmail = async ({ to, subject, message }) => {
+    if (!user) {
+      setPendingAction("save");
+      navigate("/login");
+      showToast("Please login to send invoices", "error");
+      return false;
+    }
+
+    const savedId = await handleSaveInvoice(false);
+    if (!savedId) return false;
+
+    try {
+      const emailSettings = storage.getEmailSettings()
+      const missingSmtp =
+        !emailSettings.smtpHost ||
+        !emailSettings.smtpPort ||
+        !emailSettings.smtpUsername ||
+        !emailSettings.smtpPassword
+      if (missingSmtp) {
+        throw new Error(t("smtpRequired"))
+      }
+
+      const pdf = await generatePDFForEmail();
+      await storage.sendInvoiceEmail(savedId, {
+        to,
+        subject,
+        message,
+        language: invoice?.settings?.language || "id",
+        currency: invoice?.settings?.currency || "IDR",
+        locale: invoice?.settings?.locale || "id-ID",
+        pdfBase64: pdf?.pdfBase64 || null,
+        filename: pdf?.filename || null,
+        smtp_host: emailSettings.smtpHost,
+        smtp_port: Number(emailSettings.smtpPort),
+        smtp_encryption: emailSettings.smtpEncryption || "tls",
+        smtp_username: emailSettings.smtpUsername,
+        smtp_password: emailSettings.smtpPassword,
+        from_address: emailSettings.fromAddress || null,
+        from_name: emailSettings.fromName || null,
+      });
+      showToast(t("emailSent"), "success");
+      return true;
+    } catch (error) {
+      showToast(error.message || "Failed to send email.", "error");
+      return false;
+    }
   };
 
   const handleLogin = (user) => {
@@ -442,6 +493,7 @@ export default function App() {
         onGoSettings={() => navigate("/settings")}
         onGoContacts={() => navigate("/contacts")}
         onGoHistory={() => navigate("/history")}
+        onGoReceipts={() => navigate("/receipts")}
         onGoUpgrade={() => navigate("/upgrade")}
         onGoProfile={() => navigate("/profile")}
         onGoAdmin={() => navigate("/admin")}
@@ -477,6 +529,7 @@ export default function App() {
                 onResetInvoice={handleCreateInvoiceWrapper}
                 onSave={handleSaveInvoice}
                 onDownload={handleDownloadPDF}
+                onSendEmail={handleSendInvoiceEmail}
                 user={user}
                 isSaving={isSavingInvoice}
               />
@@ -491,6 +544,7 @@ export default function App() {
                 onResetInvoice={handleResetInvoice}
                 onSave={handleSaveInvoice}
                 onDownload={handleDownloadPDF}
+                onSendEmail={handleSendInvoiceEmail}
                 user={user}
                 isSaving={isSavingInvoice}
               />
@@ -529,6 +583,10 @@ export default function App() {
                 settings={invoice.settings}
               />
             }
+          />
+          <Route
+            path="/receipts"
+            element={<Receipts settings={invoice.settings} user={user} />}
           />
           <Route
             path="/auth/callback"

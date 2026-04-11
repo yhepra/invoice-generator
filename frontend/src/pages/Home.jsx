@@ -1,4 +1,4 @@
-import React from "react"
+import React, { useState } from "react"
 import PropTypes from "prop-types"
 import SellerForm from "../components/forms/SellerForm.jsx"
 import CustomerForm from "../components/forms/CustomerForm.jsx"
@@ -26,10 +26,17 @@ export default function Home({
   downloadPDF,
   onSave,
   onDownload,
+  onSendEmail,
   user,
   isSaving
 }) {
   const t = (key) => getTranslation(invoice.settings.language, key);
+  const [isEmailOpen, setIsEmailOpen] = useState(false)
+  const [emailTo, setEmailTo] = useState("")
+  const [emailSubject, setEmailSubject] = useState("")
+  const [emailMessage, setEmailMessage] = useState("")
+  const [emailError, setEmailError] = useState("")
+  const [isSendingEmail, setIsSendingEmail] = useState(false)
 
   const handleDownload = async () => {
     // If external onDownload is provided (from App.jsx which handles auth), use it
@@ -79,6 +86,39 @@ export default function Home({
 
     // Proceed with download
     downloadPDF()
+  }
+
+  const openEmail = () => {
+    setEmailError("")
+    setEmailTo(String(invoice.customer?.email || "").trim())
+    setEmailSubject(`${t("invoice")} ${invoice.details?.number || ""}`.trim())
+    setEmailMessage("")
+    setIsEmailOpen(true)
+  }
+
+  const handleSendEmail = async () => {
+    if (!onSendEmail) return
+
+    const to = String(emailTo || "").trim()
+    if (!to) {
+      setEmailError(t("emailTo"))
+      return
+    }
+
+    setEmailError("")
+    setIsSendingEmail(true)
+    try {
+      const ok = await onSendEmail({
+        to,
+        subject: String(emailSubject || "").trim(),
+        message: String(emailMessage || "").trim()
+      })
+      if (ok) setIsEmailOpen(false)
+    } catch (e) {
+      setEmailError(e?.message || "Failed to send email")
+    } finally {
+      setIsSendingEmail(false)
+    }
   }
 
   return (
@@ -137,6 +177,14 @@ export default function Home({
                   t('save')
                 )}
               </Button>
+              <Button
+                onClick={openEmail}
+                variant="outline"
+                className="w-full"
+                disabled={!onSendEmail}
+              >
+                {t("sendInvoiceEmail")}
+              </Button>
               <Button onClick={handleDownload} className="w-full">{t('download')}</Button>
             </div>
           </div>
@@ -145,6 +193,71 @@ export default function Home({
           <InvoicePreview invoice={invoice} totals={totals} previewRef={previewRef} user={user} />
         </div>
       </div>
+
+      {isEmailOpen ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto overflow-x-hidden bg-black/50 p-4 backdrop-blur-sm">
+          <div className="relative w-full max-w-md rounded-lg bg-white shadow-lg ring-1 ring-gray-200">
+            <div className="p-6">
+              <div className="text-lg font-semibold text-gray-900">{t("sendInvoiceEmail")}</div>
+
+              <div className="mt-4 space-y-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">{t("emailTo")}</label>
+                  <input
+                    type="email"
+                    className="mt-1 block w-full rounded-md border border-gray-300 bg-white py-2 px-3 text-sm placeholder-gray-500 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+                    value={emailTo}
+                    onChange={(e) => setEmailTo(e.target.value)}
+                    placeholder={t("email")}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">{t("emailSubject")}</label>
+                  <input
+                    type="text"
+                    className="mt-1 block w-full rounded-md border border-gray-300 bg-white py-2 px-3 text-sm placeholder-gray-500 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+                    value={emailSubject}
+                    onChange={(e) => setEmailSubject(e.target.value)}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">{t("emailMessageOptional")}</label>
+                  <textarea
+                    rows={4}
+                    className="mt-1 block w-full rounded-md border border-gray-300 bg-white py-2 px-3 text-sm placeholder-gray-500 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+                    value={emailMessage}
+                    onChange={(e) => setEmailMessage(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              {emailError ? (
+                <div className="mt-3 text-sm text-red-600">{emailError}</div>
+              ) : null}
+
+              <div className="mt-6 flex justify-end gap-3">
+                <Button
+                  variant="ghost"
+                  onClick={() => setIsEmailOpen(false)}
+                  disabled={isSendingEmail}
+                  className="text-gray-700 hover:bg-gray-100"
+                >
+                  {t("cancel")}
+                </Button>
+                <Button
+                  onClick={handleSendEmail}
+                  loading={isSendingEmail}
+                  disabled={isSendingEmail}
+                >
+                  {isSendingEmail ? t("sendingEmail") : t("sendInvoiceEmail")}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   )
 }
@@ -174,5 +287,6 @@ Home.propTypes = {
   moveItemUp: PropTypes.func.isRequired,
   moveItemDown: PropTypes.func.isRequired,
   downloadPDF: PropTypes.func.isRequired,
-  onSave: PropTypes.func
+  onSave: PropTypes.func,
+  onSendEmail: PropTypes.func
 }

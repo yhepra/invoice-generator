@@ -1,12 +1,21 @@
 import calculateTotals from "../utils/calculateTotals";
 
-const API_URL = "https://be.generateinvoice.id/api";
+const API_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:8001/api";
 
 const STORAGE_KEYS = {
   SETTINGS: "invoice_gen_settings",
   LOGOS: "invoice_gen_logos",
   SIGNATURES: "invoice_gen_signatures",
   HISTORY_VIEW_MODE: "invoice_gen_history_view_mode",
+  EMAIL_SETTINGS: "invoice_gen_email_settings",
+};
+
+const safeParseJson = (value) => {
+  try {
+    return value ? JSON.parse(value) : null;
+  } catch {
+    return null;
+  }
 };
 
 // Helper to determine status based on invoice data
@@ -85,12 +94,33 @@ export const storage = {
       }
 
       const existing = localStorage.getItem(STORAGE_KEYS.SETTINGS);
-      const current = existing ? JSON.parse(existing) : {};
+      const current = safeParseJson(existing) || {};
       const updated = { ...current, ...settings };
       localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(updated));
     } catch (e) {
       console.error("Error saving settings", e);
     }
+  },
+
+  getEmailSettings: () => {
+    const raw = localStorage.getItem(STORAGE_KEYS.EMAIL_SETTINGS);
+    const parsed = safeParseJson(raw) || {};
+    return {
+      fromAddress: parsed.fromAddress || "",
+      fromName: parsed.fromName || "",
+      smtpHost: parsed.smtpHost || "",
+      smtpPort: parsed.smtpPort || "587",
+      smtpEncryption: parsed.smtpEncryption || "tls",
+      smtpUsername: parsed.smtpUsername || "",
+      smtpPassword: parsed.smtpPassword || "",
+    };
+  },
+
+  saveEmailSettings: (patch) => {
+    const current = storage.getEmailSettings();
+    const updated = { ...current, ...patch };
+    localStorage.setItem(STORAGE_KEYS.EMAIL_SETTINGS, JSON.stringify(updated));
+    return updated;
   },
 
   // Invoices (Backend API)
@@ -212,6 +242,28 @@ export const storage = {
       console.error("Error saving invoice", e);
       throw e;
     }
+  },
+
+  sendInvoiceEmail: async (id, payload) => {
+    const token = localStorage.getItem("token");
+    const headers = {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    };
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+
+    const response = await fetch(`${API_URL}/invoices/${id}/send-email`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || "Failed to send email");
+    }
+
+    return await response.json();
   },
 
   deleteInvoice: async (id) => {

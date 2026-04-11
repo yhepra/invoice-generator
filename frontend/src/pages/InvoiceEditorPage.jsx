@@ -9,6 +9,7 @@ export default function InvoiceEditorPage({
   user,
   onSave,
   onDownload,
+  onSendEmail,
   isSaving,
 }) {
   const { id } = useParams();
@@ -31,6 +32,7 @@ export default function InvoiceEditorPage({
       user={user}
       onSave={onSave}
       onDownload={onDownload}
+      onSendEmail={onSendEmail}
       isSaving={isSaving}
     />
   );

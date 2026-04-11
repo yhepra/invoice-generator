@@ -93,10 +93,22 @@ export default function useInvoice(initialData = null) {
       return { ...prev, items: nextItems }
     })
 
+  const getPdfFilename = () => {
+    const headerTitleNormalized = String(invoice?.details?.headerTitle || "")
+      .trim()
+      .toLowerCase()
+    const isReceipt =
+      headerTitleNormalized.startsWith("receipt") ||
+      headerTitleNormalized.startsWith("kwitansi")
+    return isReceipt
+      ? `Kwitansi-${invoice.details.number}.pdf`
+      : `${invoice.details.number}.pdf`
+  }
+
   const downloadPDF = async () => {
     const element = previewRef.current
     if (!element) return
-    const filename = `${invoice.details.number}.pdf`
+    const filename = getPdfFilename()
     const opt = {
       margin: 10,
       filename,
@@ -106,6 +118,32 @@ export default function useInvoice(initialData = null) {
       pagebreak: { mode: ["css", "legacy"] }
     }
     await html2pdf().set(opt).from(element).save()
+  }
+
+  const generatePDFForEmail = async () => {
+    const element = previewRef.current
+    if (!element) return null
+
+    const filename = getPdfFilename()
+    const opt = {
+      margin: 10,
+      filename,
+      image: { type: "jpeg", quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true },
+      jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+      pagebreak: { mode: ["css", "legacy"] }
+    }
+
+    const dataUri = await html2pdf()
+      .set(opt)
+      .from(element)
+      .toPdf()
+      .outputPdf("datauristring")
+
+    const base64 = String(dataUri || "").split(",")[1] || null
+    if (!base64) return null
+
+    return { pdfBase64: base64, filename }
   }
 
   return {
@@ -123,6 +161,7 @@ export default function useInvoice(initialData = null) {
     moveItemUp,
     moveItemDown,
     downloadPDF,
+    generatePDFForEmail,
     setInvoice
   }
 }

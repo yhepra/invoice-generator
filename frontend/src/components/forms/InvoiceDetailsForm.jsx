@@ -3,66 +3,79 @@ import PropTypes from "prop-types"
 import { getTranslation } from "../../data/translations.js"
 
 export default function InvoiceDetailsForm({ details, onChange, user, settings }) {
-  const isPremium = user && user.plan === 'premium';
-  const t = (key) => getTranslation(settings?.language, key);
-  const headerTitleNormalized = String(details.headerTitle || "").trim().toLowerCase();
+  const isPremium = user && user.plan === "premium"
+  const t = (key) => getTranslation(settings?.language, key)
+
+  const headerTitleNormalized = String(details.headerTitle || "").trim().toLowerCase()
   const isQuotation =
     headerTitleNormalized.startsWith("quotation") ||
     headerTitleNormalized.startsWith("penawaran") ||
-    headerTitleNormalized === String(t("quotation")).trim().toLowerCase();
-  const numberLabel = isQuotation ? t("quotationNumber") : t("number");
-  const dateLabel = isQuotation ? t("quotationDate") : t("date");
-  const dueDateLabel = isQuotation ? t("validUntil") : t("dueDate");
+    headerTitleNormalized === String(t("quotation")).trim().toLowerCase()
+  const documentTypeValue = isQuotation ? "quotation" : "invoice"
+
+  const numberLabel = isQuotation ? t("quotationNumber") : t("number")
+  const dateLabel = isQuotation ? t("quotationDate") : t("date")
+  const dueDateLabel = isQuotation ? t("validUntil") : t("dueDate")
 
   return (
     <div className="space-y-3">
-      <h2 className="text-lg font-semibold">{t('details')}</h2>
+      <h2 className="text-lg font-semibold">{t("details")}</h2>
       <div>
-        <label className="block text-sm text-gray-600 mb-1">{t('documentType')}</label>
+        <label className="block text-sm text-gray-600 mb-1">{t("documentType")}</label>
         <select
-          value={isQuotation ? "quotation" : "invoice"}
+          value={documentTypeValue}
           onChange={(e) => {
-            const type = e.target.value;
-            onChange({ headerTitle: type === 'quotation' ? t('quotation') : t('invoice') });
+            const type = e.target.value
+            onChange({
+              headerTitle: type === "quotation" ? t("quotation") : t("invoice")
+            })
           }}
           className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
         >
-          <option value="invoice">{t('invoice')}</option>
-          <option value="quotation">{t('quotation')}</option>
+          <option value="invoice">{t("invoice")}</option>
+          <option value="quotation">{t("quotation")}</option>
         </select>
       </div>
       <div>
-        <label className="block text-sm text-gray-600 mb-1">{t('headerTitle')}</label>
+        <label className="block text-sm text-gray-600 mb-1">{t("headerTitle")}</label>
         <input
           type="text"
-          value={details.headerTitle || t('invoice')}
+          value={details.headerTitle || t(documentTypeValue)}
           onChange={(e) => {
             if (e.target.value.length <= 30) {
-              onChange({ headerTitle: e.target.value });
+              onChange({ headerTitle: e.target.value })
             }
           }}
           maxLength={30}
-          placeholder={t('placeholderHeader')}
+          placeholder={t("placeholderHeader")}
           readOnly={!isPremium}
-          className={`w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 ${!isPremium ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+          className={`w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 ${!isPremium ? "bg-gray-100 cursor-not-allowed" : ""}`}
         />
-        {!isPremium && <p className="text-xs text-gray-500 mt-1">{t('upgradeToPremiumHeader')}</p>}
+        {!isPremium && (
+          <p className="text-xs text-gray-500 mt-1">{t("upgradeToPremiumHeader")}</p>
+        )}
       </div>
       <div>
-        <label className="block text-sm text-gray-600 mb-1">{numberLabel} <span className="text-red-500">*</span></label>
+        <label className="block text-sm text-gray-600 mb-1">
+          {numberLabel} <span className="text-red-500">*</span>
+        </label>
         <input
           type="text"
           value={details.number}
           onChange={(e) => onChange({ number: e.target.value })}
-          placeholder={t('invoiceNumber')}
+          placeholder={t("invoiceNumber")}
           readOnly={!isPremium}
-          className={`w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 ${!isPremium ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+          className={`w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 ${!isPremium ? "bg-gray-100 cursor-not-allowed" : ""}`}
         />
-        {!isPremium && <p className="text-xs text-gray-500 mt-1">{t('upgradeToPremiumNumber')}</p>}
+        {!isPremium && (
+          <p className="text-xs text-gray-500 mt-1">{t("upgradeToPremiumNumber")}</p>
+        )}
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-sm text-gray-600 mb-1">{dateLabel} <span className="text-red-500">*</span></label>
+          <label className="block text-sm text-gray-600 mb-1">
+            {dateLabel} <span className="text-red-500">*</span>
+          </label>
           <input
             type="date"
             value={details.invoiceDate}
@@ -71,7 +84,9 @@ export default function InvoiceDetailsForm({ details, onChange, user, settings }
           />
         </div>
         <div>
-          <label className="block text-sm text-gray-600 mb-1">{dueDateLabel} <span className="text-red-500">*</span></label>
+          <label className="block text-sm text-gray-600 mb-1">
+            {dueDateLabel} <span className="text-red-500">*</span>
+          </label>
           <input
             type="date"
             value={details.dueDate}
@@ -83,14 +98,14 @@ export default function InvoiceDetailsForm({ details, onChange, user, settings }
       <textarea
         value={details.notes}
         onChange={(e) => onChange({ notes: e.target.value })}
-        placeholder={t('notes')}
+        placeholder={t("notes")}
         className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
         rows={3}
       />
       <textarea
         value={details.terms}
         onChange={(e) => onChange({ terms: e.target.value })}
-        placeholder={t('terms')}
+        placeholder={t("terms")}
         className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
         rows={3}
       />
@@ -106,5 +121,7 @@ InvoiceDetailsForm.propTypes = {
     notes: PropTypes.string,
     terms: PropTypes.string
   }).isRequired,
-  onChange: PropTypes.func.isRequired
+  onChange: PropTypes.func.isRequired,
+  user: PropTypes.object,
+  settings: PropTypes.object
 }
