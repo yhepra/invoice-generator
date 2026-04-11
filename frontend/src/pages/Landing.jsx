@@ -25,7 +25,7 @@ export default function Landing({
       const loadData = async () => {
         setLoading(true);
         try {
-          const invoices = await storage.getInvoices();
+          const invoices = await storage.getInvoices({ summary: true });
           // Get top 3 most recent
           setRecentInvoices(invoices.slice(0, 3));
         } catch (error) {
@@ -161,7 +161,7 @@ export default function Landing({
                       {inv.customer.name || t("unknownCustomer")}
                     </p>
                     <p className="text-sm text-gray-500">
-                      {inv.items.length} {t("itemsCount")}
+                      {(inv.itemsCount ?? inv.items.length)} {t("itemsCount")}
                     </p>
                   </div>
                 </div>

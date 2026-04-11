@@ -4,7 +4,11 @@ import PhoneInput from "../common/PhoneInput.jsx"
 import { storage } from "../../services/storage"
 import { getTranslation } from "../../data/translations.js"
 
-export default function CustomerForm({ customer, onChange, settings }) {
+const CustomerForm = React.memo(function CustomerForm({
+  customer,
+  onChange,
+  settings,
+}) {
   const [suggestions, setSuggestions] = useState([])
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
@@ -117,7 +121,7 @@ export default function CustomerForm({ customer, onChange, settings }) {
       </div>
     </div>
   )
-}
+})
 
 CustomerForm.propTypes = {
   customer: PropTypes.shape({
@@ -128,3 +132,5 @@ CustomerForm.propTypes = {
   }).isRequired,
   onChange: PropTypes.func.isRequired
 }
+
+export default CustomerForm

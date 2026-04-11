@@ -2,7 +2,7 @@ import React from "react"
 import PropTypes from "prop-types"
 import { getTranslation } from "../../data/translations.js"
 
-export default function InvoiceItemsForm({
+const InvoiceItemsForm = React.memo(function InvoiceItemsForm({
   items,
   onAddItem,
   onUpdateItem,
@@ -157,7 +157,7 @@ export default function InvoiceItemsForm({
       </div>
     </div>
   )
-}
+})
 
 InvoiceItemsForm.propTypes = {
   items: PropTypes.arrayOf(
@@ -176,3 +176,5 @@ InvoiceItemsForm.propTypes = {
   onMoveUp: PropTypes.func.isRequired,
   onMoveDown: PropTypes.func.isRequired
 }
+
+export default InvoiceItemsForm

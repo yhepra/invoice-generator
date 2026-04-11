@@ -2,7 +2,12 @@ import React from "react"
 import PropTypes from "prop-types"
 import { getTranslation } from "../../data/translations.js"
 
-export default function InvoiceDetailsForm({ details, onChange, user, settings }) {
+const InvoiceDetailsForm = React.memo(function InvoiceDetailsForm({
+  details,
+  onChange,
+  user,
+  settings,
+}) {
   const isPremium = user && user.plan === "premium"
   const t = (key) => getTranslation(settings?.language, key)
 
@@ -111,7 +116,7 @@ export default function InvoiceDetailsForm({ details, onChange, user, settings }
       />
     </div>
   )
-}
+})
 
 InvoiceDetailsForm.propTypes = {
   details: PropTypes.shape({
@@ -125,3 +130,5 @@ InvoiceDetailsForm.propTypes = {
   user: PropTypes.object,
   settings: PropTypes.object
 }
+
+export default InvoiceDetailsForm

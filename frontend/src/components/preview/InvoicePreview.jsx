@@ -2,7 +2,12 @@ import React from "react"
 import PropTypes from "prop-types"
 import SimpleInvoice from "../../templates/SimpleInvoice.jsx"
 
-export default function InvoicePreview({ invoice, totals, previewRef, user }) {
+const InvoicePreview = React.memo(function InvoicePreview({
+  invoice,
+  totals,
+  previewRef,
+  user,
+}) {
   return (
     <div className="rounded-lg border bg-white shadow-sm">
       <div ref={previewRef} id="invoice-preview" className="invoice-a4">
@@ -10,7 +15,7 @@ export default function InvoicePreview({ invoice, totals, previewRef, user }) {
       </div>
     </div>
   )
-}
+})
 
 InvoicePreview.propTypes = {
   invoice: PropTypes.shape({
@@ -28,3 +33,5 @@ InvoicePreview.propTypes = {
   }).isRequired,
   previewRef: PropTypes.object.isRequired
 }
+
+export default InvoicePreview

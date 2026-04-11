@@ -124,25 +124,36 @@ export const storage = {
   },
 
   // Invoices (Backend API)
-  getInvoices: async () => {
+  getInvoices: async (options = {}) => {
     try {
+      const summary = options?.summary === true;
       const token = localStorage.getItem("token");
       const headers = {
         Accept: "application/json",
       };
       if (token) headers["Authorization"] = `Bearer ${token}`;
 
-      const response = await fetch(`${API_URL}/invoices`, { headers });
+      const url = summary ? `${API_URL}/invoices?summary=1` : `${API_URL}/invoices`;
+      const response = await fetch(url, { headers });
       if (!response.ok) throw new Error("Failed to fetch invoices");
       const data = await response.json();
 
       // Map Backend -> Frontend
       return data.map((inv) => {
-        const items = inv.items.map((i) => ({
-          ...i,
-          taxPercent: i.tax_percent || 0,
-        }));
-        const totals = calculateTotals({ items });
+        const items = Array.isArray(inv.items)
+          ? inv.items.map((i) => ({
+              ...i,
+              taxPercent: i.tax_percent || 0,
+            }))
+          : [];
+
+        const summaryTotals = {
+          subtotal: Number(inv.subtotal ?? 0),
+          taxAmount: Number(inv.tax_amount ?? 0),
+          total: Number(inv.total ?? 0),
+        };
+
+        const totals = items.length ? calculateTotals({ items }) : summaryTotals;
 
         return {
           ...inv,
@@ -151,6 +162,7 @@ export const storage = {
           seller: inv.seller_info,
           customer: inv.customer_info,
           items: items,
+          itemsCount: Number(inv.items_count ?? items.length),
           totals: totals,
           details: {
             number: inv.number,
@@ -171,6 +183,49 @@ export const storage = {
       console.error("Error fetching invoices", e);
       return [];
     }
+  },
+
+  getInvoice: async (id) => {
+    const token = localStorage.getItem("token");
+    const headers = {
+      Accept: "application/json",
+    };
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+
+    const response = await fetch(`${API_URL}/invoices/${id}`, { headers });
+    if (!response.ok) throw new Error("Failed to fetch invoice");
+    const inv = await response.json();
+
+    const items = Array.isArray(inv.items)
+      ? inv.items.map((i) => ({
+          ...i,
+          taxPercent: i.tax_percent || 0,
+        }))
+      : [];
+    const totals = calculateTotals({ items });
+
+    return {
+      ...inv,
+      invoiceNumber: inv.number,
+      dueDate: inv.due_date,
+      seller: inv.seller_info,
+      customer: inv.customer_info,
+      items,
+      itemsCount: items.length,
+      totals,
+      details: {
+        number: inv.number,
+        date: inv.date,
+        invoiceDate: inv.date,
+        dueDate: inv.due_date,
+        notes: inv.notes,
+        terms: inv.terms,
+      },
+      settings: { currency: "IDR", locale: "id-ID" },
+      historyId: inv.uuid || inv.id,
+      savedAt: inv.created_at,
+      status: calculateStatus(inv),
+    };
   },
 
   saveInvoice: async (invoice) => {
