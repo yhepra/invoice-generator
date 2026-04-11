@@ -35,7 +35,7 @@ export default function History({ onLoadInvoice, settings }) {
     const loadData = async () => {
       try {
         setLoading(true);
-        const data = await storage.getInvoices();
+        const data = await storage.getInvoices({ summary: true });
         // Sort by savedAt descending (newest first)
         const sortedData = data.sort(
           (a, b) => new Date(b.savedAt) - new Date(a.savedAt),
@@ -59,7 +59,7 @@ export default function History({ onLoadInvoice, settings }) {
   const handleDelete = async () => {
     if (invoiceToDelete) {
       await storage.deleteInvoice(invoiceToDelete.historyId);
-      const data = await storage.getInvoices();
+      const data = await storage.getInvoices({ summary: true });
       const sortedData = data.sort(
         (a, b) => new Date(b.savedAt) - new Date(a.savedAt),
       );

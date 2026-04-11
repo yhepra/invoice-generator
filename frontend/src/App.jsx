@@ -167,27 +167,17 @@ export default function App() {
 
   const handleLoadInvoiceById = useCallback(
     async (id) => {
-      const invoices = await storage.getInvoices();
-      // Try to find by historyId (backend id) or id (frontend generated id)
-      const found = invoices.find(
-        (inv) =>
-          String(inv.historyId) === String(id) || String(inv.id) === String(id),
-      );
-
-      if (found) {
-        const merged = {
-          ...defaultInvoice,
-          ...found,
-          settings: { ...defaultInvoice.settings, ...found.settings },
-          seller: { ...defaultInvoice.seller, ...found.seller },
-          customer: { ...defaultInvoice.customer, ...found.customer },
-          details: { ...defaultInvoice.details, ...found.details },
-          items: found.items || [],
-        };
-        setInvoice(merged);
-      } else {
-        throw new Error("Invoice not found");
-      }
+      const found = await storage.getInvoice(id);
+      const merged = {
+        ...defaultInvoice,
+        ...found,
+        settings: { ...defaultInvoice.settings, ...found.settings },
+        seller: { ...defaultInvoice.seller, ...found.seller },
+        customer: { ...defaultInvoice.customer, ...found.customer },
+        details: { ...defaultInvoice.details, ...found.details },
+        items: found.items || [],
+      };
+      setInvoice(merged);
     },
     [setInvoice],
   );

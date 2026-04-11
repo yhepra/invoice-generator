@@ -4,7 +4,12 @@ import PhoneInput from "../common/PhoneInput.jsx";
 import { storage } from "../../services/storage";
 import { getTranslation } from "../../data/translations.js";
 
-export default function SellerForm({ seller, onChange, settings, user }) {
+const SellerForm = React.memo(function SellerForm({
+  seller,
+  onChange,
+  settings,
+  user,
+}) {
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -582,7 +587,7 @@ export default function SellerForm({ seller, onChange, settings, user }) {
       </div>
     </div>
   );
-}
+});
 
 SellerForm.propTypes = {
   seller: PropTypes.shape({
@@ -598,3 +603,5 @@ SellerForm.propTypes = {
   onChange: PropTypes.func.isRequired,
   user: PropTypes.object,
 };
+
+export default SellerForm;

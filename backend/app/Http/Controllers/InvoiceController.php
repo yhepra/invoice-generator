@@ -11,8 +11,34 @@ use Illuminate\Support\Facades\Mail;
 
 class InvoiceController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        if ($request->boolean('summary')) {
+            $totals = DB::table('invoice_items')
+                ->select('invoice_id')
+                ->selectRaw('SUM(quantity * price) as subtotal')
+                ->selectRaw('SUM(quantity * price * (tax_percent / 100)) as tax_amount')
+                ->selectRaw('SUM(quantity * price * (1 + (tax_percent / 100))) as total')
+                ->groupBy('invoice_id');
+
+            $invoices = Invoice::query()
+                ->where('invoices.user_id', Auth::id())
+                ->leftJoinSub($totals, 't', function ($join) {
+                    $join->on('t.invoice_id', '=', 'invoices.id');
+                })
+                ->withCount('items')
+                ->orderByDesc('invoices.created_at')
+                ->select('invoices.*')
+                ->addSelect([
+                    DB::raw('COALESCE(t.subtotal, 0) as subtotal'),
+                    DB::raw('COALESCE(t.tax_amount, 0) as tax_amount'),
+                    DB::raw('COALESCE(t.total, 0) as total'),
+                ])
+                ->get();
+
+            return response()->json($invoices);
+        }
+
         $invoices = Invoice::where('user_id', Auth::id())->with('items')->latest()->get();
         return response()->json($invoices);
     }

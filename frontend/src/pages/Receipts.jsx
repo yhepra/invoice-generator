@@ -30,7 +30,7 @@ export default function Receipts({ settings, user }) {
     const load = async () => {
       try {
         setLoading(true);
-        const data = await storage.getInvoices();
+        const data = await storage.getInvoices({ summary: true });
         const sorted = data.sort((a, b) => new Date(b.savedAt) - new Date(a.savedAt));
         setInvoices(sorted);
       } catch (e) {
@@ -88,13 +88,28 @@ export default function Receipts({ settings, user }) {
 
   const handleSelect = (inv) => {
     setSelectedInvoice(inv);
-    receiptApi.setInvoice(buildReceiptInvoice(inv));
+    if (Array.isArray(inv.items) && inv.items.length) {
+      receiptApi.setInvoice(buildReceiptInvoice(inv));
+      return;
+    }
+    storage
+      .getInvoice(inv.historyId)
+      .then((full) => {
+        setSelectedInvoice(full);
+        receiptApi.setInvoice(buildReceiptInvoice(full));
+      })
+      .catch(() => {});
   };
 
   const handleGenerate = async (inv) => {
     setIsGenerating(true);
     try {
-      handleSelect(inv);
+      if (!Array.isArray(inv.items) || inv.items.length === 0) {
+        const full = await storage.getInvoice(inv.historyId);
+        handleSelect(full);
+      } else {
+        handleSelect(inv);
+      }
       await new Promise((r) => requestAnimationFrame(() => r()));
       await new Promise((r) => requestAnimationFrame(() => r()));
       await receiptApi.downloadPDF();
