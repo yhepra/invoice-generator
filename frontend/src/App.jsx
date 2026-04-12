@@ -40,6 +40,7 @@ export default function App() {
   const [loadingUser, setLoadingUser] = useState(true);
   const [pendingAction, setPendingAction] = useState(null); // 'save' | 'download' | null
   const isRemoteUpdate = useRef(false);
+  const saveInvoiceRef = useRef(null);
   const [isTourOpen, setIsTourOpen] = useState(false);
   const [tourStepIndex, setTourStepIndex] = useState(0);
 
@@ -340,6 +341,17 @@ export default function App() {
     }
   };
 
+  const htmlToPlainText = (value) => {
+    const v = String(value || "")
+    if (v.trim() === "") return ""
+    if (!(v.includes("<") && v.includes(">"))) return v.trim()
+    const template = document.createElement("template")
+    template.innerHTML = v
+    return String(template.content.textContent || "")
+      .replace(/\u00A0/g, " ")
+      .trim()
+  }
+
   const validateInvoice = () => {
     if (!invoice.seller.name.trim()) {
       showToast("Seller name is required", "error");
@@ -354,13 +366,14 @@ export default function App() {
       return false;
     }
     for (const item of invoice.items) {
-      if (!item.name.trim()) {
+      const itemNameText = htmlToPlainText(item.name)
+      if (!itemNameText) {
         showToast("All items must have a name", "error");
         return false;
       }
       if (item.quantity <= 0) {
         showToast(
-          `Item "${item.name}" quantity must be greater than 0`,
+          `Item "${itemNameText}" quantity must be greater than 0`,
           "error",
         );
         return false;
@@ -453,6 +466,33 @@ export default function App() {
       setIsSavingInvoice(false);
     }
   };
+
+  useEffect(() => {
+    saveInvoiceRef.current = handleSaveInvoice;
+  }, [handleSaveInvoice]);
+
+  useEffect(() => {
+    const onKeyDown = (e) => {
+      const key = String(e.key || "").toLowerCase();
+      const isSaveCombo = key === "s" && (e.ctrlKey || e.metaKey);
+      if (!isSaveCombo) return;
+
+      const path = window.location.pathname || "";
+      const isInvoiceEditor = path === "/create" || path.startsWith("/edit/");
+      if (!isInvoiceEditor) return;
+
+      e.preventDefault();
+      if (e.repeat) return;
+
+      const fn = saveInvoiceRef.current;
+      if (typeof fn === "function") {
+        fn(true);
+      }
+    };
+
+    window.addEventListener("keydown", onKeyDown, true);
+    return () => window.removeEventListener("keydown", onKeyDown, true);
+  }, []);
 
   const handleDownloadPDF = async () => {
     if (!user) {

@@ -38,6 +38,82 @@ export default function SimpleInvoice({ invoice, user }) {
     });
   };
 
+  const sanitizeSimpleHtml = (input) => {
+    if (!input) return "";
+    const template = document.createElement("template");
+    template.innerHTML = String(input);
+    const allowed = new Set(["B", "STRONG", "I", "EM", "U", "S", "STRIKE", "DEL", "UL", "OL", "LI", "BR", "P", "DIV"]);
+
+    const walk = (node) => {
+      const children = Array.from(node.childNodes || []);
+      for (const child of children) {
+        if (child.nodeType === Node.ELEMENT_NODE) {
+          const el = child;
+          const tag = el.tagName;
+          if (!allowed.has(tag)) {
+            const frag = document.createDocumentFragment();
+            while (el.firstChild) frag.appendChild(el.firstChild);
+            el.replaceWith(frag);
+            continue;
+          }
+          for (const attr of Array.from(el.attributes || [])) {
+            el.removeAttribute(attr.name);
+          }
+          walk(el);
+        }
+      }
+    };
+
+    walk(template.content);
+
+    const normalizeBlock = (node) => {
+      const children = Array.from(node.childNodes || []);
+      for (const child of children) {
+        if (child.nodeType === Node.ELEMENT_NODE) {
+          const el = child;
+          if (el.tagName === "DIV") {
+            const p = document.createElement("p");
+            while (el.firstChild) p.appendChild(el.firstChild);
+            el.replaceWith(p);
+            normalizeBlock(p);
+            continue;
+          }
+          normalizeBlock(el);
+        }
+      }
+    };
+    normalizeBlock(template.content);
+
+    return template.innerHTML;
+  };
+
+  const normalizeToHtml = (value) => {
+    const v = String(value || "");
+    if (v.trim() === "") return "";
+    if (v.includes("<") && v.includes(">")) return sanitizeSimpleHtml(v);
+    const template = document.createElement("template");
+    template.textContent = v;
+    return template.innerHTML.replace(/\n/g, "<br>");
+  };
+
+  const renderRichText = (value, className = "") => {
+    const html = normalizeToHtml(value);
+    if (!html) return null;
+    return (
+      <div
+        className={[
+          className,
+          "[&_p]:m-0 [&_p]:leading-relaxed [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:my-0.5 [&_br]:leading-none [&_u]:underline [&_s]:line-through [&_del]:line-through [&_strike]:line-through",
+        ]
+          .filter(Boolean)
+          .join(" ")}
+        dangerouslySetInnerHTML={{
+          __html: html,
+        }}
+      />
+    );
+  };
+
   const toWordsEn = (n) => {
     const num = Math.floor(Number(n) || 0);
     if (num === 0) return "zero";
@@ -312,14 +388,14 @@ export default function SimpleInvoice({ invoice, user }) {
           {details.notes ? (
             <div className="text-xs">
               <div className="font-semibold text-gray-700">{t("forPaymentOf")}</div>
-              <div className="mt-1 whitespace-pre-line text-gray-700">{details.notes}</div>
+              {renderRichText(details.notes, "mt-1 text-gray-700")}
             </div>
           ) : null}
 
           {details.terms ? (
             <div className="text-xs">
               <div className="font-semibold text-gray-700">{t("terms")}</div>
-              <div className="mt-1 whitespace-pre-line text-gray-700">{details.terms}</div>
+              {renderRichText(details.terms, "mt-1 text-gray-700")}
             </div>
           ) : null}
         </section>
@@ -473,7 +549,9 @@ export default function SimpleInvoice({ invoice, user }) {
             {items.map((item) => (
               <tr key={item.id} className="border-b border-gray-100">
                 <td className="py-2 pr-2 text-left text-gray-800">
-                  {item.name || t("placeholderItemName")}
+                  {renderRichText(item.name, "text-gray-800") || (
+                    <span>{t("placeholderItemName")}</span>
+                  )}
                 </td>
                 <td className="py-2 text-right text-gray-800">
                   {item.quantity || 0}
@@ -520,17 +598,13 @@ export default function SimpleInvoice({ invoice, user }) {
       {details.notes ? (
         <section className="invoice-notes mt-6 text-xs">
           <p className="font-semibold text-gray-700">{t("notes")}</p>
-          <p className="mt-1 whitespace-pre-line text-gray-700">
-            {details.notes}
-          </p>
+          {renderRichText(details.notes, "mt-1 text-gray-700")}
         </section>
       ) : null}
       {details.terms ? (
         <section className="invoice-terms mt-1 text-xs">
           <p className="font-semibold text-gray-700">{t("terms")}</p>
-          <p className="mt-1 whitespace-pre-line text-gray-700">
-            {details.terms}
-          </p>
+          {renderRichText(details.terms, "mt-1 text-gray-700")}
         </section>
       ) : null}
 
