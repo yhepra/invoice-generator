@@ -111,7 +111,7 @@
           $lineTotal = $line + ($line * ($taxPercent / 100.0));
         @endphp
         <tr>
-          <td style="padding: 10px; border-bottom: 1px solid #F3F4F6;">{{ $it->name }}</td>
+          <td style="padding: 10px; border-bottom: 1px solid #F3F4F6;">{!! $it->name !!}</td>
           <td style="padding: 10px; text-align: right; border-bottom: 1px solid #F3F4F6;">{{ $it->quantity }}</td>
           <td style="padding: 10px; text-align: right; border-bottom: 1px solid #F3F4F6;">{{ $money($it->price) }}</td>
           <td style="padding: 10px; text-align: right; border-bottom: 1px solid #F3F4F6;">{{ (float) ($it->tax_percent ?? 0) }}%</td>
@@ -144,14 +144,14 @@
   @if(!empty($invoice->notes))
     <div style="margin-top: 16px;">
       <div style="font-weight: 700; margin-bottom: 4px;">{{ $labels['notes'] }}</div>
-      <div style="white-space: pre-line; color: #374151;">{{ $invoice->notes }}</div>
+      <div style="color: #374151;">{!! $invoice->notes !!}</div>
     </div>
   @endif
 
   @if(!empty($invoice->terms))
     <div style="margin-top: 12px;">
       <div style="font-weight: 700; margin-bottom: 4px;">{{ $labels['terms'] }}</div>
-      <div style="white-space: pre-line; color: #374151;">{{ $invoice->terms }}</div>
+      <div style="color: #374151;">{!! $invoice->terms !!}</div>
     </div>
   @endif
 </div>
