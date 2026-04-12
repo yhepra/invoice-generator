@@ -58,6 +58,87 @@ class InvoiceController extends Controller
         return $base . '/storage/' . ltrim($relativePath, '/');
     }
 
+    private function sanitizeRichTextHtml($value): ?string
+    {
+        if ($value === null) return null;
+        if (!is_string($value)) return null;
+
+        $input = trim($value);
+        if ($input === '') return '';
+
+        if (strpos($input, '<') === false) {
+            $decoded = html_entity_decode($input, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+            $escaped = htmlspecialchars($decoded, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+            return str_replace("\n", "<br>", $escaped);
+        }
+
+        $allowed = [
+            'b' => true,
+            'strong' => true,
+            'i' => true,
+            'em' => true,
+            'u' => true,
+            's' => true,
+            'strike' => true,
+            'del' => true,
+            'ul' => true,
+            'ol' => true,
+            'li' => true,
+            'br' => true,
+            'p' => true,
+            'div' => true,
+        ];
+
+        $doc = new \DOMDocument('1.0', 'UTF-8');
+        $prev = libxml_use_internal_errors(true);
+        $doc->loadHTML('<div>' . $input . '</div>', LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
+        libxml_clear_errors();
+        libxml_use_internal_errors($prev);
+
+        $clean = function ($node) use (&$clean, $doc, $allowed) {
+            if (!$node) return;
+
+            if ($node->nodeType === XML_COMMENT_NODE) {
+                $node->parentNode?->removeChild($node);
+                return;
+            }
+
+            if ($node->nodeType === XML_ELEMENT_NODE) {
+                $tag = strtolower($node->nodeName);
+                if (!isset($allowed[$tag])) {
+                    $text = $doc->createTextNode($node->textContent ?? '');
+                    $node->parentNode?->replaceChild($text, $node);
+                    return;
+                }
+
+                if ($node->hasAttributes()) {
+                    for ($i = $node->attributes->length - 1; $i >= 0; $i--) {
+                        $attr = $node->attributes->item($i);
+                        if ($attr) $node->removeAttributeNode($attr);
+                    }
+                }
+            }
+
+            if ($node->hasChildNodes()) {
+                $children = [];
+                foreach ($node->childNodes as $child) $children[] = $child;
+                foreach ($children as $child) $clean($child);
+            }
+        };
+
+        $root = $doc->documentElement;
+        if ($root) $clean($root);
+
+        $out = '';
+        if ($root && $root->hasChildNodes()) {
+            foreach ($root->childNodes as $child) {
+                $out .= $doc->saveHTML($child);
+            }
+        }
+
+        return $out;
+    }
+
     private function storeDataUriImage(string $dataUri, string $kind): ?string
     {
         if (preg_match('/^data:image\/(png|jpeg|jpg|webp);base64,(.*)$/', $dataUri, $m) !== 1) {
@@ -257,6 +338,14 @@ class InvoiceController extends Controller
             ]);
             $data['user_id'] = Auth::id();
 
+            if (array_key_exists('notes', $data)) {
+                $data['notes'] = $this->sanitizeRichTextHtml($data['notes']);
+            }
+
+            if (array_key_exists('terms', $data)) {
+                $data['terms'] = $this->sanitizeRichTextHtml($data['terms']);
+            }
+
             if (is_array($data['seller_info'] ?? null)) {
                 $data['seller_info'] = $this->normalizeSellerInfoImages($data['seller_info']);
             }
@@ -275,6 +364,9 @@ class InvoiceController extends Controller
             $invoice = Invoice::create($data);
 
             foreach ($request->items as $item) {
+                if (array_key_exists('name', $item)) {
+                    $item['name'] = $this->sanitizeRichTextHtml($item['name']);
+                }
                 $invoice->items()->create($item);
             }
 
@@ -324,6 +416,14 @@ class InvoiceController extends Controller
                 'number', 'date', 'due_date', 'seller_info', 'customer_info', 'notes', 'terms', 'status'
             ]);
 
+            if (array_key_exists('notes', $data)) {
+                $data['notes'] = $this->sanitizeRichTextHtml($data['notes']);
+            }
+
+            if (array_key_exists('terms', $data)) {
+                $data['terms'] = $this->sanitizeRichTextHtml($data['terms']);
+            }
+
             if (is_array($data['seller_info'] ?? null)) {
                 $data['seller_info'] = $this->normalizeSellerInfoImages($data['seller_info']);
             }
@@ -344,6 +444,9 @@ class InvoiceController extends Controller
             if ($request->has('items')) {
                 $invoice->items()->delete();
                 foreach ($request->items as $item) {
+                    if (array_key_exists('name', $item)) {
+                        $item['name'] = $this->sanitizeRichTextHtml($item['name']);
+                    }
                     $invoice->items()->create($item);
                 }
             }

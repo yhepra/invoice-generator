@@ -85,3 +85,22 @@ html, body {
 .animate-fade-in {
   animation: fadeIn 0.5s ease-out forwards;
 }
+
+.wysiwyg-content ul {
+  list-style: disc;
+  padding-left: 1.25rem;
+}
+
+.wysiwyg-content ol {
+  list-style: decimal;
+  padding-left: 1.25rem;
+}
+
+.wysiwyg-content li {
+  margin: 0.125rem 0;
+}
+
+.wysiwyg-content p,
+.wysiwyg-content div {
+  margin: 0;
+}

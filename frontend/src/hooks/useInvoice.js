@@ -118,30 +118,6 @@ export default function useInvoice(initialData = null) {
     })
   }, [])
 
-  const moveItem = useCallback((dragId, targetId = null) => {
-    setInvoice((prev) => {
-      const fromIdx = prev.items.findIndex((i) => i.id === dragId)
-      if (fromIdx < 0) return prev
-
-      const nextItems = [...prev.items]
-      const [moved] = nextItems.splice(fromIdx, 1)
-
-      if (targetId == null) {
-        nextItems.push(moved)
-        return { ...prev, items: nextItems }
-      }
-
-      const toIdx = nextItems.findIndex((i) => i.id === targetId)
-      if (toIdx < 0) {
-        nextItems.push(moved)
-        return { ...prev, items: nextItems }
-      }
-
-      nextItems.splice(toIdx, 0, moved)
-      return { ...prev, items: nextItems }
-    })
-  }, [])
-
   const getPdfFilename = () => {
     const headerTitleNormalized = String(invoice?.details?.headerTitle || "")
       .trim()
@@ -211,7 +187,6 @@ export default function useInvoice(initialData = null) {
     clearItems,
     moveItemUp,
     moveItemDown,
-    moveItem,
     downloadPDF,
     generatePDFForEmail,
     setInvoice
