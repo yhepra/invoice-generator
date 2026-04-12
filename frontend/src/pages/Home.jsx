@@ -124,7 +124,7 @@ export default function Home({
   return (
     <div className="mx-auto max-w-7xl p-4 md:p-8 md:h-[calc(100vh-64px)] md:overflow-hidden">
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 md:h-full">
-        <div className="space-y-8 md:overflow-y-auto md:pr-4 md:pb-8">
+        <div className="space-y-8 md:overflow-y-auto md:pr-4 md:pb-8" data-tour="editor-form">
           <SellerForm seller={invoice.seller} onChange={updateSeller} user={user} settings={invoice.settings} />
           <CustomerForm customer={invoice.customer} onChange={updateCustomer} user={user} settings={invoice.settings} />
           <InvoiceDetailsForm details={invoice.details} onChange={updateDetails} user={user} settings={invoice.settings} />
@@ -164,6 +164,7 @@ export default function Home({
                 variant="secondary" 
                 className="w-full"
                 disabled={isSaving}
+                data-tour="invoice-save"
               >
                 {isSaving ? (
                   <>

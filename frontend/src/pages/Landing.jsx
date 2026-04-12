@@ -56,6 +56,7 @@ export default function Landing({
             onClick={onCreateInvoice}
             variant="secondary"
             className="border-none shadow-md px-6 py-3 text-lg"
+            data-tour="landing-create"
           >
             {t("createNewInvoice")}
           </Button>
@@ -104,6 +105,7 @@ export default function Landing({
             <button
               onClick={onGoHistory}
               className="text-sm font-medium text-brand-600 hover:text-brand-700"
+              data-tour="landing-history"
             >
               {t("viewAllHistory")} &rarr;
             </button>
@@ -208,6 +210,7 @@ export default function Landing({
             <Button
               onClick={onCreateInvoice}
               className="h-14 px-8 text-lg font-bold shadow-xl shadow-brand-900/20 transform transition hover:scale-105"
+              data-tour="landing-create"
             >
               {t("heroCreateInvoice")}
             </Button>

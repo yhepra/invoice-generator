@@ -9,9 +9,103 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class InvoiceController extends Controller
 {
+    private function isDataUriImage($value): bool
+    {
+        if (!is_string($value)) return false;
+        return preg_match('/^data:image\/(png|jpeg|jpg|webp);base64,/', $value) === 1;
+    }
+
+    private function extractPublicStorageRelativePath(string $urlOrPath): ?string
+    {
+        $path = parse_url($urlOrPath, PHP_URL_PATH);
+        if (!is_string($path) || $path === '') $path = $urlOrPath;
+        if (!is_string($path)) return null;
+
+        $needle = '/storage/';
+        $pos = strpos($path, $needle);
+        if ($pos === false) return null;
+
+        return ltrim(substr($path, $pos + strlen($needle)), '/');
+    }
+
+    private function ensurePublicStorageCopy(string $relativePath): void
+    {
+        $publicFile = public_path('storage/' . ltrim($relativePath, '/'));
+        if (is_file($publicFile)) return;
+        if (!Storage::disk('public')->exists($relativePath)) return;
+
+        $dir = dirname($publicFile);
+        if (!is_dir($dir)) {
+            @mkdir($dir, 0755, true);
+        }
+
+        try {
+            $contents = Storage::disk('public')->get($relativePath);
+            file_put_contents($publicFile, $contents);
+        } catch (\Throwable $e) {
+            report($e);
+        }
+    }
+
+    private function publicStorageUrl(string $relativePath): string
+    {
+        $base = request()->getSchemeAndHttpHost();
+        return $base . '/storage/' . ltrim($relativePath, '/');
+    }
+
+    private function storeDataUriImage(string $dataUri, string $kind): ?string
+    {
+        if (preg_match('/^data:image\/(png|jpeg|jpg|webp);base64,(.*)$/', $dataUri, $m) !== 1) {
+            return null;
+        }
+
+        $ext = strtolower($m[1]);
+        if ($ext === 'jpeg') $ext = 'jpg';
+
+        $binary = base64_decode($m[2], true);
+        if ($binary === false) return null;
+
+        $userId = Auth::id();
+        $path = "invoice-assets/{$userId}/{$kind}/" . Str::uuid()->toString() . ".{$ext}";
+        Storage::disk('public')->put($path, $binary);
+
+        $this->ensurePublicStorageCopy($path);
+        return $this->publicStorageUrl($path);
+    }
+
+    private function normalizeSellerInfoImages(array $sellerInfo): array
+    {
+        foreach (['logo' => 'logos', 'signature' => 'signatures'] as $key => $kind) {
+            if (!array_key_exists($key, $sellerInfo)) continue;
+            $value = $sellerInfo[$key];
+
+            if ($this->isDataUriImage($value)) {
+                $stored = $this->storeDataUriImage($value, $kind);
+                if ($stored) {
+                    $sellerInfo[$key] = $stored;
+                } else {
+                    unset($sellerInfo[$key]);
+                }
+                continue;
+            }
+
+            if (is_string($value)) {
+                $relative = $this->extractPublicStorageRelativePath($value);
+                if ($relative) {
+                    $this->ensurePublicStorageCopy($relative);
+                    $sellerInfo[$key] = $this->publicStorageUrl($relative);
+                }
+            }
+        }
+
+        return $sellerInfo;
+    }
+
     public function history(Request $request)
     {
         $page = max(1, (int) $request->query('page', 1));
@@ -126,6 +220,11 @@ class InvoiceController extends Controller
         }
 
         $invoices = Invoice::where('user_id', Auth::id())->with('items')->latest()->get();
+        foreach ($invoices as $inv) {
+            if (is_array($inv->seller_info ?? null)) {
+                $inv->seller_info = $this->normalizeSellerInfoImages($inv->seller_info);
+            }
+        }
         return response()->json($invoices);
     }
 
@@ -158,6 +257,10 @@ class InvoiceController extends Controller
             ]);
             $data['user_id'] = Auth::id();
 
+            if (is_array($data['seller_info'] ?? null)) {
+                $data['seller_info'] = $this->normalizeSellerInfoImages($data['seller_info']);
+            }
+
             if (is_array($data['customer_info'] ?? null)) {
                 $data['customer_name'] = $data['customer_info']['name'] ?? null;
                 $data['customer_email'] = $data['customer_info']['email'] ?? null;
@@ -188,6 +291,10 @@ class InvoiceController extends Controller
             ->with('items')
             ->firstOrFail();
 
+        if (is_array($invoice->seller_info ?? null)) {
+            $invoice->seller_info = $this->normalizeSellerInfoImages($invoice->seller_info);
+        }
+
         return response()->json($invoice);
     }
 
@@ -216,6 +323,10 @@ class InvoiceController extends Controller
             $data = $request->only([
                 'number', 'date', 'due_date', 'seller_info', 'customer_info', 'notes', 'terms', 'status'
             ]);
+
+            if (is_array($data['seller_info'] ?? null)) {
+                $data['seller_info'] = $this->normalizeSellerInfoImages($data['seller_info']);
+            }
 
             if (is_array($data['customer_info'] ?? null)) {
                 $data['customer_name'] = $data['customer_info']['name'] ?? null;
