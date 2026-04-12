@@ -15,6 +15,7 @@ export default function Header({
   onGoUpgrade,
   onGoProfile,
   onGoAdmin,
+  onStartTour,
   user,
   onLogin,
   onLogout,
@@ -304,6 +305,30 @@ export default function Header({
                             </svg>
                             {t("settings")}
                           </button>
+
+                          <button
+                            onClick={() => {
+                              onStartTour && onStartTour();
+                              setIsMenuOpen(false);
+                            }}
+                            className="group flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-brand-600"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="mr-3 h-5 w-5 text-gray-400 group-hover:text-brand-500"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M12 18h.01M12 14a4 4 0 10-4-4m4 4v1m0-1a2 2 0 00-2-2m2 2a2 2 0 012-2m0 0a4 4 0 10-4-4"
+                              />
+                            </svg>
+                            {t("tourGuide")}
+                          </button>
                         </>
                       )}
 
@@ -419,7 +444,14 @@ export default function Header({
               </div>
             </>
           ) : (
-            <Button onClick={onLogin}>{t("loginRegister")}</Button>
+            <div className="flex items-center gap-2">
+              {onStartTour ? (
+                <Button variant="outline" onClick={onStartTour}>
+                  {t("tourGuide")}
+                </Button>
+              ) : null}
+              <Button onClick={onLogin}>{t("loginRegister")}</Button>
+            </div>
           )}
         </div>
 
@@ -560,6 +592,16 @@ export default function Header({
                     >
                       {t("settings")}
                     </button>
+
+                    <button
+                      onClick={() => {
+                        onStartTour && onStartTour();
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="block w-full text-left rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-50 hover:text-brand-700"
+                    >
+                      {t("tourGuide")}
+                    </button>
                   </>
                 )}
 
@@ -678,6 +720,7 @@ Header.propTypes = {
   onGoReceipts: PropTypes.func,
   onGoUpgrade: PropTypes.func,
   onGoProfile: PropTypes.func,
+  onStartTour: PropTypes.func,
   user: PropTypes.object,
   onLogin: PropTypes.func.isRequired,
   onLogout: PropTypes.func,

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import {
   Routes,
   Route,
@@ -22,12 +22,15 @@ import Upgrade from "./pages/Upgrade.jsx";
 import Profile from "./pages/Profile.jsx";
 import AdminDashboard from "./pages/AdminDashboard.jsx";
 import Toast from "./components/common/Toast.jsx";
+import TourGuide from "./components/common/TourGuide.jsx";
 import useInvoice from "./hooks/useInvoice.js";
 import { storage } from "./services/storage";
 import { auth } from "./services/auth";
 import defaultInvoice from "./data/defaultInvoice";
 import generateInvoiceNumber from "./utils/generateInvoiceNumber.js";
 import { getTranslation } from "./data/translations.js";
+
+const TOUR_SEEN_KEY = "invoice_gen_tour_seen_v1";
 
 export default function App() {
   const navigate = useNavigate();
@@ -37,6 +40,8 @@ export default function App() {
   const [loadingUser, setLoadingUser] = useState(true);
   const [pendingAction, setPendingAction] = useState(null); // 'save' | 'download' | null
   const isRemoteUpdate = useRef(false);
+  const [isTourOpen, setIsTourOpen] = useState(false);
+  const [tourStepIndex, setTourStepIndex] = useState(0);
 
   const showToast = (message, type = "success") => {
     const id = Date.now();
@@ -128,6 +133,94 @@ export default function App() {
   const invoiceApi = useInvoice(defaultInvoice);
   const { invoice, updateSettings, setInvoice, downloadPDF, generatePDFForEmail } = invoiceApi;
   const t = (key) => getTranslation(invoice?.settings?.language, key);
+
+  const tourSteps = useMemo(
+    () => [
+      {
+        path: "/",
+        selector: '[data-tour="landing-create"]',
+        title: t("tourStepWelcomeTitle"),
+        body: t("tourStepWelcomeBody"),
+      },
+      {
+        path: "/",
+        selector: '[data-tour="landing-create"]',
+        title: t("tourStepCreateTitle"),
+        body: t("tourStepCreateBody"),
+      },
+      {
+        path: "/create",
+        selector: '[data-tour="editor-form"]',
+        title: t("tourStepEditorTitle"),
+        body: t("tourStepEditorBody"),
+      },
+      {
+        path: "/create",
+        selector: '[data-tour="invoice-save"]',
+        title: t("tourStepSaveTitle"),
+        body: t("tourStepSaveBody"),
+      },
+      {
+        path: "/history",
+        selector: '[data-tour="history-search"]',
+        title: t("tourStepHistoryTitle"),
+        body: t("tourStepHistoryBody"),
+      },
+      {
+        path: "/settings",
+        selector: '[data-tour="settings-email"]',
+        title: t("tourStepEmailTitle"),
+        body: t("tourStepEmailBody"),
+      },
+    ],
+    [t],
+  );
+
+  const goToTourStep = useCallback(
+    (index) => {
+      const nextIndex = Math.max(0, Math.min(index, tourSteps.length - 1));
+      const nextStep = tourSteps[nextIndex];
+      if (nextStep?.path && location.pathname !== nextStep.path) {
+        navigate(nextStep.path);
+      }
+      setTourStepIndex(nextIndex);
+    },
+    [location.pathname, navigate, tourSteps],
+  );
+
+  const startTour = useCallback(() => {
+    setIsTourOpen(true);
+    goToTourStep(0);
+  }, [goToTourStep]);
+
+  const closeTour = useCallback(() => {
+    setIsTourOpen(false);
+    localStorage.setItem(TOUR_SEEN_KEY, "1");
+  }, []);
+
+  const nextTour = useCallback(() => {
+    goToTourStep(tourStepIndex + 1);
+  }, [goToTourStep, tourStepIndex]);
+
+  const prevTour = useCallback(() => {
+    goToTourStep(tourStepIndex - 1);
+  }, [goToTourStep, tourStepIndex]);
+
+  useEffect(() => {
+    if (!isTourOpen) return;
+    const active = tourSteps[tourStepIndex];
+    if (active?.path && location.pathname !== active.path) {
+      navigate(active.path);
+    }
+  }, [isTourOpen, location.pathname, navigate, tourStepIndex, tourSteps]);
+
+  useEffect(() => {
+    if (loadingUser) return;
+    if (!user) return;
+    if (isTourOpen) return;
+    if (localStorage.getItem(TOUR_SEEN_KEY)) return;
+    startTour();
+  }, [isTourOpen, loadingUser, startTour, user]);
 
   // Load settings when user changes or app starts
   useEffect(() => {
@@ -337,7 +430,12 @@ export default function App() {
 
     try {
       const savedInvoice = await storage.saveInvoice(invoice);
-      setInvoice((prev) => ({ ...prev, historyId: savedInvoice.historyId }));
+      setInvoice((prev) => ({
+        ...prev,
+        historyId: savedInvoice.historyId,
+        seller: savedInvoice.seller_info || prev.seller,
+        customer: savedInvoice.customer_info || prev.customer,
+      }));
 
       // Auto-save contacts (create or update)
       await saveContactsFromInvoice(invoice);
@@ -478,6 +576,7 @@ export default function App() {
         onGoUpgrade={() => navigate("/upgrade")}
         onGoProfile={() => navigate("/profile")}
         onGoAdmin={() => navigate("/admin")}
+        onStartTour={startTour}
         user={user}
         onLogin={() => navigate("/login")}
         onLogout={handleLogout}
@@ -648,6 +747,22 @@ export default function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
+
+      <TourGuide
+        open={isTourOpen}
+        steps={tourSteps}
+        stepIndex={tourStepIndex}
+        onClose={closeTour}
+        onNext={nextTour}
+        onBack={prevTour}
+        labels={{
+          next: t("tourNext"),
+          back: t("tourBack"),
+          done: t("tourDone"),
+          skip: t("tourSkip"),
+          close: t("tourClose"),
+        }}
+      />
     </div>
   );
 }

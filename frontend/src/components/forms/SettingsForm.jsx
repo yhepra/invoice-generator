@@ -98,7 +98,7 @@ export default function SettingsForm({ settings, onChange }) {
         />
       </div>
 
-      <div className="pt-2">
+      <div className="pt-2" data-tour="settings-email">
         <h3 className="text-sm font-semibold text-gray-900">{t("emailSettings")}</h3>
         <p className="mt-1 text-xs text-gray-500">{t("emailSettingsLocalOnly")}</p>
         <p className="mt-1 text-xs text-gray-500">{t("senderEmailHelp")}</p>

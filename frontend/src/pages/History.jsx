@@ -312,6 +312,7 @@ export default function History({ onLoadInvoice, settings }) {
               placeholder={t("searchPlaceholder")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              data-tour="history-search"
             />
           </div>
           <select
