@@ -23,6 +23,7 @@ export default function Home({
   clearItems,
   moveItemUp,
   moveItemDown,
+  moveItem,
   downloadPDF,
   onSave,
   onDownload,
@@ -136,6 +137,7 @@ export default function Home({
             onClearItems={clearItems}
             onMoveUp={moveItemUp}
             onMoveDown={moveItemDown}
+            onMoveItem={moveItem}
             settings={invoice.settings}
           />
           <div className="space-y-2 rounded-lg border bg-white p-4">
@@ -287,6 +289,7 @@ Home.propTypes = {
   clearItems: PropTypes.func.isRequired,
   moveItemUp: PropTypes.func.isRequired,
   moveItemDown: PropTypes.func.isRequired,
+  moveItem: PropTypes.func.isRequired,
   downloadPDF: PropTypes.func.isRequired,
   onSave: PropTypes.func,
   onSendEmail: PropTypes.func
