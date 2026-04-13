@@ -52,10 +52,39 @@ class InvoiceController extends Controller
         }
     }
 
+    private function extractPathFromUrl(string $url): string {
+        if (str_starts_with($url, 'data:')) return $url;
+        if (str_contains($url, '/storage/')) return ltrim(explode('/storage/', $url)[1] ?? '', '/');
+        if (str_contains($url, '/api/public-files/')) return ltrim(explode('/api/public-files/', $url)[1] ?? '', '/');
+        return ltrim($url, '/');
+    }
+
     private function publicStorageUrl(string $relativePath): string
     {
         $base = rtrim(config('app.url'), '/');
         return $base . '/api/public-files/' . ltrim($relativePath, '/');
+    }
+
+    private function getBase64OrProxyUrl(?string $relativePath): ?string
+    {
+        if (empty($relativePath)) return null;
+        if (str_starts_with($relativePath, 'data:')) return $relativePath;
+        
+        $path = $this->extractPathFromUrl($relativePath);
+        if (Storage::disk('public')->exists($path)) {
+            try {
+                $mime = Storage::disk('public')->mimeType($path);
+                if (!$mime) {
+                    $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+                    $mime = 'image/' . ($ext === 'jpg' ? 'jpeg' : $ext);
+                }
+                $content = base64_encode(Storage::disk('public')->get($path));
+                return "data:{$mime};base64,{$content}";
+            } catch (\Exception $e) {}
+        }
+        
+        $base = rtrim(config('app.url'), '/');
+        return $base . '/api/public-files/' . $path;
     }
 
     private function sanitizeRichTextHtml($value): ?string
@@ -370,8 +399,28 @@ class InvoiceController extends Controller
                 $invoice->items()->create($item);
             }
 
-            return response()->json($invoice->load('items'), 201);
+            $newInvoice = $invoice->load('items');
+            if (is_array($newInvoice->seller_info ?? null)) {
+                $sellerInfoData = $newInvoice->seller_info;
+                $newInvoice->seller_info = [
+                    'logo' => !empty($sellerInfoData['logo']) ? $this->getBase64OrProxyUrl($sellerInfoData['logo']) : null,
+                    'signature' => !empty($sellerInfoData['signature']) ? $this->getBase64OrProxyUrl($sellerInfoData['signature']) : null,
+                ] + $sellerInfoData;
+            }
+
+            return response()->json($newInvoice, 201);
         });
+    }
+
+    private function mapSellerInfoForResponse(array $sellerInfo): array
+    {
+        if (!empty($sellerInfo['logo'])) {
+            $sellerInfo['logo'] = $this->getBase64OrProxyUrl($sellerInfo['logo']);
+        }
+        if (!empty($sellerInfo['signature'])) {
+            $sellerInfo['signature'] = $this->getBase64OrProxyUrl($sellerInfo['signature']);
+        }
+        return $sellerInfo;
     }
 
     public function show($id)
@@ -384,7 +433,7 @@ class InvoiceController extends Controller
             ->firstOrFail();
 
         if (is_array($invoice->seller_info ?? null)) {
-            $invoice->seller_info = $this->normalizeSellerInfoImages($invoice->seller_info);
+            $invoice->seller_info = $this->mapSellerInfoForResponse($invoice->seller_info);
         }
 
         return response()->json($invoice);
@@ -451,7 +500,16 @@ class InvoiceController extends Controller
                 }
             }
 
-            return response()->json($invoice->load('items'));
+            $updatedInvoice = $invoice->load('items');
+            if (is_array($updatedInvoice->seller_info ?? null)) {
+                $sellerInfoData = $updatedInvoice->seller_info;
+                $updatedInvoice->seller_info = [
+                    'logo' => !empty($sellerInfoData['logo']) ? $this->getBase64OrProxyUrl($sellerInfoData['logo']) : null,
+                    'signature' => !empty($sellerInfoData['signature']) ? $this->getBase64OrProxyUrl($sellerInfoData['signature']) : null,
+                ] + $sellerInfoData;
+            }
+
+            return response()->json($updatedInvoice);
         });
     }
 
