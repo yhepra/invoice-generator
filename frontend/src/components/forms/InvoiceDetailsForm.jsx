@@ -1,15 +1,18 @@
 import React from "react"
 import PropTypes from "prop-types"
+import { useNavigate } from "react-router-dom"
 import { getTranslation } from "../../data/translations.js"
 import WysiwygEditor from "../common/WysiwygEditor.jsx"
 
 const InvoiceDetailsForm = React.memo(function InvoiceDetailsForm({
   details,
   onChange,
+  onSettingsChange,
   user,
   settings,
 }) {
-  const isPremium = user && user.plan === "premium"
+  const navigate = useNavigate()
+  const isPremium = user && (user.plan === "premium" || user.plan === "lifetime")
   const t = (key) => getTranslation(settings?.language, key)
 
   const headerTitleNormalized = String(details.headerTitle || "").trim().toLowerCase()
@@ -40,6 +43,25 @@ const InvoiceDetailsForm = React.memo(function InvoiceDetailsForm({
         >
           <option value="invoice">{t("invoice")}</option>
           <option value="quotation">{t("quotation")}</option>
+        </select>
+      </div>
+      <div>
+        <label className="block text-sm text-gray-600 mb-1">{t("template") || "Template"}</label>
+        <select
+          value={settings?.template || "simple"}
+          onChange={(e) => {
+            const val = e.target.value;
+            if ((val === "template1" || val === "template2") && !isPremium) {
+              navigate("/upgrade");
+              return;
+            }
+            if (onSettingsChange) onSettingsChange({ template: val });
+          }}
+          className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+        >
+          <option value="simple">Simple Clean</option>
+          <option value="template1">Modern Orange {!isPremium ? "🔒 (Premium)" : ""}</option>
+          <option value="template2">Corporate Blue {!isPremium ? "🔒 (Premium)" : ""}</option>
         </select>
       </div>
       <div>
@@ -135,6 +157,7 @@ InvoiceDetailsForm.propTypes = {
     headerTitle: PropTypes.string
   }).isRequired,
   onChange: PropTypes.func.isRequired,
+  onSettingsChange: PropTypes.func,
   user: PropTypes.object,
   settings: PropTypes.object
 }

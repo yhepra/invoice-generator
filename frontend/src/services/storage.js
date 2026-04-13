@@ -232,8 +232,8 @@ export const storage = {
             notes: inv.notes, // Add mapping for notes
             terms: inv.terms, // Add mapping for terms
           },
-          // Default settings if missing, as backend doesn't store it yet
-          settings: { currency: "IDR", locale: "id-ID" },
+          // Ensure template is mapped properly from db, falls back to default empty which will trigger default template mapping logic
+          settings: { currency: "IDR", locale: "id-ID", template: inv.template },
           historyId: inv.uuid || inv.id,
           savedAt: inv.created_at,
           status: calculateStatus(inv), // Add derived status
@@ -358,7 +358,7 @@ export const storage = {
         notes: inv.notes,
         terms: inv.terms,
       },
-      settings: { currency: "IDR", locale: "id-ID" },
+      settings: { currency: "IDR", locale: "id-ID", template: inv.template },
       historyId: inv.uuid || inv.id,
       savedAt: inv.created_at,
       status: calculateStatus(inv),
@@ -401,6 +401,7 @@ export const storage = {
         notes: invoice.details?.notes || invoice.notes,
         terms: invoice.details?.terms || invoice.terms,
         status: invoice.status || "draft",
+        template: invoice.settings?.template,
       };
 
       const token = localStorage.getItem("token");

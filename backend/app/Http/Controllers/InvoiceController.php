@@ -280,6 +280,7 @@ class InvoiceController extends Controller
                     'uuid',
                     'number',
                     'status',
+                    'template',
                     'created_at',
                     'total',
                     'items_count',
@@ -319,6 +320,7 @@ class InvoiceController extends Controller
                     'due_date',
                     'customer_info',
                     'status',
+                    'template',
                     'created_at',
                     'subtotal',
                     'tax_amount',
@@ -359,11 +361,12 @@ class InvoiceController extends Controller
             'items.*.quantity' => 'required|numeric|min:0',
             'items.*.price' => 'required|numeric|min:0',
             'items.*.tax_percent' => 'nullable|numeric|min:0',
+            'template' => 'nullable|string',
         ]);
 
         return DB::transaction(function () use ($request) {
             $data = $request->only([
-                'number', 'date', 'due_date', 'seller_info', 'customer_info', 'notes', 'terms', 'status'
+                'number', 'date', 'due_date', 'seller_info', 'customer_info', 'notes', 'terms', 'status', 'template'
             ]);
             $data['user_id'] = Auth::id();
 
@@ -458,11 +461,12 @@ class InvoiceController extends Controller
             'items.*.quantity' => 'required|numeric|min:0',
             'items.*.price' => 'required|numeric|min:0',
             'items.*.tax_percent' => 'nullable|numeric|min:0',
+            'template' => 'nullable|string',
         ]);
         
         return DB::transaction(function () use ($request, $invoice) {
             $data = $request->only([
-                'number', 'date', 'due_date', 'seller_info', 'customer_info', 'notes', 'terms', 'status'
+                'number', 'date', 'due_date', 'seller_info', 'customer_info', 'notes', 'terms', 'status', 'template'
             ]);
 
             if (array_key_exists('notes', $data)) {

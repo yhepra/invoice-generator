@@ -459,8 +459,9 @@ export default function useInvoice(initialData = null) {
     if (!element) return
     const { default: html2pdf } = await import("html2pdf.js")
     const filename = getPdfFilename()
+    const isFullPage = invoice?.settings?.template === "template1" || invoice?.settings?.template === "template2"
     const opt = {
-      margin: 10,
+      margin: isFullPage ? 0 : 10,
       filename,
       image: { type: "jpeg", quality: 0.98 },
       html2canvas: { scale: 2, useCORS: true, allowTaint: false, backgroundColor: "#ffffff", imageTimeout: 0 },
@@ -487,8 +488,9 @@ export default function useInvoice(initialData = null) {
 
     const { default: html2pdf } = await import("html2pdf.js")
     const filename = getPdfFilename()
+    const isFullPage = invoice?.settings?.template === "template1" || invoice?.settings?.template === "template2"
     const opt = {
-      margin: 10,
+      margin: isFullPage ? 0 : 10,
       filename,
       image: { type: "jpeg", quality: 0.98 },
       html2canvas: { scale: 2, useCORS: true, allowTaint: false, backgroundColor: "#ffffff", imageTimeout: 0 },

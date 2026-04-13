@@ -7,7 +7,8 @@ const defaultInvoice = {
     currency: "IDR",
     locale: "id-ID",
     language: "id",
-    footerText: "Terima kasih atas kerjasama Anda."
+    footerText: "Terima kasih atas kerjasama Anda.",
+    template: "simple"
   },
   seller: {
     name: "",

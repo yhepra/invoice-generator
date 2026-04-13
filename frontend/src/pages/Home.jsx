@@ -17,6 +17,7 @@ export default function Home({
   updateSeller,
   updateCustomer,
   updateDetails,
+  updateSettings,
   addItem,
   updateItem,
   removeItem,
@@ -127,7 +128,7 @@ export default function Home({
         <div className="space-y-8 md:overflow-y-auto md:pr-4 md:pb-8" data-tour="editor-form">
           <SellerForm seller={invoice.seller} onChange={updateSeller} user={user} settings={invoice.settings} />
           <CustomerForm customer={invoice.customer} onChange={updateCustomer} user={user} settings={invoice.settings} />
-          <InvoiceDetailsForm details={invoice.details} onChange={updateDetails} user={user} settings={invoice.settings} />
+          <InvoiceDetailsForm details={invoice.details} onChange={updateDetails} onSettingsChange={updateSettings} user={user} settings={invoice.settings} />
           <InvoiceItemsForm
             items={invoice.items}
             onAddItem={addItem}
