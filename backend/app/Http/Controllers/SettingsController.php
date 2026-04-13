@@ -48,10 +48,33 @@ class SettingsController extends Controller
         }
     }
 
-    private function publicStorageUrl(string $relativePath): string
+    private function extractPathFromUrl(string $url): string {
+        if (str_starts_with($url, 'data:')) return $url;
+        if (str_contains($url, '/storage/')) return ltrim(explode('/storage/', $url)[1] ?? '', '/');
+        if (str_contains($url, '/api/public-files/')) return ltrim(explode('/api/public-files/', $url)[1] ?? '', '/');
+        return ltrim($url, '/');
+    }
+
+    private function getBase64OrProxyUrl(?string $relativePath): ?string
     {
+        if (empty($relativePath)) return null;
+        if (str_starts_with($relativePath, 'data:')) return $relativePath;
+        
+        $path = $this->extractPathFromUrl($relativePath);
+        if (Storage::disk('public')->exists($path)) {
+            try {
+                $mime = Storage::disk('public')->mimeType($path);
+                if (!$mime) {
+                    $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+                    $mime = 'image/' . ($ext === 'jpg' ? 'jpeg' : $ext);
+                }
+                $content = base64_encode(Storage::disk('public')->get($path));
+                return "data:{$mime};base64,{$content}";
+            } catch (\Exception $e) {}
+        }
+        
         $base = rtrim(config('app.url'), '/');
-        return $base . '/api/public-files/' . ltrim($relativePath, '/');
+        return $base . '/api/public-files/' . $path;
     }
 
     private function storeDataUriImage(string $dataUri, string $kind): ?string
@@ -120,13 +143,17 @@ class SettingsController extends Controller
             ];
         }
 
+        $mapBase64 = function(array $list) {
+            return array_map(fn($url) => $this->getBase64OrProxyUrl($url), $list);
+        };
+
         return [
             'currency' => $settings->currency,
             'locale' => $settings->locale,
             'language' => $settings->language,
             'footerText' => $settings->footerText,
-            'logo_history' => $this->normalizeImageHistory($settings->logo_history, 'logos'),
-            'signature_history' => $this->normalizeImageHistory($settings->signature_history, 'signatures'),
+            'logo_history' => $mapBase64($this->normalizeImageHistory($settings->logo_history, 'logos')),
+            'signature_history' => $mapBase64($this->normalizeImageHistory($settings->signature_history, 'signatures')),
             'fromAddress' => $settings->fromAddress,
             'fromName' => $settings->fromName,
             'smtpHost' => $settings->smtpHost,
