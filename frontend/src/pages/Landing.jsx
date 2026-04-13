@@ -45,7 +45,10 @@ export default function Landing({
   if (user) {
     return (
       <div className="mx-auto max-w-7xl p-4 md:p-8">
-        <div className="mb-8 flex flex-col items-start justify-between gap-4 rounded-2xl bg-gradient-to-r from-brand-600 to-blue-600 p-8 text-white shadow-lg md:flex-row md:items-center">
+        <div
+          className="mb-8 flex flex-col items-start justify-between gap-4 rounded-2xl bg-gradient-to-r from-brand-600 to-blue-600 p-8 text-white shadow-lg md:flex-row md:items-center"
+          data-tour="dashboard-welcome"
+        >
           <div>
             <h1 className="mb-2 text-3xl font-bold flex items-center gap-3">
               {t("welcomeBack").replace("{name}", user.name)}

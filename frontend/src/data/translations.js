@@ -91,6 +91,8 @@ export const translations = {
     tourStepHistoryBody: "Search and filter invoices quickly from History.",
     tourStepEmailTitle: "Email Settings",
     tourStepEmailBody: "Configure SMTP once in Settings. The server will use it when sending emails.",
+    tourStepDashboardTitle: "Dashboard",
+    tourStepDashboardBody: "Selamat datang! Silakan gunakan dashboard untuk mulai membuat invoice, melihat invoice terbaru, dan membuka history.",
 
     // Forms
     name: "Name",
@@ -455,6 +457,8 @@ export const translations = {
     tourStepHistoryBody: "Cari dan filter invoice dengan cepat dari halaman History.",
     tourStepEmailTitle: "Pengaturan Email",
     tourStepEmailBody: "Atur SMTP sekali di Settings. Server akan memakainya saat mengirim email.",
+    tourStepDashboardTitle: "Dashboard",
+    tourStepDashboardBody: "Selamat datang! Silakan gunakan dashboard untuk mulai membuat invoice, melihat invoice terbaru, dan membuka history.",
 
     // Forms
     name: "Nama",

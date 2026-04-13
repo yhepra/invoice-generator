@@ -172,6 +172,12 @@ export default function App() {
         title: t("tourStepEmailTitle"),
         body: t("tourStepEmailBody"),
       },
+      {
+        path: "/",
+        selector: '[data-tour="dashboard-welcome"]',
+        title: t("tourStepDashboardTitle"),
+        body: t("tourStepDashboardBody"),
+      },
     ],
     [t],
   );
