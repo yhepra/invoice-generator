@@ -7,6 +7,7 @@ import {
   Navigate,
 } from "react-router-dom";
 import InvoiceEditorPage from "./pages/InvoiceEditorPage.jsx";
+import TemplateSelection from "./pages/TemplateSelection.jsx";
 import Landing from "./pages/Landing.jsx";
 import Settings from "./pages/Settings.jsx";
 import Contacts from "./pages/Contacts.jsx";
@@ -149,6 +150,12 @@ export default function App() {
         body: t("tourStepCreateBody"),
       },
       {
+        path: "/templates",
+        selector: null,
+        title: t("tourStepTemplateTitle") || "Pilih Template Faktur",
+        body: t("tourStepTemplateBody") || "Pilih desain faktur yang sesuai. Simple Clean tersedia untuk semua pengguna, sedangkan Modern Orange dan Corporate Blue khusus untuk pengguna Premium.",
+      },
+      {
         path: "/create",
         selector: '[data-tour="editor-form"]',
         title: t("tourStepEditorTitle"),
@@ -174,9 +181,9 @@ export default function App() {
       },
       {
         path: "/",
-        selector: '[data-tour="dashboard-welcome"]',
-        title: t("tourStepDashboardTitle"),
-        body: t("tourStepDashboardBody"),
+        selector: null,
+        title: t("tourStepDoneTitle") || "Selesai! 🎉",
+        body: t("tourStepDoneBody") || "Anda sudah siap membuat faktur profesional. Klik Selesai untuk kembali ke Beranda dan mulai gunakan aplikasi.",
       },
     ],
     [t],
@@ -202,7 +209,8 @@ export default function App() {
   const closeTour = useCallback(() => {
     setIsTourOpen(false);
     localStorage.setItem(TOUR_SEEN_KEY, "1");
-  }, []);
+    navigate("/");
+  }, [navigate]);
 
   const nextTour = useCallback(() => {
     goToTourStep(tourStepIndex + 1);
@@ -281,7 +289,7 @@ export default function App() {
     [setInvoice],
   );
 
-  const handleResetInvoice = useCallback(() => {
+  const handleResetInvoice = useCallback((initialTemplate = null) => {
     // Keep current settings but reset content
     const freshInvoice = JSON.parse(JSON.stringify(defaultInvoice));
     freshInvoice.details.number = generateInvoiceNumber();
@@ -293,7 +301,10 @@ export default function App() {
 
     setInvoice((prev) => ({
       ...freshInvoice,
-      settings: prev.settings,
+      settings: {
+        ...(prev.settings || {}),
+        ...(initialTemplate ? { template: initialTemplate } : {}),
+      },
     }));
   }, [setInvoice]);
 
@@ -304,6 +315,9 @@ export default function App() {
       delete data.savedAt;
       setInvoice(data);
       // Clear state so refresh resets? Or replace history?
+      window.history.replaceState({}, document.title);
+    } else if (location.state?.initialTemplate) {
+      handleResetInvoice(location.state.initialTemplate);
       window.history.replaceState({}, document.title);
     } else {
       handleResetInvoice();
@@ -576,7 +590,7 @@ export default function App() {
       <Header
         title="GenerateInvoice"
         onGoHome={() => navigate("/")}
-        onGoEditor={() => navigate("/create")}
+        onGoEditor={() => navigate("/templates")}
         onGoSettings={() => navigate("/settings")}
         onGoContacts={() => navigate("/contacts")}
         onGoHistory={() => navigate("/history")}
@@ -598,7 +612,7 @@ export default function App() {
             element={
               <Landing
                 user={user}
-                onCreateInvoice={() => navigate("/create")}
+                onCreateInvoice={() => navigate("/templates")}
                 onLoadInvoice={handleLoadInvoiceFromLanding}
                 onGoUpgrade={() => navigate("/upgrade")}
                 onGoHistory={() => navigate("/history")}
@@ -607,6 +621,10 @@ export default function App() {
                 settings={invoice.settings}
               />
             }
+          />
+          <Route
+            path="/templates"
+            element={<TemplateSelection settings={invoice.settings} user={user} />}
           />
           <Route
             path="/create"
