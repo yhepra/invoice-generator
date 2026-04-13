@@ -539,6 +539,8 @@ export default function App() {
 
   const handleLogout = async () => {
     await auth.logout();
+    setIsTourOpen(false);
+    setTourStepIndex(0);
     setUser(null);
     navigate("/");
     showToast("Logged out successfully", "success");
@@ -576,7 +578,7 @@ export default function App() {
         onGoUpgrade={() => navigate("/upgrade")}
         onGoProfile={() => navigate("/profile")}
         onGoAdmin={() => navigate("/admin")}
-        onStartTour={startTour}
+        onStartTour={user ? startTour : null}
         user={user}
         onLogin={() => navigate("/login")}
         onLogout={handleLogout}
@@ -748,21 +750,23 @@ export default function App() {
         </Routes>
       </main>
 
-      <TourGuide
-        open={isTourOpen}
-        steps={tourSteps}
-        stepIndex={tourStepIndex}
-        onClose={closeTour}
-        onNext={nextTour}
-        onBack={prevTour}
-        labels={{
-          next: t("tourNext"),
-          back: t("tourBack"),
-          done: t("tourDone"),
-          skip: t("tourSkip"),
-          close: t("tourClose"),
-        }}
-      />
+      {user ? (
+        <TourGuide
+          open={isTourOpen}
+          steps={tourSteps}
+          stepIndex={tourStepIndex}
+          onClose={closeTour}
+          onNext={nextTour}
+          onBack={prevTour}
+          labels={{
+            next: t("tourNext"),
+            back: t("tourBack"),
+            done: t("tourDone"),
+            skip: t("tourSkip"),
+            close: t("tourClose"),
+          }}
+        />
+      ) : null}
     </div>
   );
 }
