@@ -168,8 +168,11 @@ export default function useInvoice(initialData = null) {
         } catch {
           void 0
         }
-        const res = await fetch(url, {
+        const bypassUrl = new URL(url, window.location.href)
+        bypassUrl.searchParams.set("_nocache", Date.now().toString())
+        const res = await fetch(bypassUrl.href, {
           mode: "cors",
+          cache: "no-store",
           credentials,
           signal: controller.signal,
         })
