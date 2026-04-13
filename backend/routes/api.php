@@ -13,6 +13,35 @@ Route::get('/ping', function () {
     return response()->json(['message' => 'Backend API is running']);
 });
 
+Route::options('/public-files/{path}', function () {
+    return response('', 204);
+})->where('path', '.*');
+
+Route::get('/public-files/{path}', function (string $path) {
+    $relative = ltrim($path, '/');
+    if ($relative === '' || str_contains($relative, '..') || str_contains($relative, "\0")) {
+        abort(404);
+    }
+
+    $candidates = [
+        storage_path('app/public/' . $relative),
+        public_path('storage/' . $relative),
+    ];
+
+    $file = null;
+    foreach ($candidates as $candidate) {
+        if (is_file($candidate)) {
+            $file = $candidate;
+            break;
+        }
+    }
+
+    if (!$file) abort(404);
+
+    return response()
+        ->file($file);
+})->where('path', '.*');
+
 // Public Auth Routes
 Route::post('/register', [AuthController::class, 'register']);
 Route::get('/email/verify/{id}/{hash}', [AuthController::class, 'verify'])->name('verification.verify');

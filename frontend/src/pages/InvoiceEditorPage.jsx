@@ -26,6 +26,25 @@ export default function InvoiceEditorPage({
     }
   }, [id, onLoadInvoice, onResetInvoice, navigate]);
 
+  useEffect(() => {
+    const onKeyDown = (e) => {
+      const key = String(e.key || "").toLowerCase();
+      if (key !== "s") return;
+      if (!e.ctrlKey && !e.metaKey) return;
+      if (e.altKey) return;
+
+      e.preventDefault();
+      if (e.repeat) return;
+      if (isSaving) return;
+      if (typeof onSave !== "function") return;
+
+      onSave(true);
+    };
+
+    window.addEventListener("keydown", onKeyDown, { capture: true });
+    return () => window.removeEventListener("keydown", onKeyDown, { capture: true });
+  }, [onSave, isSaving]);
+
   return (
     <InvoiceEditor
       {...invoiceApi}
