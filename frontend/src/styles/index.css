@@ -87,20 +87,27 @@ html, body {
 }
 
 .wysiwyg-content ul {
-  list-style: disc;
-  padding-left: 1.25rem;
+  list-style-type: disc;
+  list-style-position: inside;
+  padding-left: 0.5rem;
+  margin-left: 0;
 }
 
 .wysiwyg-content ol {
-  list-style: decimal;
-  padding-left: 1.25rem;
+  list-style-type: decimal;
+  list-style-position: inside;
+  padding-left: 0.5rem;
+  margin-left: 0;
 }
 
 .wysiwyg-content li {
-  margin: 0.125rem 0;
+  margin: 0;
+  padding: 0.125rem 0;
+  line-height: 1.5;
 }
 
 .wysiwyg-content p,
 .wysiwyg-content div {
   margin: 0;
+  line-height: 1.5;
 }
