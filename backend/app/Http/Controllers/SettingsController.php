@@ -50,8 +50,8 @@ class SettingsController extends Controller
 
     private function publicStorageUrl(string $relativePath): string
     {
-        $base = request()->getSchemeAndHttpHost();
-        return $base . '/storage/' . ltrim($relativePath, '/');
+        $base = rtrim(config('app.url'), '/');
+        return $base . '/api/public-files/' . ltrim($relativePath, '/');
     }
 
     private function storeDataUriImage(string $dataUri, string $kind): ?string
