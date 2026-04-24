@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\InvoiceMail;
 use App\Models\Invoice;
 use App\Models\UserSetting;
-use App\Mail\InvoiceMail;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -16,31 +16,44 @@ class InvoiceController extends Controller
 {
     private function isDataUriImage($value): bool
     {
-        if (!is_string($value)) return false;
+        if (! is_string($value)) {
+            return false;
+        }
+
         return preg_match('/^data:image\/(png|jpeg|jpg|webp);base64,/', $value) === 1;
     }
 
     private function extractPublicStorageRelativePath(string $urlOrPath): ?string
     {
         $path = parse_url($urlOrPath, PHP_URL_PATH);
-        if (!is_string($path) || $path === '') $path = $urlOrPath;
-        if (!is_string($path)) return null;
+        if (! is_string($path) || $path === '') {
+            $path = $urlOrPath;
+        }
+        if (! is_string($path)) {
+            return null;
+        }
 
         $needle = '/storage/';
         $pos = strpos($path, $needle);
-        if ($pos === false) return null;
+        if ($pos === false) {
+            return null;
+        }
 
         return ltrim(substr($path, $pos + strlen($needle)), '/');
     }
 
     private function ensurePublicStorageCopy(string $relativePath): void
     {
-        $publicFile = public_path('storage/' . ltrim($relativePath, '/'));
-        if (is_file($publicFile)) return;
-        if (!Storage::disk('public')->exists($relativePath)) return;
+        $publicFile = public_path('storage/'.ltrim($relativePath, '/'));
+        if (is_file($publicFile)) {
+            return;
+        }
+        if (! Storage::disk('public')->exists($relativePath)) {
+            return;
+        }
 
         $dir = dirname($publicFile);
-        if (!is_dir($dir)) {
+        if (! is_dir($dir)) {
             @mkdir($dir, 0755, true);
         }
 
@@ -52,53 +65,76 @@ class InvoiceController extends Controller
         }
     }
 
-    private function extractPathFromUrl(string $url): string {
-        if (str_starts_with($url, 'data:')) return $url;
-        if (str_contains($url, '/storage/')) return ltrim(explode('/storage/', $url)[1] ?? '', '/');
-        if (str_contains($url, '/api/public-files/')) return ltrim(explode('/api/public-files/', $url)[1] ?? '', '/');
+    private function extractPathFromUrl(string $url): string
+    {
+        if (str_starts_with($url, 'data:')) {
+            return $url;
+        }
+        if (str_contains($url, '/storage/')) {
+            return ltrim(explode('/storage/', $url)[1] ?? '', '/');
+        }
+        if (str_contains($url, '/api/public-files/')) {
+            return ltrim(explode('/api/public-files/', $url)[1] ?? '', '/');
+        }
+
         return ltrim($url, '/');
     }
 
     private function publicStorageUrl(string $relativePath): string
     {
         $base = rtrim(config('app.url'), '/');
-        return $base . '/api/public-files/' . ltrim($relativePath, '/');
+
+        return $base.'/api/public-files/'.ltrim($relativePath, '/');
     }
 
     private function getBase64OrProxyUrl(?string $relativePath): ?string
     {
-        if (empty($relativePath)) return null;
-        if (str_starts_with($relativePath, 'data:')) return $relativePath;
-        
+        if (empty($relativePath)) {
+            return null;
+        }
+        if (str_starts_with($relativePath, 'data:')) {
+            return $relativePath;
+        }
+
         $path = $this->extractPathFromUrl($relativePath);
         if (Storage::disk('public')->exists($path)) {
             try {
                 $mime = Storage::disk('public')->mimeType($path);
-                if (!$mime) {
+                if (! $mime) {
                     $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
-                    $mime = 'image/' . ($ext === 'jpg' ? 'jpeg' : $ext);
+                    $mime = 'image/'.($ext === 'jpg' ? 'jpeg' : $ext);
                 }
                 $content = base64_encode(Storage::disk('public')->get($path));
+
                 return "data:{$mime};base64,{$content}";
-            } catch (\Exception $e) {}
+            } catch (\Exception $e) {
+            }
         }
-        
+
         $base = rtrim(config('app.url'), '/');
-        return $base . '/api/public-files/' . $path;
+
+        return $base.'/api/public-files/'.$path;
     }
 
     private function sanitizeRichTextHtml($value): ?string
     {
-        if ($value === null) return null;
-        if (!is_string($value)) return null;
+        if ($value === null) {
+            return null;
+        }
+        if (! is_string($value)) {
+            return null;
+        }
 
         $input = trim($value);
-        if ($input === '') return '';
+        if ($input === '') {
+            return '';
+        }
 
         if (strpos($input, '<') === false) {
             $decoded = html_entity_decode($input, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
             $escaped = htmlspecialchars($decoded, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
-            return str_replace("\n", "<br>", $escaped);
+
+            return str_replace("\n", '<br>', $escaped);
         }
 
         $allowed = [
@@ -120,43 +156,55 @@ class InvoiceController extends Controller
 
         $doc = new \DOMDocument('1.0', 'UTF-8');
         $prev = libxml_use_internal_errors(true);
-        $doc->loadHTML('<div>' . $input . '</div>', LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
+        $doc->loadHTML('<div>'.$input.'</div>', LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
         libxml_clear_errors();
         libxml_use_internal_errors($prev);
 
         $clean = function ($node) use (&$clean, $doc, $allowed) {
-            if (!$node) return;
+            if (! $node) {
+                return;
+            }
 
             if ($node->nodeType === XML_COMMENT_NODE) {
                 $node->parentNode?->removeChild($node);
+
                 return;
             }
 
             if ($node->nodeType === XML_ELEMENT_NODE) {
                 $tag = strtolower($node->nodeName);
-                if (!isset($allowed[$tag])) {
+                if (! isset($allowed[$tag])) {
                     $text = $doc->createTextNode($node->textContent ?? '');
                     $node->parentNode?->replaceChild($text, $node);
+
                     return;
                 }
 
                 if ($node->hasAttributes()) {
                     for ($i = $node->attributes->length - 1; $i >= 0; $i--) {
                         $attr = $node->attributes->item($i);
-                        if ($attr) $node->removeAttributeNode($attr);
+                        if ($attr) {
+                            $node->removeAttributeNode($attr);
+                        }
                     }
                 }
             }
 
             if ($node->hasChildNodes()) {
                 $children = [];
-                foreach ($node->childNodes as $child) $children[] = $child;
-                foreach ($children as $child) $clean($child);
+                foreach ($node->childNodes as $child) {
+                    $children[] = $child;
+                }
+                foreach ($children as $child) {
+                    $clean($child);
+                }
             }
         };
 
         $root = $doc->documentElement;
-        if ($root) $clean($root);
+        if ($root) {
+            $clean($root);
+        }
 
         $out = '';
         if ($root && $root->hasChildNodes()) {
@@ -175,23 +223,30 @@ class InvoiceController extends Controller
         }
 
         $ext = strtolower($m[1]);
-        if ($ext === 'jpeg') $ext = 'jpg';
+        if ($ext === 'jpeg') {
+            $ext = 'jpg';
+        }
 
         $binary = base64_decode($m[2], true);
-        if ($binary === false) return null;
+        if ($binary === false) {
+            return null;
+        }
 
         $userId = Auth::id();
-        $path = "invoice-assets/{$userId}/{$kind}/" . Str::uuid()->toString() . ".{$ext}";
+        $path = "invoice-assets/{$userId}/{$kind}/".Str::uuid()->toString().".{$ext}";
         Storage::disk('public')->put($path, $binary);
 
         $this->ensurePublicStorageCopy($path);
+
         return $this->publicStorageUrl($path);
     }
 
     private function normalizeSellerInfoImages(array $sellerInfo): array
     {
         foreach (['logo' => 'logos', 'signature' => 'signatures'] as $key => $kind) {
-            if (!array_key_exists($key, $sellerInfo)) continue;
+            if (! array_key_exists($key, $sellerInfo)) {
+                continue;
+            }
             $value = $sellerInfo[$key];
 
             if ($this->isDataUriImage($value)) {
@@ -201,6 +256,7 @@ class InvoiceController extends Controller
                 } else {
                     unset($sellerInfo[$key]);
                 }
+
                 continue;
             }
 
@@ -220,8 +276,12 @@ class InvoiceController extends Controller
     {
         $page = max(1, (int) $request->query('page', 1));
         $perPage = (int) $request->query('per_page', 20);
-        if ($perPage <= 0) $perPage = 20;
-        if ($perPage > 200) $perPage = 200;
+        if ($perPage <= 0) {
+            $perPage = 20;
+        }
+        if ($perPage > 200) {
+            $perPage = 200;
+        }
 
         $q = trim((string) $request->query('q', ''));
         $period = (string) $request->query('period', 'all');
@@ -308,36 +368,88 @@ class InvoiceController extends Controller
 
     public function index(Request $request)
     {
+        $wantsPagination = $request->has('page') || $request->has('per_page') || $request->boolean('paginate');
+
         if ($request->boolean('summary')) {
-            $invoices = Invoice::query()
+            $query = Invoice::query()
                 ->where('user_id', Auth::id())
-                ->orderByDesc('created_at')
-                ->get([
-                    'id',
-                    'uuid',
-                    'number',
-                    'date',
-                    'due_date',
-                    'customer_info',
-                    'status',
-                    'template',
-                    'created_at',
-                    'subtotal',
-                    'tax_amount',
-                    'total',
-                    'items_count',
-                ]);
+                ->orderByDesc('created_at');
+
+            $columns = [
+                'id',
+                'uuid',
+                'number',
+                'date',
+                'due_date',
+                'customer_info',
+                'status',
+                'template',
+                'created_at',
+                'subtotal',
+                'tax_amount',
+                'total',
+                'items_count',
+            ];
+
+            if (! $wantsPagination) {
+                $invoices = $query->get($columns);
+
+                return response()->json($invoices);
+            }
+
+            $page = max(1, (int) $request->query('page', 1));
+            $perPage = 10;
+            $paginator = $query->paginate($perPage, $columns, 'page', $page);
+
+            return response()->json([
+                'data' => $paginator->items(),
+                'meta' => [
+                    'current_page' => $paginator->currentPage(),
+                    'last_page' => $paginator->lastPage(),
+                    'per_page' => $paginator->perPage(),
+                    'total' => $paginator->total(),
+                ],
+            ]);
+        }
+
+        $query = Invoice::query()
+            ->where('user_id', Auth::id())
+            ->with('items')
+            ->latest();
+
+        if (! $wantsPagination) {
+            $invoices = $query->get();
+            foreach ($invoices as $inv) {
+                if (is_array($inv->seller_info ?? null)) {
+                    $inv->seller_info = $this->normalizeSellerInfoImages($inv->seller_info);
+                }
+            }
 
             return response()->json($invoices);
         }
 
-        $invoices = Invoice::where('user_id', Auth::id())->with('items')->latest()->get();
-        foreach ($invoices as $inv) {
-            if (is_array($inv->seller_info ?? null)) {
-                $inv->seller_info = $this->normalizeSellerInfoImages($inv->seller_info);
-            }
-        }
-        return response()->json($invoices);
+        $page = max(1, (int) $request->query('page', 1));
+        $perPage = 10;
+        $paginator = $query->paginate($perPage, ['*'], 'page', $page);
+        $paginator->setCollection(
+            $paginator->getCollection()->map(function ($inv) {
+                if (is_array($inv->seller_info ?? null)) {
+                    $inv->seller_info = $this->normalizeSellerInfoImages($inv->seller_info);
+                }
+
+                return $inv;
+            })
+        );
+
+        return response()->json([
+            'data' => $paginator->items(),
+            'meta' => [
+                'current_page' => $paginator->currentPage(),
+                'last_page' => $paginator->lastPage(),
+                'per_page' => $paginator->perPage(),
+                'total' => $paginator->total(),
+            ],
+        ]);
     }
 
     public function store(Request $request)
@@ -366,7 +478,7 @@ class InvoiceController extends Controller
 
         return DB::transaction(function () use ($request) {
             $data = $request->only([
-                'number', 'date', 'due_date', 'seller_info', 'customer_info', 'notes', 'terms', 'status', 'template'
+                'number', 'date', 'due_date', 'seller_info', 'customer_info', 'notes', 'terms', 'status', 'template',
             ]);
             $data['user_id'] = Auth::id();
 
@@ -392,7 +504,7 @@ class InvoiceController extends Controller
             $data['tax_amount'] = $analytics['taxAmount'];
             $data['total'] = $analytics['total'];
             $data['items_count'] = $analytics['itemsCount'];
-            
+
             $invoice = Invoice::create($data);
 
             foreach ($request->items as $item) {
@@ -406,8 +518,8 @@ class InvoiceController extends Controller
             if (is_array($newInvoice->seller_info ?? null)) {
                 $sellerInfoData = $newInvoice->seller_info;
                 $newInvoice->seller_info = [
-                    'logo' => !empty($sellerInfoData['logo']) ? $this->getBase64OrProxyUrl($sellerInfoData['logo']) : null,
-                    'signature' => !empty($sellerInfoData['signature']) ? $this->getBase64OrProxyUrl($sellerInfoData['signature']) : null,
+                    'logo' => ! empty($sellerInfoData['logo']) ? $this->getBase64OrProxyUrl($sellerInfoData['logo']) : null,
+                    'signature' => ! empty($sellerInfoData['signature']) ? $this->getBase64OrProxyUrl($sellerInfoData['signature']) : null,
                 ] + $sellerInfoData;
             }
 
@@ -417,12 +529,13 @@ class InvoiceController extends Controller
 
     private function mapSellerInfoForResponse(array $sellerInfo): array
     {
-        if (!empty($sellerInfo['logo'])) {
+        if (! empty($sellerInfo['logo'])) {
             $sellerInfo['logo'] = $this->getBase64OrProxyUrl($sellerInfo['logo']);
         }
-        if (!empty($sellerInfo['signature'])) {
+        if (! empty($sellerInfo['signature'])) {
             $sellerInfo['signature'] = $this->getBase64OrProxyUrl($sellerInfo['signature']);
         }
+
         return $sellerInfo;
     }
 
@@ -463,10 +576,10 @@ class InvoiceController extends Controller
             'items.*.tax_percent' => 'nullable|numeric|min:0',
             'template' => 'nullable|string',
         ]);
-        
+
         return DB::transaction(function () use ($request, $invoice) {
             $data = $request->only([
-                'number', 'date', 'due_date', 'seller_info', 'customer_info', 'notes', 'terms', 'status', 'template'
+                'number', 'date', 'due_date', 'seller_info', 'customer_info', 'notes', 'terms', 'status', 'template',
             ]);
 
             if (array_key_exists('notes', $data)) {
@@ -508,8 +621,8 @@ class InvoiceController extends Controller
             if (is_array($updatedInvoice->seller_info ?? null)) {
                 $sellerInfoData = $updatedInvoice->seller_info;
                 $updatedInvoice->seller_info = [
-                    'logo' => !empty($sellerInfoData['logo']) ? $this->getBase64OrProxyUrl($sellerInfoData['logo']) : null,
-                    'signature' => !empty($sellerInfoData['signature']) ? $this->getBase64OrProxyUrl($sellerInfoData['signature']) : null,
+                    'logo' => ! empty($sellerInfoData['logo']) ? $this->getBase64OrProxyUrl($sellerInfoData['logo']) : null,
+                    'signature' => ! empty($sellerInfoData['signature']) ? $this->getBase64OrProxyUrl($sellerInfoData['signature']) : null,
                 ] + $sellerInfoData;
             }
 
@@ -541,8 +654,9 @@ class InvoiceController extends Controller
                 $query->where('uuid', $id)->orWhere('id', $id);
             })
             ->firstOrFail();
-            
+
         $invoice->delete();
+
         return response()->json(null, 204);
     }
 
@@ -576,19 +690,19 @@ class InvoiceController extends Controller
         $totals = $this->calculateTotals($invoice->items);
 
         $subject = $payload['subject'] ?? null;
-        if (!$subject) {
+        if (! $subject) {
             $subject = "Invoice {$invoice->number}";
         }
 
         $pdfBinary = null;
         $pdfFilename = $payload['filename'] ?? null;
-        if (!empty($payload['pdfBase64'])) {
+        if (! empty($payload['pdfBase64'])) {
             $decoded = base64_decode($payload['pdfBase64'], true);
             if ($decoded === false) {
                 return response()->json(['message' => 'Invalid PDF payload.'], 422);
             }
             $pdfBinary = $decoded;
-            if (!$pdfFilename) {
+            if (! $pdfFilename) {
                 $pdfFilename = "Invoice-{$invoice->number}.pdf";
             }
         }
@@ -609,7 +723,9 @@ class InvoiceController extends Controller
             }
 
             $encryption = $smtpEncryption;
-            if ($encryption === 'none') $encryption = null;
+            if ($encryption === 'none') {
+                $encryption = null;
+            }
 
             config([
                 'mail.mailers.dynamic' => [
