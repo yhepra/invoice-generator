@@ -39,6 +39,10 @@ class AppServiceProvider extends ServiceProvider
                 return true;
             }
 
+            if (filter_var(env('SCRAMBLE_PUBLIC_DOCS', false), FILTER_VALIDATE_BOOL)) {
+                return true;
+            }
+
             $allowedIps = array_filter(array_map('trim', explode(',', (string) env('SCRAMBLE_ALLOWED_IPS', ''))));
             if ($ip && in_array($ip, $allowedIps, true)) {
                 return true;
