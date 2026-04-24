@@ -1,13 +1,12 @@
 <?php
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\InvoiceController;
-use App\Http\Controllers\ContactController;
-use App\Http\Controllers\SettingsController;
-use App\Http\Controllers\AuthController;
-use App\Http\Controllers\WebhookController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ContactController;
+use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\SettingsController;
+use App\Http\Controllers\WebhookController;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/ping', function () {
     return response()->json(['message' => 'Backend API is running']);
@@ -24,8 +23,8 @@ Route::get('/public-files/{path}', function (string $path) {
     }
 
     $candidates = [
-        storage_path('app/public/' . $relative),
-        public_path('storage/' . $relative),
+        storage_path('app/public/'.$relative),
+        public_path('storage/'.$relative),
     ];
 
     $file = null;
@@ -36,7 +35,9 @@ Route::get('/public-files/{path}', function (string $path) {
         }
     }
 
-    if (!$file) abort(404);
+    if (! $file) {
+        abort(404);
+    }
 
     return response()
         ->file($file);
@@ -60,13 +61,28 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/password', [AuthController::class, 'changePassword']);
     Route::post('/upgrade', [AuthController::class, 'upgrade']);
     Route::post('/upgrade/verify', [AuthController::class, 'verifyPayment']);
-    
+
     Route::patch('/invoices/{id}/status', [InvoiceController::class, 'updateStatus']);
     Route::get('/invoices/history', [InvoiceController::class, 'history']);
     Route::apiResource('invoices', InvoiceController::class);
     Route::post('/invoices/{id}/send-email', [InvoiceController::class, 'sendEmail']);
+
+    Route::get('/contacts/customers', [ContactController::class, 'indexCustomers']);
+    Route::post('/contacts/customers', [ContactController::class, 'storeCustomer']);
+    Route::get('/contacts/customers/{id}', [ContactController::class, 'showCustomer']);
+    Route::put('/contacts/customers/{id}', [ContactController::class, 'updateCustomer']);
+    Route::patch('/contacts/customers/{id}', [ContactController::class, 'updateCustomer']);
+    Route::delete('/contacts/customers/{id}', [ContactController::class, 'destroyCustomer']);
+
+    Route::get('/contacts/sellers', [ContactController::class, 'indexSellers']);
+    Route::post('/contacts/sellers', [ContactController::class, 'storeSeller']);
+    Route::get('/contacts/sellers/{id}', [ContactController::class, 'showSeller']);
+    Route::put('/contacts/sellers/{id}', [ContactController::class, 'updateSeller']);
+    Route::patch('/contacts/sellers/{id}', [ContactController::class, 'updateSeller']);
+    Route::delete('/contacts/sellers/{id}', [ContactController::class, 'destroySeller']);
+
     Route::apiResource('contacts', ContactController::class);
-    
+
     Route::get('/settings', [SettingsController::class, 'index']);
     Route::post('/settings', [SettingsController::class, 'update']);
 
