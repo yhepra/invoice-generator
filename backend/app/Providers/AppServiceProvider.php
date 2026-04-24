@@ -2,8 +2,9 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\ServiceProvider;
 use Illuminate\Auth\Notifications\ResetPassword;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -26,6 +27,12 @@ class AppServiceProvider extends ServiceProvider
             $token = urlencode($token);
 
             return "{$frontendUrl}/reset-password?token={$token}&email={$email}";
+        });
+
+        Gate::define('viewApiDocs', function ($user = null) {
+            $ip = request()->ip();
+
+            return in_array($ip, ['127.0.0.1', '::1'], true);
         });
     }
 }
