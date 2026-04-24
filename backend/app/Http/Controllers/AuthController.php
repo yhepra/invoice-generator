@@ -2,19 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
 use App\Models\Payment;
-use Illuminate\Http\Request;
-use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Password;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Validation\ValidationException;
-use Illuminate\Support\Facades\Notification;
-use Illuminate\Auth\Events\Registered;
+use App\Models\User;
 use App\Services\XenditService;
+use Illuminate\Auth\Events\Registered;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Laravel\Socialite\Facades\Socialite;
 
 class AuthController extends Controller
@@ -36,20 +32,20 @@ class AuthController extends Controller
         try {
             $googleUser = Socialite::driver('google')->stateless()->user();
         } catch (\Exception $e) {
-            return redirect(env('APP_FRONTEND_URL', 'http://localhost:5173') . '/login?error=google_auth_failed');
+            return redirect(env('APP_FRONTEND_URL', 'http://localhost:5173').'/login?error=google_auth_failed');
         }
 
         $user = User::where('email', $googleUser->getEmail())->first();
 
         if ($user) {
             // Update google_id and avatar if not set
-            if (!$user->google_id) {
+            if (! $user->google_id) {
                 $user->google_id = $googleUser->getId();
             }
-            if (!$user->avatar) {
+            if (! $user->avatar) {
                 $user->avatar = $googleUser->getAvatar();
             }
-            if (!$user->email_verified_at) {
+            if (! $user->email_verified_at) {
                 $user->email_verified_at = now();
             }
             $user->save();
@@ -63,14 +59,14 @@ class AuthController extends Controller
                 'password' => null, // No password for Google users
                 'email_verified_at' => now(), // Google emails are verified
             ]);
-            
+
             event(new Registered($user));
         }
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
         // Redirect to frontend with token
-        return redirect(env('APP_FRONTEND_URL', 'http://localhost:5173') . '/auth/callback?token=' . $token);
+        return redirect(env('APP_FRONTEND_URL', 'http://localhost:5173').'/auth/callback?token='.$token);
     }
 
     public function register(Request $request)
@@ -91,7 +87,7 @@ class AuthController extends Controller
 
         return response()->json([
             'message' => 'Registration successful. Please check your email for verification link.',
-            'user' => $user
+            'user' => $user,
         ], 201);
     }
 
@@ -108,34 +104,34 @@ class AuthController extends Controller
         }
 
         if ($user->hasVerifiedEmail()) {
-            return redirect(env('APP_FRONTEND_URL', 'http://localhost:5173') . '/login?verified=1');
+            return redirect(env('APP_FRONTEND_URL', 'http://localhost:5173').'/login?verified=1');
         }
 
         if ($user->markEmailAsVerified()) {
             event(new \Illuminate\Auth\Events\Verified($user));
         }
 
-        return redirect(env('APP_FRONTEND_URL', 'http://localhost:5173') . '/login?verified=1');
+        return redirect(env('APP_FRONTEND_URL', 'http://localhost:5173').'/login?verified=1');
     }
 
     public function login(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'email' => 'required|email',
             'password' => 'required',
         ]);
 
-        $user = User::where('email', $request->email)->first();
+        $user = User::where('email', $validated['email'])->first();
 
-        if (! $user || ! Hash::check($request->password, $user->password)) {
-            throw ValidationException::withMessages([
-                'email' => ['Invalid credentials provided.'],
-            ]);
+        if (! $user || empty($user->password) || ! Hash::check($validated['password'], $user->password)) {
+            return response()->json([
+                'message' => 'Invalid credentials provided.',
+            ], 401);
         }
 
         if (! $user->hasVerifiedEmail()) {
             return response()->json([
-                'message' => 'Please verify your email address before logging in.'
+                'message' => 'Please verify your email address before logging in.',
             ], 403);
         }
 
@@ -150,7 +146,7 @@ class AuthController extends Controller
         return response()->json([
             'access_token' => $token,
             'token_type' => 'Bearer',
-            'user' => $user
+            'user' => $user,
         ]);
     }
 
@@ -183,7 +179,7 @@ class AuthController extends Controller
             $request->only('email', 'password', 'password_confirmation', 'token'),
             function (User $user, string $password) {
                 $user->forceFill([
-                    'password' => Hash::make($password)
+                    'password' => Hash::make($password),
                 ])->setRememberToken(Str::random(60));
 
                 $user->save();
@@ -235,7 +231,7 @@ class AuthController extends Controller
 
         return response()->json([
             'message' => 'Profile updated successfully',
-            'user' => $user
+            'user' => $user,
         ]);
     }
 
@@ -249,7 +245,7 @@ class AuthController extends Controller
         /** @var \App\Models\User $user */
         $user = $request->user();
 
-        if (!Hash::check($request->current_password, $user->password)) {
+        if (! Hash::check($request->current_password, $user->password)) {
             throw ValidationException::withMessages([
                 'current_password' => ['The provided password does not match your current password.'],
             ]);
@@ -279,10 +275,11 @@ class AuthController extends Controller
 
         try {
             $invoice = $this->xenditService->createInvoice($user, $period);
+
             return response()->json([
                 'message' => 'Payment link generated successfully',
                 'payment_url' => $invoice['invoice_url'],
-                'invoice' => $invoice
+                'invoice' => $invoice,
             ]);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Failed to generate payment link'], 500);
@@ -292,13 +289,13 @@ class AuthController extends Controller
     public function verifyPayment(Request $request)
     {
         $request->validate(['invoice_id' => 'required|string']);
-        
+
         /** @var \App\Models\User $user */
         $user = $request->user();
-        
+
         try {
             $invoice = $this->xenditService->getInvoice($request->invoice_id);
-            
+
             if ($invoice['status'] === 'PAID' || $invoice['status'] === 'SETTLED') {
                 $externalId = $invoice['external_id'] ?? '';
                 $parts = explode('_', (string) $externalId);
@@ -328,7 +325,7 @@ class AuthController extends Controller
                         'payment_channel' => $invoice['payment_channel'] ?? 'Unknown',
                         'payment_method' => $invoice['payment_method'] ?? 'Unknown',
                         'paid_at' => isset($invoice['paid_at']) ? \Carbon\Carbon::parse($invoice['paid_at']) : now(),
-                        'payment_details' => $invoice
+                        'payment_details' => $invoice,
                     ]
                 );
 
@@ -345,16 +342,16 @@ class AuthController extends Controller
                 return response()->json([
                     'status' => 'success',
                     'message' => 'Payment verified, upgraded to premium',
-                    'user' => $user
+                    'user' => $user,
                 ]);
             } else {
                 return response()->json([
                     'status' => 'pending',
-                    'message' => 'Payment not yet confirmed. Current status: ' . $invoice['status']
+                    'message' => 'Payment not yet confirmed. Current status: '.$invoice['status'],
                 ]);
             }
         } catch (\Exception $e) {
-            return response()->json(['message' => 'Failed to verify payment: ' . $e->getMessage()], 500);
+            return response()->json(['message' => 'Failed to verify payment: '.$e->getMessage()], 500);
         }
     }
 }
