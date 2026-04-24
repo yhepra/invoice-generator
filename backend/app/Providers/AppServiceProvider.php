@@ -2,9 +2,12 @@
 
 namespace App\Providers;
 
+use Dedoc\Scramble\Scramble;
 use Illuminate\Auth\Notifications\ResetPassword;
+use Illuminate\Routing\Route as LaravelRoute;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Str;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -32,7 +35,35 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('viewApiDocs', function ($user = null) {
             $ip = request()->ip();
 
-            return in_array($ip, ['127.0.0.1', '::1'], true);
+            if (app()->environment('local')) {
+                return true;
+            }
+
+            $allowedIps = array_filter(array_map('trim', explode(',', (string) env('SCRAMBLE_ALLOWED_IPS', ''))));
+            if ($ip && in_array($ip, $allowedIps, true)) {
+                return true;
+            }
+
+            return ($user?->role ?? null) === 'super_admin';
         });
+
+        Scramble::configure()
+            ->routes(function (LaravelRoute $route) {
+                $uri = ltrim($route->uri(), '/');
+
+                if (! Str::startsWith($uri, 'api/')) {
+                    return false;
+                }
+
+                if (Str::startsWith($uri, 'api/admin')) {
+                    return false;
+                }
+
+                if (Str::startsWith($uri, 'api/xendit')) {
+                    return false;
+                }
+
+                return true;
+            });
     }
 }
